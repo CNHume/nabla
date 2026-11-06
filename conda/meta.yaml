@@ -14,8 +14,7 @@ package:
 
 source:
   url: https://github.com/CNHume/nabla/archive/refs/tags/v{{ version }}.tar.gz
-  # TODO(release): replace with `curl -sL <url> | sha256sum` after tagging.
-  sha256: 0000000000000000000000000000000000000000000000000000000000000000
+  sha256: cc4c8f98e54f7dff1f95d96209e3244fc418e8accb01c0b51c85c3059aacafac
 
 build:
   number: 0
