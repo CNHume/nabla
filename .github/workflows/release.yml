@@ -1,0 +1,29 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build ${{ matrix.artifact }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: nabla-linux-x86_64
+          - os: macos-latest
+            artifact: nabla-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: make -C nabla -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
+      - name: Rename binary
+        run: mv nabla/build/nabla "${{ matrix.artifact }}"
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artifact }}

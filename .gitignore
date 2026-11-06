@@ -1,0 +1,24 @@
+# Visual Studio build results (nabla carries .slnx/.vcxproj for Windows builds)
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+Intermediate/
+*.exe
+*.dll
+*.obj
+*.pdb
+*.ilk
+*.user
+*.suo
+.vs/
+
+# GNU Make out-of-source builds (also covered by nabla/.gitignore and Test/.gitignore)
+build/
+build-*/
+
+# OS and editor cruft
+.DS_Store
+Thumbs.db
+*~
+*.bak
