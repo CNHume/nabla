@@ -89,9 +89,8 @@ includes the human genome (~3.1 billion), and stores each position in 4 bytes
 for maximal cache locality.
 .TP
 .B nabla64
-The 64-bit positional variant, for inputs beyond 4.29 billion positions, such
-as multi-genome concatenations or large plant genomes.  It stores each position
-in 8 bytes, so its index tables use roughly twice the memory.
+The 64-bit positional variant.  Use it when the length of one or both inputs
+exceeds nabla's 32-bit (4GB) limit.
 .PP
 Both variants accept the same options and produce identical results for inputs
 that fit the 32-bit range.  Building from source, the default
