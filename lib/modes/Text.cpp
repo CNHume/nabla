@@ -42,8 +42,8 @@ namespace lcs::modes {
 // Compare with STRING_TO_INDEXES_MAP used for RECORDS
 //
 uint64_t Text::Match(
-  MATCHES& indexesOf2MatchedByIndex1,
-  CHAR_TO_INDEXES_MAP& indexesOf2MatchedByChar,
+  MATCHES& columnsMatchedByRow,
+  CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
   const u32string& s1, const u32string& s2,
   bool ignorecase, bool ignorespace) {
   uint64_t count = 0;
@@ -51,16 +51,16 @@ uint64_t Text::Match(
   u32string buffer;
   files::Normal::Normalize(s2, buffer, ignorecase, ignorespace);
   for (const auto& it : buffer)
-    indexesOf2MatchedByChar[it].push_back(index++);
+    columnsMatchedByChar[it].push_back(index++);
 
   files::Normal::Normalize(s1, buffer, ignorecase, ignorespace);
   for (const auto& it : buffer) {
-    auto& dq2 = indexesOf2MatchedByChar[it];
-    indexesOf2MatchedByIndex1.push_back(&dq2);
+    auto& dq2 = columnsMatchedByChar[it];
+    columnsMatchedByRow.push_back(&dq2);
     count += dq2.size();
   }
 #ifdef SHOW_MATCH_COUNT
-  cout << format("count = {} of indexesOf2MatchedByIndex1\n", count);
+  cout << format("count = {} of columnsMatchedByRow\n", count);
 #endif
   return count;
 }
@@ -231,12 +231,12 @@ uint32_t Text::Compare(
     break;
   }
   case Algorithm::Matches: {
-    CHAR_TO_INDEXES_MAP indexesOf2MatchedByChar;
-    MATCHES indexesOf2MatchedByIndex1;  // holds references into indexesOf2MatchedByChar
+    CHAR_TO_INDEXES_MAP columnsMatchedByChar;
+    MATCHES columnsMatchedByRow;  // holds references into columnsMatchedByChar
     auto count = Match(
-      indexesOf2MatchedByIndex1, indexesOf2MatchedByChar, s1, s2, ignorecase, ignorespace);
+      columnsMatchedByRow, columnsMatchedByChar, s1, s2, ignorecase, ignorespace);
     algorithms::Analysis::WarnMatchCount(count, s1.size(), s2.size());
-    length = algorithms::HuntSzymanski::Find(ppairs, indexesOf2MatchedByIndex1);
+    length = algorithms::HuntSzymanski::Find(ppairs, columnsMatchedByRow);
     if (statistics) {
       statistics->algorithm = Algorithm::Matches;
       statistics->matches = count;

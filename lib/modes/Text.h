@@ -70,8 +70,8 @@ namespace lcs::modes {
     typedef std::unordered_map<char32_t, INDEXES> CHAR_TO_INDEXES_MAP;
 
     static std::uint64_t Match(
-      MATCHES& indexesOf2MatchedByIndex1,
-      CHAR_TO_INDEXES_MAP& indexesOf2MatchedByChar,
+      MATCHES& columnsMatchedByRow,
+      CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
       const std::u32string& s1, const std::u32string& s2,
       bool ignorecase, bool ignorespace);
 

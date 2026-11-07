@@ -68,65 +68,84 @@ namespace {
   //
   //   LINK[k] := newnode(i, j, LINK[k-1])
   //
-  // where index1 = i, index2 = j, and prefix = the predecessor node
-  // links[index3 - 1] = LINK[k-1].  links[] is the paper's LINK array and each
+  // where row = i, column = j, and prefix = the predecessor node
+  // links[rank - 1] = LINK[k-1].  links[] is the paper's LINK array and each
   // MatchNode is a newnode list node.  The predecessor is snapshotted here at
-  // creation time: a later update to links[index3 - 1] must not disturb nodes
+  // creation time: a later update to links[rank - 1] must not disturb nodes
   // already built on it (see Doc/References/HuntSzymanski.pdf, "The Algorithm",
   // Theorem 1, which bounds this trace at O(r) space).  Returns the new node's
   // arena index.
   //
   uint32_t pushNode(
     vector<MatchNode>& nodes, const vector<uint32_t>& links,
-    const ptrdiff_t& index3, uint32_t index1, uint32_t index2) {
-    auto prefix = index3 > 0 ? links[(size_t)(index3 - 1)] : UINT32_MAX;
-    nodes.push_back({ index1, index2, prefix });
+    const ptrdiff_t& rank, uint32_t row, uint32_t column) {
+    auto prefix = rank > 0 ? links[(size_t)(rank - 1)] : UINT32_MAX;
+    nodes.push_back({ row, column, prefix });
     return (uint32_t)(nodes.size() - 1);
+  }
+
+  //
+  // Reconstruct() returns the LCS as a Pair chain in ascending order by
+  // walking the arena from the head of the longest chain.  next links toward
+  // the chain head, so each match is prepended as it is visited.  This
+  // embodies the work formerly done by Pair::Reverse(chains.back()) when the
+  // trace was stored as a chain of Pair nodes.
+  //
+  shared_ptr<Pair> Reconstruct(
+    const vector<MatchNode>& nodes, const vector<uint32_t>& links) {
+    shared_ptr<Pair> head = nullptr;
+    auto node = links.empty() ? UINT32_MAX : links.back();
+    while (node != UINT32_MAX) {
+      const auto& match = nodes[(size_t)node];
+      head = make_shared<Pair>(match.row, match.column, head);
+      node = match.next;
+    }
+    return head;
   }
 }
 
 uint32_t HuntSzymanski::Find(
-  shared_ptr<Pair>* pairs, MATCHES& indexesOf2MatchedByIndex1) {
+  shared_ptr<Pair>* pairs, MATCHES& columnsMatchedByRow) {
   auto traceLCS = pairs != nullptr;
   vector<MatchNode> nodes;              // arena: one node per THRESH change
   vector<uint32_t> links;               // LINK array: arena index per LCS length
-  INDEXES prefixEnd;                    // THRESH array: minimal index2 per length
+  INDEXES prefixEnd;                    // THRESH array: minimal column per length
 
   //
-  //[Assert]After each index1 iteration prefixEnd[index3] is the least index2
-  // such that the LCS of s1[0:index1] and s2[0:index2] has length index3 + 1
+  //[Assert]After each row iteration prefixEnd[rank] is the least column
+  // such that the LCS of s1[0:row] and s2[0:column] has length rank + 1
   //
-  uint32_t index1 = 0;
-  for (const auto& it1 : indexesOf2MatchedByIndex1) {
+  uint32_t row = 0;
+  for (const auto& it1 : columnsMatchedByRow) {
     const auto& dq2 = *it1;
 #ifdef SHOW_MATCHES
-    cout << format("L1[{}] = {}\n", index1, join(dq2, " "));
+    cout << format("L1[{}] = {}\n", row, join(dq2, " "));
 #endif
 #ifdef SHOW_PREFIXENDS
     auto updated = false;
 #endif
     auto limit = prefixEnd.end();
     for (auto it2 = dq2.rbegin(); it2 != dq2.rend(); it2++) {
-      // Each index1, index2 pair corresponds to a match
-      auto index2 = *it2;
+      // Each row, column pair corresponds to a match
+      auto column = *it2;
 
       //
-      // Note: The reverse iterator it2 visits index2 values in descending order,
+      // Note: The reverse iterator it2 visits column values in descending order,
       // allowing in-place update of prefixEnd[].  std::lower_bound() is used to
       // perform a binary search.
       //
-      limit = lower_bound(prefixEnd.begin(), limit, index2);
+      limit = lower_bound(prefixEnd.begin(), limit, column);
 #ifdef FILTER_PAIRS
       //
-      // Look ahead to the next index2 value to optimize the MatchNodes used by
-      // the Hunt and Szymanski algorithm.  If the next index2 is also an
-      // improvement on the value currently held in prefixEnd[index3], a new
-      // MatchNode will only be superseded on the next index2 iteration.
+      // Look ahead to the next column value to optimize the MatchNodes used by
+      // the Hunt and Szymanski algorithm.  If the next column is also an
+      // improvement on the value currently held in prefixEnd[rank], a new
+      // MatchNode will only be superseded on the next column iteration.
       //
-      // Verify that a next index2 value exists; and that this value is greater
-      // than the final index2 value of the LCS prefix at prev(limit):
+      // Verify that a next column value exists; and that this value is greater
+      // than the final column value of the LCS prefix at prev(limit):
       //
-      auto preferNextIndex2 = next(it2) != dq2.rend() &&
+      auto preferNextColumn = next(it2) != dq2.rend() &&
         (limit == prefixEnd.begin() || *prev(limit) < *next(it2));
 
       //
@@ -139,11 +158,11 @@ uint32_t HuntSzymanski::Find(
       // n = 10,000 vs. ~1.26x at n = 100,000, because the O(log n) lower_bound
       // dominates the saved entry as the input grows.
       //
-      if (preferNextIndex2) continue;
+      if (preferNextColumn) continue;
 #endif
-      auto index3 = distance(prefixEnd.begin(), limit);
+      auto rank = distance(prefixEnd.begin(), limit);
 #ifdef SHOW_PREFIXENDS
-      auto len = index3 + 1;
+      auto len = rank + 1;
 #endif
       if (limit == prefixEnd.end()) {
         // Insert Case
@@ -151,30 +170,30 @@ uint32_t HuntSzymanski::Find(
         updated = true;
         cout << format(
           "inserting {} at {} for length = {}\n",
-          index2, index1, len);
+          column, row, len);
 #endif
-        prefixEnd.push_back(index2);
+        prefixEnd.push_back(column);
         // Refresh limit iterator:
         limit = prev(prefixEnd.end());
         if (traceLCS) {
-          links.push_back(pushNode(nodes, links, index3, index1, index2));
+          links.push_back(pushNode(nodes, links, rank, row, column));
         }
       }
-      else if (index2 < *limit) {
+      else if (column < *limit) {
         // Update Case
 #ifdef SHOW_PREFIXENDS
         updated = true;
         cout << format(
           "replacing {} with {} at {} for length = {}\n",
-          *limit, index2, index1, len);
+          *limit, column, row, len);
 #endif
         // Update limit value:
-        * limit = index2;
+        * limit = column;
         if (traceLCS) {
-          links[index3] = pushNode(nodes, links, index3, index1, index2);
+          links[rank] = pushNode(nodes, links, rank, row, column);
         }
       }
-    }                                   // next index2
+    }                                   // next column
 #ifdef SHOW_PREFIXENDS
     if (updated) {
       uint32_t index = 0;
@@ -183,23 +202,11 @@ uint32_t HuntSzymanski::Find(
       }
     }
 #endif
-    index1++;
-  }                                     // next index1
+    row++;
+  }                                     // next row
 
   if (traceLCS) {
-    //
-    // Reconstruct the LCS by walking the arena from the head of the longest
-    // chain.  next links toward the chain head, so prepend each match as it is
-    // visited; the result is ascending, mirroring Pair::Reverse(chains.back()).
-    //
-    shared_ptr<Pair> head = nullptr;
-    auto node = links.empty() ? UINT32_MAX : links.back();
-    while (node != UINT32_MAX) {
-      const auto& match = nodes[(size_t)node];
-      head = make_shared<Pair>(match.row, match.column, head);
-      node = match.next;
-    }
-    *pairs = head;
+    *pairs = Reconstruct(nodes, links);
 #ifdef SHOW_PAIRS
     Pair::List(*pairs);
 #endif

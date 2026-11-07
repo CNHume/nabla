@@ -30,7 +30,7 @@ namespace lcs::algorithms {
   class HuntSzymanski {
   public:
     static std::uint32_t Find(
-      std::shared_ptr<Pair>* pairs, MATCHES& indexesOf2MatchedByIndex1);
+      std::shared_ptr<Pair>* pairs, MATCHES& columnsMatchedByRow);
   };
 
 } // namespace lcs::algorithms

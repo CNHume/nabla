@@ -52,8 +52,8 @@ namespace lcs::modes {
 // time will be O(log(m+n)), at most.
 //
 uint64_t Record::Match(
-  MATCHES& indexesOf2MatchedByIndex1,
-  STRING_TO_INDEXES_MAP& indexesOf2MatchedByString,
+  MATCHES& columnsMatchedByRow,
+  STRING_TO_INDEXES_MAP& columnsMatchedByString,
   const RECORDS& r1, const RECORDS& r2,
   bool ignorecase, bool ignorespace) {
   uint64_t count = 0;
@@ -61,18 +61,18 @@ uint64_t Record::Match(
   string buffer;
   for (const auto& it : r2) {
     files::Normal::Normalize(it, buffer, ignorecase, ignorespace);
-    indexesOf2MatchedByString[buffer].push_back(index++);
+    columnsMatchedByString[buffer].push_back(index++);
   }
 
   for (const auto& it : r1) {
     files::Normal::Normalize(it, buffer, ignorecase, ignorespace);
-    auto& dq2 = indexesOf2MatchedByString[buffer];
-    indexesOf2MatchedByIndex1.push_back(&dq2);
+    auto& dq2 = columnsMatchedByString[buffer];
+    columnsMatchedByRow.push_back(&dq2);
     count += dq2.size();
   }
 #ifdef SHOW_MATCH_COUNT
   cout << format(
-    std::locale(), "count = {:L} of indexesOf2MatchedByIndex1\n", count);
+    std::locale(), "count = {:L} of columnsMatchedByRow\n", count);
 #endif
   return count;
 }
@@ -216,14 +216,14 @@ uint32_t Record::Compare(
       algorithm != Algorithm::Matches && r2.size() < r1.size();
     const auto& shorter = isswapped ? r2 : r1;
     const auto& longer = isswapped ? r1 : r2;
-    STRING_TO_INDEXES_MAP indexesOf2MatchedByString;
-    MATCHES indexesOf2MatchedByIndex1;  // holds references into indexesOf2MatchedByString
+    STRING_TO_INDEXES_MAP columnsMatchedByString;
+    MATCHES columnsMatchedByRow;  // holds references into columnsMatchedByString
     auto count = Match(
-      indexesOf2MatchedByIndex1, indexesOf2MatchedByString,
+      columnsMatchedByRow, columnsMatchedByString,
       shorter, longer, ignorecase, ignorespace);
     if (algorithm == Algorithm::Matches) {
       algorithms::Analysis::WarnMatchCount(count, shorter.size(), longer.size());
-      length = algorithms::HuntSzymanski::Find(ppairs, indexesOf2MatchedByIndex1);
+      length = algorithms::HuntSzymanski::Find(ppairs, columnsMatchedByRow);
       if (statistics) {
         statistics->algorithm = Algorithm::Matches;
         statistics->matches = count;
@@ -231,20 +231,20 @@ uint32_t Record::Compare(
     }
     else if (algorithm == Algorithm::RickSpace) {
       length = algorithms::RickSpace::Find(
-        ppairs, statistics, progress, indexesOf2MatchedByIndex1,
+        ppairs, statistics, progress, columnsMatchedByRow,
         (uint32_t)shorter.size(), (uint32_t)longer.size());
     }
     else {
       try {
         length = algorithms::RickTime::Find(
-          ppairs, statistics, progress, indexesOf2MatchedByIndex1,
+          ppairs, statistics, progress, columnsMatchedByRow,
           (uint32_t)shorter.size(), (uint32_t)longer.size());
       }
       catch (const algorithms::RickTimeBudgetExceeded&) {
         if (isverbose)
           cerr << "RickTime: recording overflowed; fell back to RickSpace\n";
         length = algorithms::RickSpace::Find(
-          ppairs, statistics, progress, indexesOf2MatchedByIndex1,
+          ppairs, statistics, progress, columnsMatchedByRow,
           (uint32_t)shorter.size(), (uint32_t)longer.size());
       }
     }

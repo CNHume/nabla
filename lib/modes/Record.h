@@ -63,8 +63,8 @@ namespace lcs::modes {
 
   protected:
     static std::uint64_t Match(
-      MATCHES& indexesOf2MatchedByIndex1,
-      STRING_TO_INDEXES_MAP& indexesOf2MatchedByString,
+      MATCHES& columnsMatchedByRow,
+      STRING_TO_INDEXES_MAP& columnsMatchedByString,
       const RECORDS& r1, const RECORDS& r2,
       bool ignorecase = false, bool ignorespace = false);
   };
