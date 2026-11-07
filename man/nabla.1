@@ -80,6 +80,28 @@ RickTime (Rick 1995): a single diagonal sweep, O(ns + d) space.
 Automatic dispatch selects Myers when the edit distance is small,
 Hunt-Szymanski when the matches are sparse, RickTime when its match
 recording fits in memory, and RickSpace otherwise.
+.SH ARCHITECTURAL VARIANTS
+.TP
+.B nabla
+The default 32-bit positional variant.  It handles inputs of up to
+4,294,967,296 positions (position indexes 0 through 4,294,967,295), which
+includes the human genome (~3.1 billion), and stores each position in 4 bytes
+for maximal cache locality.
+.TP
+.B nabla64
+The 64-bit positional variant, for inputs beyond 4.29 billion positions, such
+as multi-genome concatenations or large plant genomes.  It stores each position
+in 8 bytes, so its index tables use roughly twice the memory.
+.PP
+Both variants accept the same options and produce identical results for inputs
+that fit the 32-bit range.  Building from source, the default
+.B make -C cli
+produces
+.BR nabla ,
+and
+.B make -C cli LENGTH_SIZE=64 BUILD=build64
+produces
+.BR nabla64 .
 .SH OPTIONS
 .TP
 .BI -A " a|d|m|s|t"

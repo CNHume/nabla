@@ -1,0 +1,30 @@
+# Top-level Makefile for nabla -- convenience targets that dispatch to the
+# per-directory Makefiles.
+#
+#   make            build both nabla (32-bit) and nabla64 (64-bit)
+#   make nabla      build the default 32-bit variant only
+#   make nabla64    build the 64-bit variant only
+#   make test       build and run the test suite in both widths
+#   make clean      remove the build directories
+#
+# The real build logic lives in cli/Makefile and Test/Makefile.
+
+.PHONY: all nabla nabla64 test clean
+
+all: nabla nabla64
+
+nabla:
+	$(MAKE) -C cli
+
+nabla64:
+	$(MAKE) -C cli LENGTH_SIZE=64 BUILD=build64
+
+test:
+	$(MAKE) -C Test test
+	$(MAKE) -C Test LENGTH_SIZE=64 BUILD=build-index64 test
+
+clean:
+	$(MAKE) -C cli clean
+	$(MAKE) -C cli BUILD=build64 clean
+	$(MAKE) -C Test clean
+	$(MAKE) -C Test BUILD=build-index64 clean

@@ -27,17 +27,18 @@ GNU make and a C++20 compiler:
 make -C cli
 ```
 
-The executable is `cli/build/nabla`.
+The executable is `cli/build/nabla`.  A root-level `make` (or `make all`) builds
+both variants: `cli/build/nabla` and `cli/build64/nabla64`.
 
-For inputs longer than ~4.29 billion positions, build the 64-bit variant:
+For inputs longer than 4.29 billion positions, build the 64-bit variant:
 
 ```
 make -C cli LENGTH_SIZE=64 BUILD=build64
 ```
 
 which produces `cli/build64/nabla64`.  The 32-bit default handles up to
-4,294,967,295 positions (the human genome is ~3.1 billion); `nabla64` uses
-64-bit positions at twice the memory.
+4,294,967,296 positions (position indexes 0 through 4,294,967,295; the human
+genome is ~3.1 billion); `nabla64` uses 64-bit positions at twice the memory.
 
 ## Usage
 

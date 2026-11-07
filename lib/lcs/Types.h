@@ -19,9 +19,10 @@
 //
 // Index is the type of a position index into a sequence; its width sets the
 // maximum sequence length nabla can address.  The default 32-bit build covers
-// up to 4,294,967,295 positions (the human genome is ~3.1 billion) at half the
-// memory of 64-bit indexes.  Define LENGTH_SIZE_64 to build a specialized
-// release whose maximum sequence length is 64-bit.
+// up to 4,294,967,296 positions (position indexes 0 through 4,294,967,295; the
+// human genome is ~3.1 billion) at half the memory of 64-bit indexes.  Define
+// LENGTH_SIZE_64 to build a specialized release whose maximum sequence length
+// is 64-bit.
 //
 #pragma once
 

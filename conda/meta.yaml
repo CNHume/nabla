@@ -27,6 +27,7 @@ requirements:
 test:
   commands:
     - nabla -V
+    - nabla64 -V
 
 about:
   home: https://github.com/CNHume/nabla
