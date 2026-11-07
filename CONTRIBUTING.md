@@ -41,6 +41,21 @@ then apply it.
 The artifact should be *small and reviewable*: its purpose is to be approved
 or corrected in one glance, not to be exhaustive.
 
+## Naming
+
+Prefer descriptive identifiers: `index1`, `index2` rather than `i`, `j`.
+A self-documenting name carries its meaning, so a reader does not need the
+declaring context to understand it.
+
+A single-character name is acceptable when the character is a *documented*
+parameter — for instance an algorithm's published notation, such as `r` for
+match count, `n` for sequence length, or `p` for LCS length.  The character
+then reads as a citation, not an abbreviation.
+
+Match coordinates in new types use `row`/`column` (see the `Match` structs in
+Myers and RickSpace), anticipating a shared `Match` base.  `Pair`/`Delta`'s
+`begin1`/`begin2` names will be reconciled later.
+
 ## Why this is written down
 
 These rules are recorded after a concrete miss.  "Density" was applied
