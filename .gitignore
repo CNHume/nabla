@@ -13,7 +13,7 @@ Intermediate/
 *.suo
 .vs/
 
-# GNU Make out-of-source builds (also covered by nabla/.gitignore and Test/.gitignore)
+# GNU Make out-of-source builds (also covered by cli/.gitignore and Test/.gitignore)
 build/
 build-*/
 

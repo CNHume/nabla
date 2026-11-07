@@ -8,5 +8,5 @@ export CPPFLAGS="${CPPFLAGS} -I${PWD}/lib"
 export CXXFLAGS="${CXXFLAGS} -std=c++20"
 
 mkdir -p "${PREFIX}/bin"
-make -C nabla -j "${CPU_COUNT}"
-cp nabla/build/nabla "${PREFIX}/bin/nabla"
+make -C cli -j "${CPU_COUNT}"
+cp cli/build/nabla "${PREFIX}/bin/nabla"

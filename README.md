@@ -24,10 +24,10 @@ directly on nucleotide/protein sequences as well as text and records.
 GNU make and a C++20 compiler:
 
 ```
-make -C nabla
+make -C cli
 ```
 
-The executable is `nabla/build/nabla`.
+The executable is `cli/build/nabla`.
 
 ## Usage
 

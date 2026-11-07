@@ -1,9 +1,10 @@
 # Bioconda recipe for nabla.
 #
-# Drafted against the planned standalone home github.com/CNHume/nabla.
-# Once that repo exists and v1.0.0 is tagged, fill in the source sha256
-# below and submit meta.yaml + build.sh to bioconda-recipes under
-# recipes/nabla/.
+# Submit meta.yaml + build.sh to bioconda-recipes under recipes/nabla/.
+#
+# The source/url/sha256 below still describe v1.0.0, which predates the
+# nabla/ -> cli/ directory rename; re-point them at the next tag before
+# submitting so license_file matches the tarball layout.
 
 {% set name = "nabla" %}
 {% set version = "1.0.0" %}
@@ -32,8 +33,8 @@ about:
   home: https://github.com/CNHume/nabla
   license: LGPL-3.0-or-later
   license_file:
-    - nabla/LICENSES/COPYING_LESSER.txt
-    - nabla/LICENSES/COPYING.txt
+    - cli/LICENSES/COPYING_LESSER.txt
+    - cli/LICENSES/COPYING.txt
   summary: "Longest common subsequence of two sequences or files, with FASTA input and CIGAR output."
   description: |
     nabla finds the longest common subsequence (LCS) of two files or

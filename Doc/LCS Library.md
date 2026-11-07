@@ -54,7 +54,7 @@ namespace lcs {
 }
 ```
 
-The tool (`nabla/`) sits outside the library, in the global namespace:
+The tool (`cli/`) sits outside the library, in the global namespace:
 `Command` (derives from `lcs::files::Options`), `Version`, and the `SuspectDash`
 helper.
 

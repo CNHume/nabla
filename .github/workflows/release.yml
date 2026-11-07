@@ -23,9 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        run: make -C nabla -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
+        run: make -C cli -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
       - name: Rename binary
-        run: mv nabla/build/nabla "${{ matrix.artifact }}"
+        run: mv cli/build/nabla "${{ matrix.artifact }}"
       - name: Upload release asset
         uses: softprops/action-gh-release@v2
         with:
