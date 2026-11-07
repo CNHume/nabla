@@ -90,7 +90,9 @@ namespace {
     // Warn before allocating the dense next tables, reusing the symbol count
     // already gathered above rather than counting distinct symbols again.
     //
-    Analysis::WarnTableSize((uint64_t)t.m, (uint64_t)t.n, (uint64_t)s);
+    Analysis::WarnTableSize(
+      4 * (uint64_t)s * ((uint64_t)t.m + (uint64_t)t.n + 4),
+      (uint64_t)s, (uint64_t)t.m, (uint64_t)t.n, "RickTime");
     //
     // One extra sentinel slot so "first occurrence > j" at j == length (the
     // threshold sentinel) stays in bounds and returns length.
@@ -139,7 +141,9 @@ namespace {
     }
 
     auto s = lists.size();
-    Analysis::WarnTableSize((uint64_t)t.m, (uint64_t)t.n, (uint64_t)s);
+    Analysis::WarnTableSize(
+      4 * (uint64_t)s * ((uint64_t)t.m + (uint64_t)t.n + 4),
+      (uint64_t)s, (uint64_t)t.m, (uint64_t)t.n, "RickTime");
 
     //
     // id2[j] = symbol id of s2[j], inverting the match lists.  A position whose

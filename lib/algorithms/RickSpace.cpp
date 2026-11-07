@@ -20,6 +20,7 @@
 // See RickSpace.h for an overview.
 //
 #include "algorithms/RickSpace.h"
+#include "algorithms/Analysis.h"
 
 #include <algorithm>                    // for merge, max, min, reverse
 #include <cstdint>                      // for int64_t, uint32_t, UINT32_MAX
@@ -202,6 +203,14 @@ namespace {
 
     auto symbols = lists.size();
     occ.symbols = (int64_t)symbols;
+    //
+    // Warn before allocating the four dense next/prev tables.  A high-alphabet
+    // input (symbols ~ columns) makes the O(symbols x (rows + columns))
+    // footprint quadratic.
+    //
+    Analysis::WarnTableSize(
+      8 * (uint64_t)symbols * ((uint64_t)size1 + (uint64_t)size2 + 1),
+      (uint64_t)symbols, (uint64_t)size1, (uint64_t)size2, "RickSpace");
 
     //
     // Count-based LCS upper bound: sum over symbols of min(rows, list length),
@@ -307,6 +316,13 @@ namespace {
 
     auto symbols = charToId.size();
     occ.symbols = (int64_t)symbols;
+    //
+    // Warn before allocating the four dense next/prev tables (see the MATCHES
+    // overload above).
+    //
+    Analysis::WarnTableSize(
+      8 * (uint64_t)symbols * ((uint64_t)occ.rows + (uint64_t)occ.columns + 1),
+      (uint64_t)symbols, (uint64_t)occ.rows, (uint64_t)occ.columns, "RickSpace");
     occ.colId = move(s2Id);
 
     // Count-based LCS upper bound: sum over symbols of min(count1, count2).

@@ -70,14 +70,14 @@ void Analysis::WarnMatchCount(uint64_t matches, uint64_t m, uint64_t n) {
   }
 }
 
-void Analysis::WarnTableSize(uint64_t m, uint64_t n, uint64_t symbols) {
-  // next1 and next2 hold symbols x (length + 2) int64_t entries each.
-  auto bytes = 8 * symbols * (m + n + 4);
+void Analysis::WarnTableSize(
+  uint64_t bytes, uint64_t symbols, uint64_t m, uint64_t n,
+  string_view algorithm) {
   if (bytes > tableByteBudget) {
     std::cerr << std::format(
-      "Warning: RickTime occurrence tables need ~{} bytes for {} symbols "
-      "over a {}x{} input; consider -As (linear space)",
-      bytes, symbols, m, n) << '\n';
+      "Warning: {} occurrence tables need ~{} bytes for {} symbols over a {}x{} "
+      "input; consider -Am (matches) or -Ad (edit distance), which avoid dense tables",
+      algorithm, bytes, symbols, m, n) << '\n';
   }
 }
 

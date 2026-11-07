@@ -22,6 +22,7 @@
 
 #include <cstdint>                      // for uint64_t
 #include <string>                       // for string
+#include <string_view>                  // for string_view
 
 namespace lcs::algorithms {
 
@@ -35,8 +36,14 @@ namespace lcs::algorithms {
     // Hunt-Szymanski degenerates when the match count r is large relative
     // to the full m x n matching matrix, since it runs in O((r + n) log n).
     static void WarnMatchCount(std::uint64_t matches, std::uint64_t m, std::uint64_t n);
-    // RickTime allocates two dense s x length occurrence tables.
-    static void WarnTableSize(std::uint64_t m, std::uint64_t n, std::uint64_t symbols);
+    // Warn when the dense occurrence tables an LCS algorithm is about to
+    // allocate would exceed the byte budget.  bytes is the caller's estimate
+    // of the total table footprint (RickTime: two uint32 next tables;
+    // RickSpace: four uint32 next/prev tables); the message reports it and
+    // names the algorithm.
+    static void WarnTableSize(
+      std::uint64_t bytes, std::uint64_t symbols, std::uint64_t m, std::uint64_t n,
+      std::string_view algorithm);
     // Maximum dominant matches RickTime may record before its byRank recording,
     // added to the dense tables, would approach available RAM.
     static std::uint64_t RecordingBudget(std::uint64_t m, std::uint64_t n, std::uint64_t symbols);
