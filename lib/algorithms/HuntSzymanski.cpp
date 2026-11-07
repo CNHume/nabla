@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, see <https://www.gnu.org/licenses/>.
 //
+// 2026-11-07 CNHume  Replaced Pair chains with a MatchNode arena trace
 // 2017-07-05 CNHume  Applied prev() and next() in skip criteria.
 // 2017-07-03 CNHume  Refresh limit iterator after prefixEnd.push_back()
 // 2017-06-29 CNHume  Added Command class
@@ -35,11 +36,13 @@
 
 #include <algorithm>                    // for lower_bound()
 #include <cstddef>                      // for ptrdiff_t
+#include <cstdint>                      // for uint32_t, UINT32_MAX
 #include <format>                       // for format
 #include <iostream>                     // for cout
 #include <iterator>                     // for next() and prev()
 #include <locale>                       // for locale
 #include <memory>                       // for make_shared
+#include <vector>                       // for vector
 
 using namespace std;
 using namespace lcs;
@@ -47,19 +50,47 @@ using namespace lcs;
 namespace lcs::algorithms {
 
 namespace {
-  shared_ptr<Pair> pushPair(
-    PAIRS& chains, const ptrdiff_t& index3,
-    uint32_t& index1, uint32_t& index2) {
-    auto prefix = index3 > 0 ? chains[index3 - 1] : nullptr;
-    return make_shared<Pair>(index1, index2, prefix);
+  //
+  // MatchNode is an arena record for the trace.  It combines a match (row,
+  // column) with a back-pointer next to its predecessor in the chain, i.e. it
+  // is the paper's "list node" (newnode).  next indexes the arena
+  // (UINT32_MAX = none), matching Pair::next's "toward the chain head"
+  // direction without per-node shared_ptr allocation.
+  //
+  struct MatchNode {
+    uint32_t row = 0;
+    uint32_t column = 0;
+    uint32_t next = UINT32_MAX;
+  };
+
+  //
+  // pushNode() is Hunt & Szymanski (1977) Algorithm 2's trace, verbatim:
+  //
+  //   LINK[k] := newnode(i, j, LINK[k-1])
+  //
+  // where index1 = i, index2 = j, and prefix = the predecessor node
+  // links[index3 - 1] = LINK[k-1].  links[] is the paper's LINK array and each
+  // MatchNode is a newnode list node.  The predecessor is snapshotted here at
+  // creation time: a later update to links[index3 - 1] must not disturb nodes
+  // already built on it (see Doc/References/HuntSzymanski.pdf, "The Algorithm",
+  // Theorem 1, which bounds this trace at O(r) space).  Returns the new node's
+  // arena index.
+  //
+  uint32_t pushNode(
+    vector<MatchNode>& nodes, const vector<uint32_t>& links,
+    const ptrdiff_t& index3, uint32_t index1, uint32_t index2) {
+    auto prefix = index3 > 0 ? links[(size_t)(index3 - 1)] : UINT32_MAX;
+    nodes.push_back({ index1, index2, prefix });
+    return (uint32_t)(nodes.size() - 1);
   }
 }
 
 uint32_t HuntSzymanski::Find(
   shared_ptr<Pair>* pairs, MATCHES& indexesOf2MatchedByIndex1) {
   auto traceLCS = pairs != nullptr;
-  PAIRS chains;
-  INDEXES prefixEnd;
+  vector<MatchNode> nodes;              // arena: one node per THRESH change
+  vector<uint32_t> links;               // LINK array: arena index per LCS length
+  INDEXES prefixEnd;                    // THRESH array: minimal index2 per length
 
   //
   //[Assert]After each index1 iteration prefixEnd[index3] is the least index2
@@ -67,7 +98,7 @@ uint32_t HuntSzymanski::Find(
   //
   uint32_t index1 = 0;
   for (const auto& it1 : indexesOf2MatchedByIndex1) {
-    auto dq2 = *it1;
+    const auto& dq2 = *it1;
 #ifdef SHOW_MATCHES
     cout << format("L1[{}] = {}\n", index1, join(dq2, " "));
 #endif
@@ -87,10 +118,10 @@ uint32_t HuntSzymanski::Find(
       limit = lower_bound(prefixEnd.begin(), limit, index2);
 #ifdef FILTER_PAIRS
       //
-      // Look ahead to the next index2 value to optimize Pairs used by the Hunt
-      // and Szymanski algorithm.  If the next index2 is also an improvement on
-      // the value currently held in prefixEnd[index3], a new Pair will only be
-      // superseded on the next index2 iteration.
+      // Look ahead to the next index2 value to optimize the MatchNodes used by
+      // the Hunt and Szymanski algorithm.  If the next index2 is also an
+      // improvement on the value currently held in prefixEnd[index3], a new
+      // MatchNode will only be superseded on the next index2 iteration.
       //
       // Verify that a next index2 value exists; and that this value is greater
       // than the final index2 value of the LCS prefix at prev(limit):
@@ -100,13 +131,13 @@ uint32_t HuntSzymanski::Find(
 
       //
       // Depending on the match count, this optimization reduces the number of
-      // Pair allocations by up to (r/n + 1)/2, where r/n is the average number
-      // of matches per position.  At r/n = 1 there is no reduction.  At maximal
-      // density the factor approaches n/2.
+      // MatchNode arena entries by up to (r/n + 1)/2, where r/n is the average
+      // number of matches per position.  At r/n = 1 there is no reduction.  At
+      // maximal density the factor approaches n/2.
       //
       // The wall-clock benefit is modest and decays with n: ~1.40x faster at
       // n = 10,000 vs. ~1.26x at n = 100,000, because the O(log n) lower_bound
-      // dominates the saved allocation as the input grows.
+      // dominates the saved entry as the input grows.
       //
       if (preferNextIndex2) continue;
 #endif
@@ -126,7 +157,7 @@ uint32_t HuntSzymanski::Find(
         // Refresh limit iterator:
         limit = prev(prefixEnd.end());
         if (traceLCS) {
-          chains.push_back(pushPair(chains, index3, index1, index2));
+          links.push_back(pushNode(nodes, links, index3, index1, index2));
         }
       }
       else if (index2 < *limit) {
@@ -140,7 +171,7 @@ uint32_t HuntSzymanski::Find(
         // Update limit value:
         * limit = index2;
         if (traceLCS) {
-          chains[index3] = pushPair(chains, index3, index1, index2);
+          links[index3] = pushNode(nodes, links, index3, index1, index2);
         }
       }
     }                                   // next index2
@@ -156,10 +187,19 @@ uint32_t HuntSzymanski::Find(
   }                                     // next index1
 
   if (traceLCS) {
-    // Return the LCS as a linked list of matched index pairs:
-    auto last = chains.empty() ? nullptr : chains.back();
-    // Reverse longest chain
-    *pairs = Pair::Reverse(last);
+    //
+    // Reconstruct the LCS by walking the arena from the head of the longest
+    // chain.  next links toward the chain head, so prepend each match as it is
+    // visited; the result is ascending, mirroring Pair::Reverse(chains.back()).
+    //
+    shared_ptr<Pair> head = nullptr;
+    auto node = links.empty() ? UINT32_MAX : links.back();
+    while (node != UINT32_MAX) {
+      const auto& match = nodes[(size_t)node];
+      head = make_shared<Pair>(match.row, match.column, head);
+      node = match.next;
+    }
+    *pairs = head;
 #ifdef SHOW_PAIRS
     Pair::List(*pairs);
 #endif
