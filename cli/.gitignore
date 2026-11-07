@@ -7,6 +7,7 @@
 #
 # GNU Make out-of-source build directory (object files and the nabla
 # executable).  The BUILD ?= build variable is overridable, so ignore any
-# build-* variant as well.
+# build-* variant as well as the 64-bit build64/ variant.
 build/
 build-*/
+build64/

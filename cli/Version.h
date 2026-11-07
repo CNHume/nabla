@@ -27,7 +27,13 @@ public:
   static std::string ToString();
 
 private:
+#ifdef LENGTH_SIZE_64
+  static constexpr const char* programName = "nabla64";
+  static constexpr const char* buildFlavor = " (64-bit positions)";
+#else
   static constexpr const char* programName = "nabla";
+  static constexpr const char* buildFlavor = "";
+#endif
   static constexpr const char* programVersion = "1.0.1";
   static constexpr const char* copyrightYears = "2017-2026";
   static constexpr const char* author = "Christopher N. Hume";
