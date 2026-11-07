@@ -180,7 +180,7 @@ Length Record::Compare(
       }
     }
     if (isverbose)
-      cerr << format("Automatic: selected {} because {}\n",
+      cerr << format("Selected {} because {}\n",
         metrics::Statistics::NameOf(algorithm), reason);
   }
 
