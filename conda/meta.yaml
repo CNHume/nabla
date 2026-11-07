@@ -1,13 +1,9 @@
 # Bioconda recipe for nabla.
 #
 # Submit meta.yaml + build.sh to bioconda-recipes under recipes/nabla/.
-#
-# The source/url/sha256 below still describe v1.0.0, which predates the
-# nabla/ -> cli/ directory rename; re-point them at the next tag before
-# submitting so license_file matches the tarball layout.
 
 {% set name = "nabla" %}
-{% set version = "1.0.0" %}
+{% set version = "1.0.1" %}
 
 package:
   name: {{ name|lower }}
@@ -15,7 +11,8 @@ package:
 
 source:
   url: https://github.com/CNHume/nabla/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: cc4c8f98e54f7dff1f95d96209e3244fc418e8accb01c0b51c85c3059aacafac
+  # TODO(release): fill after tagging v1.0.1 — `curl -sL <url> | sha256sum`.
+  sha256: 0000000000000000000000000000000000000000000000000000000000000000
 
 build:
   number: 0

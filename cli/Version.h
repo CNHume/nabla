@@ -28,7 +28,7 @@ public:
 
 private:
   static constexpr const char* programName = "nabla";
-  static constexpr const char* programVersion = "1.0.0";
+  static constexpr const char* programVersion = "1.0.1";
   static constexpr const char* copyrightYears = "2017-2026";
   static constexpr const char* author = "Christopher N. Hume";
 };
