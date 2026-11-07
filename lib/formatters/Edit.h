@@ -42,10 +42,10 @@ namespace lcs::formatters {
   public:
     void BeginResult(
       const std::string& label1, const std::string& label2,
-      std::uint32_t size1, std::uint32_t size2) override;
+      Length size1, Length size2) override;
     void BeginInterval(
-      std::uint32_t begin1, std::uint32_t end1,
-      std::uint32_t begin2, std::uint32_t end2) override;
+      Index begin1, Index end1,
+      Index begin2, Index end2) override;
     void Layout(
       std::uint32_t, const SideSpan& side1, const SideSpan& side2,
       EditKind kind) override;
@@ -63,7 +63,7 @@ namespace lcs::formatters {
     // Difference() mirrors modes::Record::Difference(): compare, complement,
     // coalesce, and build the Edit Intervals.
     //
-    static std::uint32_t Difference(
+    static Length Difference(
       EDIT_INTERVALS* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const modes::Record::RECORDS& r1, const modes::Record::RECORDS& r2,
@@ -72,11 +72,11 @@ namespace lcs::formatters {
       std::uint32_t join, std::uint32_t prefix, std::uint32_t suffix);
 
   private:
-    static std::string Range(std::uint32_t begin, std::uint32_t end);
+    static std::string Range(Index begin, Index end);
     // A Delta run tagged Match (context) or Change.
     static std::shared_ptr<Delta> MakeRun(
-      EditKind kind, std::uint32_t begin1, std::uint32_t begin2,
-      std::uint32_t end1, std::uint32_t end2);
+      EditKind kind, Index begin1, Index begin2,
+      Index end1, Index end2);
   };
 
 } // namespace lcs::formatters

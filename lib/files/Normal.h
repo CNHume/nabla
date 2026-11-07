@@ -17,6 +17,8 @@
 //
 #pragma once
 
+#include "lcs/Types.h"
+
 #include <cstdint>                      // for uint32_t
 #include <string>
 #include <vector>
@@ -37,7 +39,7 @@ namespace lcs::files {
     static void NormalCase(std::u32string& input);
     static void NormalSpace(const std::u32string& input, std::u32string& output);
     static void NormalSpace(const std::u32string& input, std::u32string& output,
-      std::vector<std::uint32_t>& mapBegin, std::vector<std::uint32_t>& mapEnd);
+      std::vector<Index>& mapBegin, std::vector<Index>& mapEnd);
     static char32_t ToLower(char32_t c);
   };
 

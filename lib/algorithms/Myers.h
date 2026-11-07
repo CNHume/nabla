@@ -47,14 +47,14 @@ namespace lcs::algorithms {
     // required.  It throws when the edit distance exceeds the memory-derived
     // budget rather than spending O(N*D) time on a dissimilar input.
     //
-    static std::uint32_t Find(
+    static Length Find(
       std::shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
       const std::u32string& s1, const std::u32string& s2);
     //
     // Record path: compare sequences of records.  Records must already be
     // normalized for case/space; indices map 1:1 to the input records.
     //
-    static std::uint32_t Find(
+    static Length Find(
       std::shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
       const std::vector<std::string>& r1, const std::vector<std::string>& r2);
     //

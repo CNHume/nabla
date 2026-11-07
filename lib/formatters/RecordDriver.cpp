@@ -31,7 +31,7 @@ namespace lcs::formatters {
 modes::Record::RECORDS RecordDriver::Select(
   shared_ptr<Delta> deltas, const RECORDS& r1, const RECORDS& r2,
   bool isright) {
-  uint32_t length1, length2;
+  Length length1, length2;
   Delta::Lengths(deltas, length1, length2);
   RECORDS list;
   list.reserve(isright ? length2 : length1);
@@ -46,12 +46,12 @@ modes::Record::RECORDS RecordDriver::Select(
   return list;
 }
 
-uint32_t RecordDriver::Show(
+Length RecordDriver::Show(
   Formatter& format, shared_ptr<Delta> deltas,
   const RECORDS& r1, const RECORDS& r2,
   const string& label1, const string& label2) {
   format.BeginResult(
-    label1, label2, (uint32_t)r1.size(), (uint32_t)r2.size());
+    label1, label2, (Length)r1.size(), (Length)r2.size());
   uint32_t ndelta = 0;                  // # of deltas
   for (auto next = deltas; next != nullptr;
     next = dynamic_pointer_cast<Delta>(next->next)) {
@@ -64,12 +64,12 @@ uint32_t RecordDriver::Show(
   return ndelta;
 }
 
-uint32_t RecordDriver::Show(
+Length RecordDriver::Show(
   Formatter& format, const EDIT_INTERVALS& intervals,
   const RECORDS& r1, const RECORDS& r2,
   const string& label1, const string& label2) {
   format.BeginResult(
-    label1, label2, (uint32_t)r1.size(), (uint32_t)r2.size());
+    label1, label2, (Length)r1.size(), (Length)r2.size());
   uint32_t ndelta = 0;                  // # of runs
   for (const auto& interval : intervals) {
     format.BeginInterval(
@@ -88,7 +88,7 @@ uint32_t RecordDriver::Show(
 
 SideSpan RecordDriver::MakeSpan(
   const string& label, const RECORDS& records,
-  uint32_t begin, uint32_t end) {
+  Index begin, Index end) {
   SideSpan span;
   span.label = label;
   span.begin = begin;

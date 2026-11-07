@@ -57,7 +57,7 @@ uint64_t Record::Match(
   const RECORDS& r1, const RECORDS& r2,
   bool ignorecase, bool ignorespace) {
   uint64_t count = 0;
-  uint32_t index = 0;
+  Index index = 0;
   string buffer;
   for (const auto& it : r2) {
     files::Normal::Normalize(it, buffer, ignorecase, ignorespace);
@@ -77,7 +77,7 @@ uint64_t Record::Match(
   return count;
 }
 
-uint32_t Record::Correspondence(
+Length Record::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const RECORDS& r1, const RECORDS& r2,
@@ -97,7 +97,7 @@ uint32_t Record::Correspondence(
   return length;
 }
 
-uint32_t Record::Difference(
+Length Record::Difference(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const RECORDS& r1, const RECORDS& r2,
@@ -118,7 +118,7 @@ uint32_t Record::Difference(
   return length;
 }
 
-uint32_t Record::Compare(
+Length Record::Compare(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const RECORDS& r1, const RECORDS& r2,
@@ -129,7 +129,7 @@ uint32_t Record::Compare(
   metrics::Duration duration;                    // time the algorithm
   shared_ptr<Pair> pairs;
   auto ppairs = intervals != nullptr ? &pairs : nullptr;
-  uint32_t length;
+  Length length;
   bool isswapped = false;
 
   if (algorithm == Algorithm::Automatic) {
@@ -232,20 +232,20 @@ uint32_t Record::Compare(
     else if (algorithm == Algorithm::RickSpace) {
       length = algorithms::RickSpace::Find(
         ppairs, statistics, progress, columnsMatchedByRow,
-        (uint32_t)shorter.size(), (uint32_t)longer.size());
+        (Length)shorter.size(), (Length)longer.size());
     }
     else {
       try {
         length = algorithms::RickTime::Find(
           ppairs, statistics, progress, columnsMatchedByRow,
-          (uint32_t)shorter.size(), (uint32_t)longer.size());
+          (Length)shorter.size(), (Length)longer.size());
       }
       catch (const algorithms::RickTimeBudgetExceeded&) {
         if (isverbose)
           cerr << "RickTime: recording overflowed; fell back to RickSpace\n";
         length = algorithms::RickSpace::Find(
           ppairs, statistics, progress, columnsMatchedByRow,
-          (uint32_t)shorter.size(), (uint32_t)longer.size());
+          (Length)shorter.size(), (Length)longer.size());
       }
     }
     break;

@@ -34,7 +34,7 @@ namespace lcs::formatters {
 
     void BeginResult(
       const std::string& label1, const std::string& label2,
-      std::uint32_t, std::uint32_t) override;
+      Length, Length) override;
     void EndResult() override;
     void Layout(
       std::uint32_t counter, const SideSpan& side1, const SideSpan& side2,

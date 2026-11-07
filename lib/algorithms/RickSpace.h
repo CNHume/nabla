@@ -45,12 +45,12 @@ namespace lcs::algorithms {
     // code-point overload builds O(ns) tables directly from the strings and
     // serves the character (-t -r) path.  Both assume size1 <= size2.
     //
-    static std::uint32_t Find(
+    static Length Find(
       std::shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const MATCHES& matches,
-      std::uint32_t size1, std::uint32_t size2);
-    static std::uint32_t Find(
+      Length size1, Length size2);
+    static Length Find(
       std::shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2);

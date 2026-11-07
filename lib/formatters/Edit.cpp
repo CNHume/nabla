@@ -27,13 +27,13 @@ using namespace lcs;
 namespace lcs::formatters {
 
 void Edit::BeginResult(
-  const string& label1, const string& label2, uint32_t, uint32_t) {
+  const string& label1, const string& label2, Length, Length) {
   cout << "--- " << label1 << '\n';
   cout << "+++ " << label2 << '\n';
 }
 
 void Edit::BeginInterval(
-  uint32_t begin1, uint32_t end1, uint32_t begin2, uint32_t end2) {
+  Index begin1, Index end1, Index begin2, Index end2) {
   cout << format("@@ -{} +{} @@\n",
     Range(begin1, end1), Range(begin2, end2));
 }
@@ -57,7 +57,7 @@ void Edit::EndResult() {}
 //
 // Format one side of an @@ header from a semi-open [begin, end) range.
 //
-string Edit::Range(uint32_t begin, uint32_t end) {
+string Edit::Range(Index begin, Index end) {
   auto count = end - begin;
   if (count == 0) {
     //
@@ -76,7 +76,7 @@ string Edit::Range(uint32_t begin, uint32_t end) {
 // MakeRun() creates a Delta run tagged Match (context) or Change.
 //
 shared_ptr<Delta> Edit::MakeRun(
-  EditKind kind, uint32_t begin1, uint32_t begin2, uint32_t end1, uint32_t end2) {
+  EditKind kind, Index begin1, Index begin2, Index end1, Index end2) {
   auto run = make_shared<Delta>(begin1, begin2, end1, end2);
   run->kind = kind;
   return run;
@@ -104,7 +104,7 @@ EDIT_INTERVALS Edit::BuildIntervals(
       mp = dynamic_pointer_cast<Delta>(mp->next);
     }
     if (lead != nullptr) {
-      auto n = min(prefix, lead->end1 - lead->begin1);
+      auto n = min((Index)prefix, lead->end1 - lead->begin1);
       if (n > 0)
         interval.push_back(MakeRun(EditKind::Match,
           lead->end1 - n, lead->end2 - n, lead->end1, lead->end2));
@@ -125,7 +125,7 @@ EDIT_INTERVALS Edit::BuildIntervals(
 
     // Suffix context: the head of the match starting where the interval ends.
     if (mp != nullptr && mp->begin1 == cEnd1) {
-      auto n = min(suffix, mp->end1 - mp->begin1);
+      auto n = min((Index)suffix, mp->end1 - mp->begin1);
       if (n > 0)
         interval.push_back(MakeRun(EditKind::Match,
           mp->begin1, mp->begin2, mp->begin1 + n, mp->begin2 + n));
@@ -142,7 +142,7 @@ EDIT_INTERVALS Edit::BuildIntervals(
 // complement to get the differences, coalesce (join then context overlap),
 // and split into EDIT_INTERVALS.
 //
-uint32_t Edit::Difference(
+Length Edit::Difference(
   EDIT_INTERVALS* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const modes::Record::RECORDS& r1, const modes::Record::RECORDS& r2,

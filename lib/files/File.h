@@ -30,12 +30,12 @@ namespace lcs::files {
 
   class File {
   public:
-    static std::uint32_t Correspondence(
+    static Length Correspondence(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const Options& options);
 
-    static std::uint32_t Difference(
+    static Length Difference(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const Options& options);

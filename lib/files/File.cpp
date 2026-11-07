@@ -28,11 +28,11 @@ using namespace std;
 using namespace lcs;
 using namespace lcs::files;
 
-uint32_t File::Correspondence(
+Length File::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const Options& options) {
-  uint32_t length(0);
+  Length length(0);
   auto format = formatters::Formatter::Make(
     options.format, options.width, options.tabsize);
   if (options.istext) {
@@ -74,11 +74,11 @@ uint32_t File::Correspondence(
   return length;
 }
 
-uint32_t File::Difference(
+Length File::Difference(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const Options& options) {
-  uint32_t length(0);
+  Length length(0);
   if (options.istext) {
     auto format = formatters::Formatter::Make(
       options.format, options.width, options.tabsize);

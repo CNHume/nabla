@@ -46,13 +46,13 @@ namespace lcs {
   class Delta : public Pair {
   public:
     static std::int64_t Deltas;
-    std::uint32_t end1 = 0;
-    std::uint32_t end2 = 0;
+    Index end1 = 0;
+    Index end2 = 0;
     EditKind kind = EditKind::None;
 
     virtual ~Delta();
     Delta();
-    Delta(std::uint32_t begin1, std::uint32_t begin2, std::uint32_t end1, std::uint32_t end2,
+    Delta(Index begin1, Index begin2, Index end1, Index end2,
       std::shared_ptr<Delta> next = nullptr);
   #ifdef COPY_SEMANTICS
     Delta(const Delta& other);
@@ -62,7 +62,7 @@ namespace lcs {
     Delta(Delta&& other) noexcept;
     Delta& operator=(Delta&& other) noexcept;
   #endif
-    static void Lengths(const std::shared_ptr<Delta> deltas, std::uint32_t& length1, std::uint32_t& length2);
+    static void Lengths(const std::shared_ptr<Delta> deltas, Length& length1, Length& length2);
     static void List(const std::shared_ptr<Delta> deltas);
     static std::shared_ptr<Delta> Copy(const std::shared_ptr<Delta> deltas);
     static std::shared_ptr<Delta> Coalesce(const std::shared_ptr<Pair> pairs);

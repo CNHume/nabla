@@ -121,9 +121,9 @@ namespace {
     auto p = algorithms::RickSpace::Find(&pairs, nullptr, nullptr, s1, s2);
 
     auto m = s1.size(), n = s2.size();
-    printf("m=%zu n=%zu p=%u m-p=%zd n-p=%zd Rows=%llu Candidates=%llu "
+    printf("m=%zu n=%zu p=%llu m-p=%zd n-p=%zd Rows=%llu Candidates=%llu "
       "Rows/(p*(n-p))=%g\n",
-      m, n, p, (ptrdiff_t)(m - p), (ptrdiff_t)(n - p),
+      m, n, (unsigned long long)p, (ptrdiff_t)(m - p), (ptrdiff_t)(n - p),
       (unsigned long long)algorithms::RickSpace::Rows,
       (unsigned long long)algorithms::RickSpace::Candidates,
       (double)algorithms::RickSpace::Rows / (double)((uint64_t)p * (uint64_t)(n - p)));

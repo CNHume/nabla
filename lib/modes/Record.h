@@ -33,7 +33,7 @@ namespace lcs::modes {
   public:
     typedef std::vector<std::string> RECORDS;
 
-    static std::uint32_t Correspondence(
+    static Length Correspondence(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const RECORDS& r1, const RECORDS& r2,
@@ -42,7 +42,7 @@ namespace lcs::modes {
       bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
-    static std::uint32_t Difference(
+    static Length Difference(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const RECORDS& r1, const RECORDS& r2,
@@ -51,7 +51,7 @@ namespace lcs::modes {
       bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
-    static std::uint32_t Compare(
+    static Length Compare(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const RECORDS& r1, const RECORDS& r2,

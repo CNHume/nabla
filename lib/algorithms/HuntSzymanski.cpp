@@ -54,13 +54,13 @@ namespace {
   // MatchNode is an arena record for the trace.  It combines a match (row,
   // column) with a back-pointer next to its predecessor in the chain, i.e. it
   // is the paper's "list node" (newnode).  next indexes the arena
-  // (UINT32_MAX = none), matching Pair::next's "toward the chain head"
+  // (NoIndex = none), matching Pair::next's "toward the chain head"
   // direction without per-node shared_ptr allocation.
   //
   struct MatchNode {
-    uint32_t row = 0;
-    uint32_t column = 0;
-    uint32_t next = UINT32_MAX;
+    Index row = 0;
+    Index column = 0;
+    Index next = NoIndex;
   };
 
   //
@@ -76,12 +76,12 @@ namespace {
   // Theorem 1, which bounds this trace at O(r) space).  Returns the new node's
   // arena index.
   //
-  uint32_t pushNode(
-    vector<MatchNode>& nodes, const vector<uint32_t>& links,
-    const ptrdiff_t& rank, uint32_t row, uint32_t column) {
-    auto prefix = rank > 0 ? links[(size_t)(rank - 1)] : UINT32_MAX;
+  Index pushNode(
+    vector<MatchNode>& nodes, const vector<Index>& links,
+    const ptrdiff_t& rank, Index row, Index column) {
+    auto prefix = rank > 0 ? links[(size_t)(rank - 1)] : NoIndex;
     nodes.push_back({ row, column, prefix });
-    return (uint32_t)(nodes.size() - 1);
+    return (Index)(nodes.size() - 1);
   }
 
   //
@@ -92,10 +92,10 @@ namespace {
   // trace was stored as a chain of Pair nodes.
   //
   shared_ptr<Pair> Reconstruct(
-    const vector<MatchNode>& nodes, const vector<uint32_t>& links) {
+    const vector<MatchNode>& nodes, const vector<Index>& links) {
     shared_ptr<Pair> head = nullptr;
-    auto node = links.empty() ? UINT32_MAX : links.back();
-    while (node != UINT32_MAX) {
+    auto node = links.empty() ? NoIndex : links.back();
+    while (node != NoIndex) {
       const auto& match = nodes[(size_t)node];
       head = make_shared<Pair>(match.row, match.column, head);
       node = match.next;
@@ -104,18 +104,18 @@ namespace {
   }
 }
 
-uint32_t HuntSzymanski::Find(
+Length HuntSzymanski::Find(
   shared_ptr<Pair>* pairs, MATCHES& columnsMatchedByRow) {
   auto traceLCS = pairs != nullptr;
   vector<MatchNode> nodes;              // arena: one node per THRESH change
-  vector<uint32_t> links;               // LINK array: arena index per LCS length
+  vector<Index> links;                  // LINK array: arena index per LCS length
   INDEXES prefixEnd;                    // THRESH array: minimal column per length
 
   //
   //[Assert]After each row iteration prefixEnd[rank] is the least column
   // such that the LCS of s1[0:row] and s2[0:column] has length rank + 1
   //
-  uint32_t row = 0;
+  Index row = 0;
   for (const auto& it1 : columnsMatchedByRow) {
     const auto& dq2 = *it1;
 #ifdef SHOW_MATCHES

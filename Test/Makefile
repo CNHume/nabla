@@ -13,6 +13,13 @@ CPPFLAGS ?= -I../lib -I. -DTEST_DATA_DIR=\"$(abspath ../data)\"
 CXXFLAGS ?= -std=c++20 -O2 -Wall -Wextra
 DEPFLAGS := -MMD -MP
 
+# Position index width: `make LENGTH_SIZE=64` builds a specialized release
+# with 64-bit positions (LENGTH_SIZE_64); the default is 32-bit.
+LENGTH_SIZE ?= 32
+ifeq ($(LENGTH_SIZE),64)
+CPPFLAGS += -DLENGTH_SIZE_64
+endif
+
 BUILD   ?= build
 
 # Library objects: one per lib/*.cpp.

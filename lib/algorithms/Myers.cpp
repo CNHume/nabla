@@ -37,8 +37,8 @@ namespace lcs::algorithms {
 
 namespace {
   struct Match {
-    uint32_t row = 0;
-    uint32_t column = 0;
+    Index row = 0;
+    Index column = 0;
   };
 
   //
@@ -79,9 +79,9 @@ namespace {
     }
     if (x >= m && y >= n)
       return 0;
-    vector<int64_t> prev{ x };
+    vector<Index> prev{ (Index)x };
     for (int64_t d = 1; d <= budget; d++) {
-      vector<int64_t> v((size_t)(2 * d + 1), 0);
+      vector<Index> v((size_t)(2 * d + 1), 0);
       for (int64_t k = -d; k <= d; k += 2) {
         if (k == -d || (k != d && prev[(size_t)(k - 1 + d - 1)] < prev[(size_t)(k + 1 + d - 1)])) {
           x = prev[(size_t)(k + 1 + d - 1)];         // down move (insertion)
@@ -94,7 +94,7 @@ namespace {
           x++;
           y++;
         }
-        v[(size_t)(k + d)] = x;
+        v[(size_t)(k + d)] = (Index)x;
         if (x >= m && y >= n)
           return d;
       }
@@ -108,7 +108,7 @@ namespace {
   // (u32string) and the record path (vector<string>) share one implementation.
   //
   template <typename Sequence>
-  uint32_t MyersFind(
+  Length MyersFind(
     shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
     const Sequence& s1, const Sequence& s2) {
     auto m = s1.size();
@@ -137,7 +137,7 @@ namespace {
         throw runtime_error(
           "Myers: edit distance exceeds the budget; use -As (RickSpace) or -At (RickTime)");
       }
-      auto length = (uint32_t)((m + n - (size_t)D) / 2);
+      auto length = (Length)((m + n - (size_t)D) / 2);
       if (statistics) {
         statistics->algorithm = Algorithm::EditDistance;
         statistics->edits = (uint64_t)D;
@@ -151,7 +151,7 @@ namespace {
     // k = x - y, indexed by k + d; snakes follow the matching runs.  The first
     // d whose frontier reaches (m, n) is the minimal edit distance.
     //
-    vector<vector<int64_t>> V;
+    vector<vector<Index>> V;
     V.reserve((size_t)budget + 1);
 
     int64_t x = 0;
@@ -160,12 +160,12 @@ namespace {
       x++;
       y++;
     }
-    V.push_back(vector<int64_t>{ x });
+    V.push_back(vector<Index>{ (Index)x });
 
     int64_t D = (x >= (int64_t)m && y >= (int64_t)n) ? 0 : -1;
     for (int64_t d = 1; d <= (int64_t)budget && D < 0; d++) {
       auto& prev = V[(size_t)(d - 1)];
-      vector<int64_t> v((size_t)(2 * d + 1), 0);
+      vector<Index> v((size_t)(2 * d + 1), 0);
       for (int64_t k = -d; k <= d; k += 2) {
         if (k == -d || (k != d && prev[(size_t)(k - 1 + d - 1)] < prev[(size_t)(k + 1 + d - 1)])) {
           x = prev[(size_t)(k + 1 + d - 1)];        // down move (insertion)
@@ -178,7 +178,7 @@ namespace {
           x++;
           y++;
         }
-        v[(size_t)(k + d)] = x;
+        v[(size_t)(k + d)] = (Index)x;
         if (x >= (int64_t)m && y >= (int64_t)n) {
           D = d;
           break;
@@ -193,7 +193,7 @@ namespace {
         "Myers: edit distance exceeds the budget; use -As (RickSpace) or -At (RickTime)");
     }
 
-    auto length = (uint32_t)((m + n - (size_t)D) / 2);
+    auto length = (Length)((m + n - (size_t)D) / 2);
     if (statistics) {
       statistics->algorithm = Algorithm::EditDistance;
       statistics->edits = (uint64_t)D;
@@ -221,12 +221,12 @@ namespace {
       int64_t startX = prevK == k + 1 ? prevX : prevX + 1;
       // Emit the snake high-to-low so the reverse() below yields ascending rows.
       for (int64_t i = x - 1; i >= startX; i--)
-        matches.push_back({ .row = (uint32_t)i, .column = (uint32_t)(i - k) });
+        matches.push_back({ .row = (Index)i, .column = (Index)(i - k) });
       x = prevX;
       y = prevY;
     }
     for (int64_t i = x - 1; i >= 0; i--)
-      matches.push_back({ .row = (uint32_t)i, .column = (uint32_t)i });
+      matches.push_back({ .row = (Index)i, .column = (Index)i });
 
     reverse(matches.begin(), matches.end());
 
@@ -245,13 +245,13 @@ namespace {
   }
 }
 
-uint32_t Myers::Find(
+Length Myers::Find(
   shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
   const u32string& s1, const u32string& s2) {
   return MyersFind(pairs, statistics, s1, s2);
 }
 
-uint32_t Myers::Find(
+Length Myers::Find(
   shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
   const vector<string>& r1, const vector<string>& r2) {
   return MyersFind(pairs, statistics, r1, r2);

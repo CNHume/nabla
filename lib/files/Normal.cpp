@@ -106,12 +106,12 @@ void Normal::NormalCase(u32string& input) {
 }
 
 void Normal::NormalSpace(const u32string& input, u32string& output) {
-  vector<uint32_t> mapBegin, mapEnd;
+  vector<Index> mapBegin, mapEnd;
   NormalSpace(input, output, mapBegin, mapEnd);
 }
 
 void Normal::NormalSpace(const u32string& input, u32string& output,
-  vector<uint32_t>& mapBegin, vector<uint32_t>& mapEnd) {
+  vector<Index>& mapBegin, vector<Index>& mapEnd) {
   // outer (right) trim
   size_t end = input.size();
   while (end > 0 && IsSpace(input[end - 1]))
@@ -132,8 +132,8 @@ void Normal::NormalSpace(const u32string& input, u32string& output,
   while (i < end) {
     if (!IsSpace(input[i])) {
       output.push_back(input[i]);
-      mapBegin.push_back((uint32_t)i);
-      mapEnd.push_back((uint32_t)i + 1);
+      mapBegin.push_back((Index)i);
+      mapEnd.push_back((Index)i + 1);
       i++;
     }
     else {
@@ -145,8 +145,8 @@ void Normal::NormalSpace(const u32string& input, u32string& output,
       while (i < end && IsSpace(input[i]))
         i++;
       output.push_back(U' ');
-      mapBegin.push_back((uint32_t)runStart);
-      mapEnd.push_back((uint32_t)i);
+      mapBegin.push_back((Index)runStart);
+      mapEnd.push_back((Index)i);
     }
   }
 }

@@ -33,18 +33,18 @@ namespace lcs::formatters {
   public:
     void BeginResult(
       const std::string&, const std::string&,
-      std::uint32_t size1, std::uint32_t) override;
+      Length size1, Length) override;
     void EndResult() override;
     void Layout(
       std::uint32_t counter, const SideSpan& side1, const SideSpan& side2,
       EditKind) override;
 
   private:
-    std::uint32_t size1_ = 0;           // reference length
-    std::uint32_t size2_ = 0;           // query length
-    std::uint32_t prevEnd1_ = 0;        // previous delta's reference end
-    std::uint32_t reference_ = 0;       // reference positions accounted for
-    std::uint32_t query_ = 0;           // query positions accounted for
+    Length size1_ = 0;                  // reference length
+    Length size2_ = 0;                  // query length
+    Index prevEnd1_ = 0;                // previous delta's reference end
+    Index reference_ = 0;               // reference positions accounted for
+    Index query_ = 0;                   // query positions accounted for
     std::string cigar_;
   };
 

@@ -20,6 +20,8 @@
 #define COPY_SEMANTICS
 #define MOVE_SEMANTICS
 
+#include "lcs/Types.h"
+
 #include <cstdint>                      // for int64_t, uint32_t
 #include <iostream>                     // for ostream
 #include <memory>                       // for shared_ptr<>
@@ -32,13 +34,13 @@ namespace lcs {
 
   public:
     static std::int64_t Count;
-    std::uint32_t begin1 = 0;
-    std::uint32_t begin2 = 0;
+    Index begin1 = 0;
+    Index begin2 = 0;
     std::shared_ptr<Pair> next;
 
     virtual ~Pair();
     Pair();
-    Pair(std::uint32_t begin1, std::uint32_t begin2, std::shared_ptr<Pair> next = nullptr);
+    Pair(Index begin1, Index begin2, std::shared_ptr<Pair> next = nullptr);
   #ifdef COPY_SEMANTICS
     Pair(const Pair& other);
     Pair& operator=(const Pair& other);
@@ -47,7 +49,7 @@ namespace lcs {
     Pair(Pair&& other) noexcept;
     Pair& operator=(Pair&& other) noexcept;
   #endif
-    static std::uint32_t Length(const std::shared_ptr<Pair> pairs);
+    static Length ChainLength(const std::shared_ptr<Pair> pairs);
     static void List(const std::shared_ptr<Pair> pairs);
     static std::shared_ptr<Pair> Copy(const std::shared_ptr<Pair> pairs);
     static std::shared_ptr<Pair> Reverse(const std::shared_ptr<Pair> pairs);

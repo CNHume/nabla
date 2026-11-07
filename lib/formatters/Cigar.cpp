@@ -27,7 +27,7 @@ using namespace lcs;
 namespace lcs::formatters {
 
 void Cigar::BeginResult(
-  const string&, const string&, uint32_t size1, uint32_t size2) {
+  const string&, const string&, Length size1, Length size2) {
   size1_ = size1;
   size2_ = size2;
   prevEnd1_ = 0;

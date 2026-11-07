@@ -32,7 +32,7 @@ namespace lcs::modes {
 
   class Text {
   public:
-    static std::uint32_t Correspondence(
+    static Length Correspondence(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2,
@@ -41,7 +41,7 @@ namespace lcs::modes {
       bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
-    static std::uint32_t Difference(
+    static Length Difference(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2,
@@ -50,7 +50,7 @@ namespace lcs::modes {
       bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
-    static std::uint32_t Compare(
+    static Length Compare(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2,
@@ -78,11 +78,11 @@ namespace lcs::modes {
   private:
     // Map normalized-space Delta intervals back to original-space spans.
     static void MapDeltas(std::shared_ptr<Delta> deltas,
-      const std::vector<std::uint32_t>& mapBegin1, const std::vector<std::uint32_t>& mapEnd1,
-      const std::vector<std::uint32_t>& mapBegin2, const std::vector<std::uint32_t>& mapEnd2,
+      const std::vector<Index>& mapBegin1, const std::vector<Index>& mapEnd1,
+      const std::vector<Index>& mapBegin2, const std::vector<Index>& mapEnd2,
       std::size_t size1, std::size_t size2);
-    static void MapSide(std::uint32_t& begin, std::uint32_t& end,
-      const std::vector<std::uint32_t>& mapBegin, const std::vector<std::uint32_t>& mapEnd,
+    static void MapSide(Index& begin, Index& end,
+      const std::vector<Index>& mapBegin, const std::vector<Index>& mapEnd,
       std::size_t size);
   };
 

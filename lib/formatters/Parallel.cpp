@@ -102,7 +102,7 @@ uint32_t Parallel::rightWidth() const {
 }
 
 void Parallel::BeginResult(
-  const string& label1, const string& label2, uint32_t, uint32_t) {
+  const string& label1, const string& label2, Length, Length) {
 #ifdef SHOW_HEADER_RULE
   cout << Rule() << '\n';
 #endif

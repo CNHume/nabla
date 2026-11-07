@@ -23,7 +23,7 @@
 #include "algorithms/Analysis.h"
 
 #include <algorithm>                    // for merge, max, min, reverse
-#include <cstdint>                      // for int64_t, uint32_t, UINT32_MAX
+#include <cstdint>                      // for int64_t, uint32_t, NoIndex
 #include <iterator>                     // for back_inserter
 #include <memory>                       // for make_shared
 #include <unordered_map>                // for pointer -> symbol id
@@ -51,13 +51,13 @@ namespace lcs::algorithms {
 //
 namespace {
   struct Match {
-    uint32_t row = 0;
-    uint32_t column = 0;
+    Index row = 0;
+    Index column = 0;
   };
 
   struct Result {
     bool hasMidpoint = false;
-    uint32_t length = 0;               // LCS length of the sub-problem
+    Length length = 0;                 // LCS length of the sub-problem
     Match midpoint;
   };
 
@@ -73,21 +73,21 @@ namespace {
   // list — the "LeftPos/TopPos" trick behind the time bound.
   //
   // O(1) next/previous occurrence tables over both strings.  rowId[row] is
-  // the symbol id of s1[row] and colId[column] that of s2[column] (UINT32_MAX
+  // the symbol id of s1[row] and colId[column] that of s2[column] (NoIndex
   // when the symbol never occurs); next/prev are over s2 (the longer string)
   // and next1/prev1 over s1, each giving the smallest position >= column /
-  // largest position <= column holding the symbol (length / UINT32_MAX if
+  // largest position <= column holding the symbol (length / NoIndex if
   // none).  This is the "LeftPos/TopPos" O(ns) preprocessing of the Rick
   // contour scan, extended to both strings so the column sweep of the dual
   // diagonal sweep can run.
   //
   struct Occurrences {
-    vector<uint32_t> rowId;             // symbol id of each s1 position
-    vector<uint32_t> colId;             // symbol id of each s2 position
-    vector<vector<uint32_t>> next;      // [symbol][column] over s2, [0, columns]
-    vector<vector<uint32_t>> prev;      // [symbol][column] over s2, [0, columns)
-    vector<vector<uint32_t>> next1;     // [symbol][row] over s1, [0, rows]
-    vector<vector<uint32_t>> prev1;     // [symbol][row] over s1, [0, rows]
+    vector<Index> rowId;             // symbol id of each s1 position
+    vector<Index> colId;             // symbol id of each s2 position
+    vector<vector<Index>> next;      // [symbol][column] over s2, [0, columns]
+    vector<vector<Index>> prev;      // [symbol][column] over s2, [0, columns)
+    vector<vector<Index>> next1;     // [symbol][row] over s1, [0, rows]
+    vector<vector<Index>> prev1;     // [symbol][row] over s1, [0, rows]
     int64_t rows = 0;                   // size1
     int64_t columns = 0;                // size2
     int64_t symbols = 0;                // distinct symbols
@@ -95,7 +95,7 @@ namespace {
   };
 
   // Forward declarations (definitions follow).
-  uint32_t Solve(shared_ptr<Pair>* pairs, const Occurrences& occ,
+  Length Solve(shared_ptr<Pair>* pairs, const Occurrences& occ,
     size_t size1, size_t size2, metrics::Progress* progress);
   Occurrences BuildOccurrences(const MATCHES& matches,
     size_t size1, size_t size2);
@@ -135,7 +135,7 @@ namespace {
   // null only the length is wanted, so one forward/backward contour alternation
   // (FindMidpoint) suffices and the recursion is skipped.
   //
-  uint32_t Solve(shared_ptr<Pair>* pairs, const Occurrences& occ,
+  Length Solve(shared_ptr<Pair>* pairs, const Occurrences& occ,
     size_t size1, size_t size2, metrics::Progress* progress) {
     if (pairs == nullptr)
       return FindMidpoint(occ, 0, size1, 0, size2, progress).length;
@@ -162,7 +162,7 @@ namespace {
       *pairs = head;
     }
 
-    return (uint32_t)out.size();
+    return (Length)out.size();
   }
 
   //
@@ -185,13 +185,13 @@ namespace {
     //
     unordered_map<const INDEXES*, uint32_t> pointerToId;
     vector<const INDEXES*> lists;  // lists[id] = sorted positions of symbol id
-    occ.rowId.assign(size1, UINT32_MAX);
+    occ.rowId.assign(size1, NoIndex);
     for (size_t rowIndex = 0; rowIndex < size1; rowIndex++) {
       const auto* matchList = matches[rowIndex];
       auto found = pointerToId.find(matchList);
-      uint32_t symbolId;
+      Index symbolId;
       if (found == pointerToId.end()) {
-        symbolId = (uint32_t)lists.size();
+        symbolId = (Index)lists.size();
         pointerToId.emplace(matchList, symbolId);
         lists.push_back(matchList);
       }
@@ -218,7 +218,7 @@ namespace {
     //
     vector<uint64_t> count1(symbols, 0);
     for (auto rowSymbol : occ.rowId)
-      if (rowSymbol != UINT32_MAX)
+      if (rowSymbol != NoIndex)
         count1[rowSymbol]++;
     uint64_t pMax = 0;
     for (size_t symbolId = 0; symbolId < symbols; symbolId++) {
@@ -227,11 +227,11 @@ namespace {
     }
     SetContourBound(occ, pMax);
 
-    occ.next.assign(symbols, vector<uint32_t>((size_t)size2 + 1, (uint32_t)occ.columns));
-    occ.prev.assign(symbols, vector<uint32_t>((size_t)size2, UINT32_MAX));
+    occ.next.assign(symbols, vector<Index>((size_t)size2 + 1, (Index)occ.columns));
+    occ.prev.assign(symbols, vector<Index>((size_t)size2, NoIndex));
 
     // colId[j] = symbol id of s2[j], inverting the match lists.
-    occ.colId.assign(size2, UINT32_MAX);
+    occ.colId.assign(size2, NoIndex);
 
     for (size_t symbolId = 0; symbolId < symbols; symbolId++) {
       const auto& list = *lists[symbolId];    // sorted positions, ascending
@@ -243,12 +243,12 @@ namespace {
       for (int64_t columnIndex = 0; columnIndex <= occ.columns; columnIndex++) {
         while (listIndex < list.size() && (int64_t)list[listIndex] < columnIndex)
           listIndex++;
-        nextTable[(size_t)columnIndex] = listIndex < list.size() ? list[listIndex] : (uint32_t)occ.columns;
+        nextTable[(size_t)columnIndex] = listIndex < list.size() ? list[listIndex] : (Index)occ.columns;
       }
 
       // prev[id][j] = last list element <= j.
       listIndex = 0;
-      uint32_t last = UINT32_MAX;
+      Index last = NoIndex;
       for (int64_t columnIndex = 0; columnIndex < occ.columns; columnIndex++) {
         while (listIndex < list.size() && (int64_t)list[listIndex] <= columnIndex) {
           last = list[listIndex];
@@ -259,27 +259,27 @@ namespace {
 
       // Invert: each position in the list holds symbol id.
       for (auto columnIndex : list)
-        occ.colId[(size_t)columnIndex] = (uint32_t)symbolId;
+        occ.colId[(size_t)columnIndex] = (Index)symbolId;
     }
 
     // next1[id][i] = first occurrence of symbol id at/after i in s1 (m if none).
-    occ.next1.assign(symbols, vector<uint32_t>((size_t)occ.rows + 1, (uint32_t)occ.rows));
+    occ.next1.assign(symbols, vector<Index>((size_t)occ.rows + 1, (Index)occ.rows));
     for (int64_t rowIndex = occ.rows - 1; rowIndex >= 0; rowIndex--) {
       for (size_t symbolId = 0; symbolId < symbols; symbolId++)
         occ.next1[symbolId][(size_t)rowIndex] = occ.next1[symbolId][(size_t)rowIndex + 1];
       auto rowSymbol = occ.rowId[(size_t)rowIndex];
-      if (rowSymbol != UINT32_MAX)
-        occ.next1[(size_t)rowSymbol][(size_t)rowIndex] = (uint32_t)rowIndex;
+      if (rowSymbol != NoIndex)
+        occ.next1[(size_t)rowSymbol][(size_t)rowIndex] = (Index)rowIndex;
     }
 
-    // prev1[id][i] = last occurrence of symbol id at/before i in s1 (UINT32_MAX if none).
-    occ.prev1.assign(symbols, vector<uint32_t>((size_t)occ.rows, UINT32_MAX));
+    // prev1[id][i] = last occurrence of symbol id at/before i in s1 (NoIndex if none).
+    occ.prev1.assign(symbols, vector<Index>((size_t)occ.rows, NoIndex));
     for (int64_t rowIndex = 0; rowIndex < occ.rows; rowIndex++) {
       for (size_t symbolId = 0; symbolId < symbols; symbolId++)
-        occ.prev1[symbolId][(size_t)rowIndex] = rowIndex > 0 ? occ.prev1[symbolId][(size_t)rowIndex - 1] : UINT32_MAX;
+        occ.prev1[symbolId][(size_t)rowIndex] = rowIndex > 0 ? occ.prev1[symbolId][(size_t)rowIndex - 1] : NoIndex;
       auto rowSymbol = occ.rowId[(size_t)rowIndex];
-      if (rowSymbol != UINT32_MAX)
-        occ.prev1[(size_t)rowSymbol][(size_t)rowIndex] = (uint32_t)rowIndex;
+      if (rowSymbol != NoIndex)
+        occ.prev1[(size_t)rowSymbol][(size_t)rowIndex] = (Index)rowIndex;
     }
 
     return occ;
@@ -299,13 +299,13 @@ namespace {
 
     // Compress the code points of s2 (the tabled string) to dense ids.
     unordered_map<char32_t, uint32_t> charToId;
-    vector<uint32_t> s2Id(s2.size(), UINT32_MAX);
+    vector<Index> s2Id(s2.size(), NoIndex);
     for (size_t columnIndex = 0; columnIndex < s2.size(); columnIndex++) {
       auto codePoint = s2[columnIndex];
       auto found = charToId.find(codePoint);
-      uint32_t symbolId;
+      Index symbolId;
       if (found == charToId.end()) {
-        symbolId = (uint32_t)charToId.size();
+        symbolId = (Index)charToId.size();
         charToId.emplace(codePoint, symbolId);
       }
       else {
@@ -331,8 +331,8 @@ namespace {
     for (auto columnSymbol : occ.colId)
       count2[columnSymbol]++;
 
-    // rowId[i] = symbol id of s1[i], or UINT32_MAX when it never occurs in s2.
-    occ.rowId.assign(s1.size(), UINT32_MAX);
+    // rowId[i] = symbol id of s1[i], or NoIndex when it never occurs in s2.
+    occ.rowId.assign(s1.size(), NoIndex);
     for (size_t rowIndex = 0; rowIndex < s1.size(); rowIndex++) {
       auto found = charToId.find(s1[rowIndex]);
       if (found != charToId.end()) {
@@ -347,41 +347,41 @@ namespace {
     SetContourBound(occ, pMax);
 
     // next[id][j] = first occurrence of symbol id at/after j (n if none).
-    occ.next.assign(symbols, vector<uint32_t>((size_t)occ.columns + 1, (uint32_t)occ.columns));
+    occ.next.assign(symbols, vector<Index>((size_t)occ.columns + 1, (Index)occ.columns));
     for (int64_t columnIndex = occ.columns - 1; columnIndex >= 0; columnIndex--) {
       for (size_t symbolId = 0; symbolId < symbols; symbolId++)
         occ.next[symbolId][(size_t)columnIndex] = occ.next[symbolId][(size_t)columnIndex + 1];
-      occ.next[(size_t)occ.colId[(size_t)columnIndex]][(size_t)columnIndex] = (uint32_t)columnIndex;
+      occ.next[(size_t)occ.colId[(size_t)columnIndex]][(size_t)columnIndex] = (Index)columnIndex;
     }
 
-    // prev[id][j] = last occurrence of symbol id at/before j (UINT32_MAX if none).
-    occ.prev.assign(symbols, vector<uint32_t>((size_t)occ.columns, UINT32_MAX));
+    // prev[id][j] = last occurrence of symbol id at/before j (NoIndex if none).
+    occ.prev.assign(symbols, vector<Index>((size_t)occ.columns, NoIndex));
     for (int64_t columnIndex = 0; columnIndex < occ.columns; columnIndex++) {
       for (size_t symbolId = 0; symbolId < symbols; symbolId++)
         occ.prev[symbolId][(size_t)columnIndex] = columnIndex > 0 ?
-          occ.prev[symbolId][(size_t)columnIndex - 1] : UINT32_MAX;
-      occ.prev[(size_t)occ.colId[(size_t)columnIndex]][(size_t)columnIndex] = (uint32_t)columnIndex;
+          occ.prev[symbolId][(size_t)columnIndex - 1] : NoIndex;
+      occ.prev[(size_t)occ.colId[(size_t)columnIndex]][(size_t)columnIndex] = (Index)columnIndex;
     }
 
     // next1[id][i] = first occurrence of symbol id at/after i in s1 (m if none).
-    occ.next1.assign(symbols, vector<uint32_t>((size_t)occ.rows + 1, (uint32_t)occ.rows));
+    occ.next1.assign(symbols, vector<Index>((size_t)occ.rows + 1, (Index)occ.rows));
     for (int64_t rowIndex = occ.rows - 1; rowIndex >= 0; rowIndex--) {
       for (size_t symbolId = 0; symbolId < symbols; symbolId++)
         occ.next1[symbolId][(size_t)rowIndex] = occ.next1[symbolId][(size_t)rowIndex + 1];
       auto rowSymbol = occ.rowId[(size_t)rowIndex];
-      if (rowSymbol != UINT32_MAX)
-        occ.next1[(size_t)rowSymbol][(size_t)rowIndex] = (uint32_t)rowIndex;
+      if (rowSymbol != NoIndex)
+        occ.next1[(size_t)rowSymbol][(size_t)rowIndex] = (Index)rowIndex;
     }
 
-    // prev1[id][i] = last occurrence of symbol id at/before i in s1 (UINT32_MAX if none).
-    occ.prev1.assign(symbols, vector<uint32_t>((size_t)occ.rows, UINT32_MAX));
+    // prev1[id][i] = last occurrence of symbol id at/before i in s1 (NoIndex if none).
+    occ.prev1.assign(symbols, vector<Index>((size_t)occ.rows, NoIndex));
     for (int64_t rowIndex = 0; rowIndex < occ.rows; rowIndex++) {
       for (size_t symbolId = 0; symbolId < symbols; symbolId++)
         occ.prev1[symbolId][(size_t)rowIndex] = rowIndex > 0 ?
-          occ.prev1[symbolId][(size_t)rowIndex - 1] : UINT32_MAX;
+          occ.prev1[symbolId][(size_t)rowIndex - 1] : NoIndex;
       auto rowSymbol = occ.rowId[(size_t)rowIndex];
-      if (rowSymbol != UINT32_MAX)
-        occ.prev1[(size_t)rowSymbol][(size_t)rowIndex] = (uint32_t)rowIndex;
+      if (rowSymbol != NoIndex)
+        occ.prev1[(size_t)rowSymbol][(size_t)rowIndex] = (Index)rowIndex;
     }
 
     return occ;
@@ -410,7 +410,7 @@ namespace {
       for (auto row = row0; row < row1; row++) {
         auto symbol = occ.rowId[row];
         auto column = occ.next[symbol][bound];
-        out.push_back({ .row = (uint32_t)row, .column = column });
+        out.push_back({ .row = (Index)row, .column = column });
         bound = (size_t)column + 1;
       }
       return;
@@ -421,7 +421,7 @@ namespace {
       for (auto column = column0; column < column1; column++) {
         auto symbol = occ.colId[column];
         auto row = occ.next1[symbol][bound];
-        out.push_back({ .row = row, .column = (uint32_t)column });
+        out.push_back({ .row = row, .column = (Index)column });
         bound = (size_t)row + 1;
       }
       return;
@@ -507,7 +507,7 @@ namespace {
 
       if (fCount >= 1 && bCount >= 1 && Crossed(fc, bc)) {
         result.hasMidpoint = true;
-        result.length = (uint32_t)(fCount + bCount - 1);
+        result.length = (Length)(fCount + bCount - 1);
         result.midpoint = Midpoint(fc, bc);
         //
         // Once the top-level midpoint fixes the actual LCS length p, refine the
@@ -611,9 +611,9 @@ namespace {
     auto startDiagonal = min(min(startRowDiagonal, startColumnDiagonal), diagonalCount);
     auto startRow = row0 + startDiagonal;
     auto startColumn = column0 + startDiagonal;
-    while (matchesAbove < contour.size() && contour[matchesAbove].row < (uint32_t)startRow)
+    while (matchesAbove < contour.size() && contour[matchesAbove].row < (Index)startRow)
       matchesAbove++;
-    while (leftSources > 0 && contour[leftSources - 1].column < (uint32_t)startColumn)
+    while (leftSources > 0 && contour[leftSources - 1].column < (Index)startColumn)
       leftSources--;
 
     for (size_t diagonal = startDiagonal; diagonal < diagonalCount; diagonal++) {
@@ -625,18 +625,18 @@ namespace {
       // Row sweep: horizontal matches in the diagonal row, at/right of the diagonal column.
       // A source above the row is needed unless the contour is empty (the rank-1 case).
       //
-      while (matchesAbove < contour.size() && contour[matchesAbove].row < (uint32_t)rowIndex)
+      while (matchesAbove < contour.size() && contour[matchesAbove].row < (Index)rowIndex)
         matchesAbove++;
       auto rowId = occ.rowId[(size_t)rowIndex];
-      if (rowId != UINT32_MAX && (contour.empty() || matchesAbove > 0)) {
+      if (rowId != NoIndex && (contour.empty() || matchesAbove > 0)) {
         auto lower = columnIndex;       // first occurrence at/after the diagonal column (horizontal)
         if (matchesAbove > 0)
           lower = max(lower, (size_t)contour[matchesAbove - 1].column + 1);
         auto column = occ.next[(size_t)rowId][lower];
         // Skip if a vertical (column-sweep) match at row <= rowIndex dominates it.
-        if (column < rowThresh && (int64_t)rowIndex < colThresh) {
+        if ((int64_t)column < rowThresh && (int64_t)rowIndex < colThresh) {
           RickSpace::Candidates++;
-          rowMatches.push_back({ .row = (uint32_t)rowIndex, .column = column });
+          rowMatches.push_back({ .row = (Index)rowIndex, .column = column });
           rowThresh = column;
         }
       }
@@ -645,18 +645,18 @@ namespace {
       // Column sweep: vertical matches in the diagonal column, below the diagonal row.
       // A source left of the column is needed unless the contour is empty (the rank-1 case).
       //
-      while (leftSources > 0 && contour[leftSources - 1].column < (uint32_t)columnIndex)
+      while (leftSources > 0 && contour[leftSources - 1].column < (Index)columnIndex)
         leftSources--;
       auto colId = occ.colId[(size_t)columnIndex];
-      if (colId != UINT32_MAX && (contour.empty() || leftSources < contour.size())) {
+      if (colId != NoIndex && (contour.empty() || leftSources < contour.size())) {
         auto lower = rowIndex + 1;      // first occurrence below the diagonal row (vertical)
         if (leftSources < contour.size())
           lower = max(lower, (size_t)contour[leftSources].row + 1);
         auto row = occ.next1[(size_t)colId][lower];
         // Skip if a horizontal (row-sweep) match at column <= columnIndex dominates it.
-        if (row < colThresh && (int64_t)columnIndex < rowThresh) {
+        if ((int64_t)row < colThresh && (int64_t)columnIndex < rowThresh) {
           RickSpace::Candidates++;
-          colMatches.push_back({ .row = row, .column = (uint32_t)columnIndex });
+          colMatches.push_back({ .row = row, .column = (Index)columnIndex });
           colThresh = row;
         }
       }
@@ -734,11 +734,11 @@ namespace {
     auto startDiagonal = min(min(startRowDiagonal, startColumnDiagonal), diagonalCount);
     auto startRow = row1 - 1 - startDiagonal;
     auto startColumn = column1 - 1 - startDiagonal;
-    while (matchesBelow > 0 && contour[matchesBelow - 1].row > (uint32_t)startRow)
+    while (matchesBelow > 0 && contour[matchesBelow - 1].row > (Index)startRow)
       matchesBelow--;
     while (
       rightSources < contour.size() &&
-      contour[rightSources].column > (uint32_t)startColumn)
+      contour[rightSources].column > (Index)startColumn)
       rightSources++;
 
     for (size_t diagonal = startDiagonal; diagonal < diagonalCount; diagonal++) {
@@ -750,10 +750,10 @@ namespace {
       // Row sweep: backward horizontal matches in the diagonal row, at/left of the diagonal column.
       // A source below the row is needed unless the contour is empty (the rank-1 case).
       //
-      while (matchesBelow > 0 && contour[matchesBelow - 1].row > (uint32_t)rowIndex)
+      while (matchesBelow > 0 && contour[matchesBelow - 1].row > (Index)rowIndex)
         matchesBelow--;
       auto rowId = occ.rowId[(size_t)rowIndex];
-      if (rowId != UINT32_MAX && (contour.empty() || matchesBelow < contour.size())) {
+      if (rowId != NoIndex && (contour.empty() || matchesBelow < contour.size())) {
         bool active = true;
         auto upper = columnIndex;       // rank 1: rightmost occurrence at/left of the diagonal column
         if (matchesBelow < contour.size()) {
@@ -765,9 +765,9 @@ namespace {
         if (active) {
           auto column = occ.prev[(size_t)rowId][upper];
           // Skip if a vertical (column-sweep) match at row >= rowIndex dominates it.
-          if (column != UINT32_MAX && column > rowThresh && (int64_t)rowIndex > colThresh) {
+          if (column != NoIndex && (int64_t)column > rowThresh && (int64_t)rowIndex > colThresh) {
             RickSpace::Candidates++;
-            rowMatches.push_back({ .row = (uint32_t)rowIndex, .column = column });
+            rowMatches.push_back({ .row = (Index)rowIndex, .column = column });
             rowThresh = column;
           }
         }
@@ -777,10 +777,10 @@ namespace {
       // Column sweep: backward vertical matches in the diagonal column, above the diagonal row.
       // A source right of the column is needed unless the contour is empty (rank-1 case).
       //
-      while (rightSources < contour.size() && contour[rightSources].column > (uint32_t)columnIndex)
+      while (rightSources < contour.size() && contour[rightSources].column > (Index)columnIndex)
         rightSources++;
       auto colId = occ.colId[(size_t)columnIndex];
-      if (colId != UINT32_MAX && (contour.empty() || rightSources > 0) && rowIndex > row0) {
+      if (colId != NoIndex && (contour.empty() || rightSources > 0) && rowIndex > row0) {
         bool active = true;
         auto upper = (int64_t)rowIndex - 1;     // rank 1: bottommost occurrence above the diagonal row
         if (rightSources > 0) {
@@ -792,9 +792,9 @@ namespace {
         if (active && upper >= (int64_t)row0) {
           auto row = occ.prev1[(size_t)colId][(size_t)upper];
           // Skip if a horizontal (row-sweep) match at column >= columnIndex dominates it.
-          if (row != UINT32_MAX && row > colThresh && (int64_t)columnIndex > rowThresh) {
+          if (row != NoIndex && (int64_t)row > colThresh && (int64_t)columnIndex > rowThresh) {
             RickSpace::Candidates++;
-            colMatches.push_back({ .row = row, .column = (uint32_t)columnIndex });
+            colMatches.push_back({ .row = row, .column = (Index)columnIndex });
             colThresh = row;
           }
         }
@@ -857,7 +857,7 @@ namespace {
       if (backwardIndex < backward.size() && backward[backwardIndex].column >= match.column)
         return match;
     }
-    return { .row = UINT32_MAX, .column = UINT32_MAX };
+    return { .row = NoIndex, .column = NoIndex };
   }
 }
 
@@ -871,10 +871,10 @@ void RickSpace::ResetCounters() {
   Contours = 0;
 }
 
-uint32_t RickSpace::Find(
+Length RickSpace::Find(
   shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
   metrics::Progress* progress, const MATCHES& matches,
-  uint32_t size1, uint32_t size2) {
+  Length size1, Length size2) {
   ResetCounters();
   auto occ = BuildOccurrences(matches, size1, size2);
   auto length = Solve(pairs, occ, size1, size2, progress);
@@ -888,7 +888,7 @@ uint32_t RickSpace::Find(
   return length;
 }
 
-uint32_t RickSpace::Find(
+Length RickSpace::Find(
   shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const u32string& s1, const u32string& s2) {

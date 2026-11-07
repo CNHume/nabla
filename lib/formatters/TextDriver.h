@@ -34,15 +34,15 @@ namespace lcs::formatters {
       std::shared_ptr<Delta> deltas, const std::u32string& s1, const std::u32string& s2,
       bool isright = false);
 
-    static std::uint32_t Show(
+    static Length Show(
       Formatter& format, std::shared_ptr<Delta> deltas,
       const std::u32string& s1, const std::u32string& s2,
       const std::string& label1, const std::string& label2);
 
   private:
     static SideSpan MakeSpan(
-      const std::string& label, const std::u32string& s, std::uint32_t begin,
-      std::uint32_t end);
+      const std::string& label, const std::u32string& s, Index begin,
+      Index end);
   };
 
 } // namespace lcs::formatters

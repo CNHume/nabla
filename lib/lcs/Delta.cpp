@@ -50,7 +50,7 @@ Delta::Delta() {
   Deltas++;
 }
 
-Delta::Delta(uint32_t begin1, uint32_t begin2, uint32_t end1, uint32_t end2, shared_ptr<Delta> next)
+Delta::Delta(Index begin1, Index begin2, Index end1, Index end2, shared_ptr<Delta> next)
   : Pair(begin1, begin2, next), end1(end1), end2(end2) {
   Deltas++;
 }
@@ -87,7 +87,7 @@ Delta& Delta::operator=(Delta&& other) noexcept {
 }
 #endif                                  // MOVE_SEMANTICS
 
-void Delta::Lengths(const shared_ptr<Delta> deltas, uint32_t& length1, uint32_t& length2) {
+void Delta::Lengths(const shared_ptr<Delta> deltas, Length& length1, Length& length2) {
   length1 = 0;
   length2 = 0;
   for (auto next = deltas; next != nullptr; next = dynamic_pointer_cast<Delta>(next->next)) {
@@ -121,8 +121,8 @@ shared_ptr<Delta> Delta::Copy(const shared_ptr<Delta> deltas) {
 shared_ptr<Delta> Delta::Coalesce(shared_ptr<Pair> pairs) {
   shared_ptr<Delta> head = nullptr;
   shared_ptr<Delta> last = nullptr;
-  uint32_t first1 = 0;
-  uint32_t first2 = 0;
+  Index first1 = 0;
+  Index first2 = 0;
   for (auto next = pairs; next != nullptr; next = next->next) {
     auto begin1 = next->begin1;
     auto begin2 = next->begin2;
@@ -152,8 +152,8 @@ shared_ptr<Delta> Delta::Coalesce(shared_ptr<Pair> pairs) {
 shared_ptr<Delta> Delta::Coalesce(const shared_ptr<Delta> deltas, uint32_t join) {
   shared_ptr<Delta> head = nullptr;
   shared_ptr<Delta> last = nullptr;
-  uint32_t first1 = 0;
-  uint32_t first2 = 0;
+  Index first1 = 0;
+  Index first2 = 0;
   for (auto next = deltas; next != nullptr; next = dynamic_pointer_cast<Delta>(next->next)) {
     auto begin1 = next->begin1;
     auto begin2 = next->begin2;
@@ -182,8 +182,8 @@ shared_ptr<Delta> Delta::Coalesce(const shared_ptr<Delta> deltas, uint32_t join)
 //
 shared_ptr<Delta> Delta::Complement(shared_ptr<Delta> deltas,
   size_t size1, size_t size2) {
-  uint32_t prior1 = 0;                  // end of prior Delta
-  uint32_t prior2 = 0;
+  Index prior1 = 0;                  // end of prior Delta
+  Index prior2 = 0;
 
   shared_ptr<Delta> head = nullptr;
   shared_ptr<Delta> rest = nullptr;
@@ -222,8 +222,8 @@ void Delta::Context(shared_ptr<Delta> deltas,
 #ifdef SHOW_INTERVALS
   Delta::List(deltas);
 #endif
-  uint32_t prior1 = 0;                  // end of prior Delta
-  uint32_t prior2 = 0;
+  Index prior1 = 0;                  // end of prior Delta
+  Index prior2 = 0;
 
   shared_ptr<Delta> head = nullptr;
   shared_ptr<Delta> last = nullptr;

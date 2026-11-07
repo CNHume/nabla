@@ -51,7 +51,7 @@ Pair::Pair() {
   Count++;
 }
 
-Pair::Pair(uint32_t begin1, uint32_t begin2, shared_ptr<Pair> next)
+Pair::Pair(Index begin1, Index begin2, shared_ptr<Pair> next)
   : begin1(begin1), begin2(begin2), next(next) {
   Count++;
 }
@@ -96,8 +96,8 @@ namespace lcs {
   }
 } // namespace lcs
 
-uint32_t Pair::Length(const shared_ptr<Pair> pairs) {
-  uint32_t length = 0;
+Length Pair::ChainLength(const shared_ptr<Pair> pairs) {
+  Length length = 0;
   for (auto next = pairs; next != nullptr; next = next->next)
     length++;
   return length;

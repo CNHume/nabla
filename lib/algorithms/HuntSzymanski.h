@@ -29,7 +29,7 @@ namespace lcs::algorithms {
 
   class HuntSzymanski {
   public:
-    static std::uint32_t Find(
+    static Length Find(
       std::shared_ptr<Pair>* pairs, MATCHES& columnsMatchedByRow);
   };
 

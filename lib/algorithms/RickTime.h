@@ -57,7 +57,7 @@ namespace lcs::algorithms {
     //
     //[Note]The caller should guarantee |s1| <= |s2| by swapping when necessary.
     //
-    static std::uint32_t Find(
+    static Length Find(
       std::shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
       metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2);
@@ -66,10 +66,10 @@ namespace lcs::algorithms {
     // match-list pointer identity as the symbol->id compression, then run the
     // same diagonal sweep.  The caller guarantees size1 <= size2.
     //
-    static std::uint32_t Find(
+    static Length Find(
       std::shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
       metrics::Progress* progress,
-      const MATCHES& matches, std::uint32_t size1, std::uint32_t size2);
+      const MATCHES& matches, Length size1, Length size2);
   };
 
 } // namespace lcs::algorithms

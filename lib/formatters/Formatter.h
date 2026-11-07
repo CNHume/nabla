@@ -33,8 +33,8 @@ namespace lcs::formatters {
   //
   struct SideSpan {
     std::string label;
-    std::uint32_t begin;
-    std::uint32_t end;
+    Index begin;
+    Index end;
     std::vector<std::string> lines;
   };
 
@@ -57,13 +57,13 @@ namespace lcs::formatters {
     // Begin a file-level result (e.g. the parallel column labels, or the
     // Edit format's ---/+++ file header), given the reference and query sizes.
     virtual void BeginResult(
-      const std::string&, const std::string&, std::uint32_t, std::uint32_t) {}
+      const std::string&, const std::string&, Length, Length) {}
 
     // Begin an interval within the result (the Edit format's @@ header).
     // Part of the protocol for every format; only Edit implements it.
     virtual void BeginInterval(
-      std::uint32_t, std::uint32_t,
-      std::uint32_t, std::uint32_t) {}
+      Index, Index,
+      Index, Index) {}
 
     // Lay out one Delta's two sides, given their pre-rendered SideSpans.
     virtual void Layout(

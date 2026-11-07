@@ -47,7 +47,7 @@ uint64_t Text::Match(
   const u32string& s1, const u32string& s2,
   bool ignorecase, bool ignorespace) {
   uint64_t count = 0;
-  uint32_t index = 0;
+  Index index = 0;
   u32string buffer;
   files::Normal::Normalize(s2, buffer, ignorecase, ignorespace);
   for (const auto& it : buffer)
@@ -65,7 +65,7 @@ uint64_t Text::Match(
   return count;
 }
 
-uint32_t Text::Correspondence(
+Length Text::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const u32string& s1, const u32string& s2,
@@ -87,7 +87,7 @@ uint32_t Text::Correspondence(
     // changes under collapse, so indices must be remapped.
     //
     u32string t1, t2;
-    vector<uint32_t> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
+    vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
     auto length = Compare(intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
@@ -111,7 +111,7 @@ uint32_t Text::Correspondence(
   return length;
 }
 
-uint32_t Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
+Length Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const u32string& s1, const u32string& s2,
   Algorithm algorithm,
@@ -125,7 +125,7 @@ uint32_t Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* sta
 
   if (ignorespace) {
     u32string t1, t2;
-    vector<uint32_t> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
+    vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
     auto length = Compare(intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
@@ -150,7 +150,7 @@ uint32_t Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* sta
   return length;
 }
 
-uint32_t Text::Compare(
+Length Text::Compare(
   shared_ptr<Delta>* deltas, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const u32string& s1, const u32string& s2,
@@ -165,7 +165,7 @@ uint32_t Text::Compare(
   //
   shared_ptr<Pair> pairs;
   auto ppairs = deltas != nullptr ? &pairs : nullptr;
-  uint32_t length;
+  Length length;
 
   if (algorithm == Algorithm::Automatic) {
     //
@@ -358,8 +358,8 @@ u32string Text::StripFasta(const u32string& s) {
 }
 
 void Text::MapDeltas(shared_ptr<Delta> deltas,
-  const vector<uint32_t>& mapBegin1, const vector<uint32_t>& mapEnd1,
-  const vector<uint32_t>& mapBegin2, const vector<uint32_t>& mapEnd2,
+  const vector<Index>& mapBegin1, const vector<Index>& mapEnd1,
+  const vector<Index>& mapBegin2, const vector<Index>& mapEnd2,
   size_t size1, size_t size2) {
   for (auto next = deltas; next != nullptr;
     next = dynamic_pointer_cast<Delta>(next->next)) {
@@ -368,8 +368,8 @@ void Text::MapDeltas(shared_ptr<Delta> deltas,
   }
 }
 
-void Text::MapSide(uint32_t& begin, uint32_t& end,
-  const vector<uint32_t>& mapBegin, const vector<uint32_t>& mapEnd,
+void Text::MapSide(Index& begin, Index& end,
+  const vector<Index>& mapBegin, const vector<Index>& mapEnd,
   size_t size) {
   if (begin < end) {
     begin = mapBegin[begin];
@@ -378,7 +378,7 @@ void Text::MapSide(uint32_t& begin, uint32_t& end,
   else {
     // Empty interval: map to the corresponding original position.
     auto pos = begin < mapBegin.size() ?
-      mapBegin[begin] : (uint32_t)size;
+      mapBegin[begin] : (Index)size;
     begin = pos;
     end = pos;
   }

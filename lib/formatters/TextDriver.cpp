@@ -32,7 +32,7 @@ namespace lcs::formatters {
 u32string TextDriver::Select(
   shared_ptr<Delta> deltas, const u32string& s1, const u32string& s2,
   bool isright) {
-  uint32_t length1, length2;
+  Length length1, length2;
   Delta::Lengths(deltas, length1, length2);
   u32string buffer;
   buffer.reserve(isright ? length2 : length1);
@@ -47,12 +47,12 @@ u32string TextDriver::Select(
   return buffer;
 }
 
-uint32_t TextDriver::Show(
+Length TextDriver::Show(
   Formatter& format, shared_ptr<Delta> deltas,
   const u32string& s1, const u32string& s2,
   const string& label1, const string& label2) {
   format.BeginResult(
-    label1, label2, (uint32_t)s1.size(), (uint32_t)s2.size());
+    label1, label2, (Length)s1.size(), (Length)s2.size());
   uint32_t ndelta = 0;                  // # of deltas
   for (auto next = deltas; next != nullptr;
     next = dynamic_pointer_cast<Delta>(next->next)) {
@@ -67,7 +67,7 @@ uint32_t TextDriver::Show(
 
 SideSpan TextDriver::MakeSpan(
   const string& label, const u32string& s,
-  uint32_t begin, uint32_t end) {
+  Index begin, Index end) {
   SideSpan span;
   span.label = label;
   span.begin = begin;

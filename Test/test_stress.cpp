@@ -100,8 +100,8 @@ namespace {
       auto length = modes::Text::Correspondence(
         &deltas, nullptr, nullptr, s1, s2, algorithm, false, false, false, false, 0, 0, 0);
       if (length != expected) {
-        fprintf(stderr, "[trial %llu] %s length %u != DP %u\n",
-          (unsigned long long)trial, algoName(algorithm), length, expected);
+        fprintf(stderr, "[trial %llu] %s length %llu != DP %llu\n",
+          (unsigned long long)trial, algoName(algorithm), (unsigned long long)length, (unsigned long long)expected);
         return false;
       }
       if (!checkTrace(deltas, length, s1, s2, algoName(algorithm)))
@@ -190,8 +190,8 @@ namespace {
       auto length = modes::Record::Correspondence(
         &deltas, nullptr, nullptr, r1, r2, algorithm, false, false, false, false, 0, 0, 0);
       if (length != expected) {
-        fprintf(stderr, "[trial %llu] %s length %u != DP %u\n",
-          (unsigned long long)trial, algoName(algorithm), length, expected);
+        fprintf(stderr, "[trial %llu] %s length %llu != DP %llu\n",
+          (unsigned long long)trial, algoName(algorithm), (unsigned long long)length, (unsigned long long)expected);
         return false;
       }
       if (!checkRecordTrace(deltas, length, r1, r2, algoName(algorithm)))

@@ -46,28 +46,28 @@ namespace {
   // bound within range.
   //
   struct FlexTables {
-    vector<uint32_t> id1;               // symbol id of s1[i]
-    vector<uint32_t> id2;               // symbol id of s2[j]
-    vector<vector<uint32_t>> next1;     // next1[id][j] over s1, j in [0, m]
-    vector<vector<uint32_t>> next2;     // next2[id][j] over s2, j in [0, n]
+    vector<Index> id1;               // symbol id of s1[i]
+    vector<Index> id2;               // symbol id of s2[j]
+    vector<vector<Index>> next1;     // next1[id][j] over s1, j in [0, m]
+    vector<vector<Index>> next2;     // next2[id][j] over s2, j in [0, n]
     int64_t m = 0;
     int64_t n = 0;
   };
 
   // A recorded dominant match (coordinates in the shorter/longer strings).
   struct DomMatch {
-    uint32_t i;
-    uint32_t j;
+    Index i;
+    Index j;
   };
 
   //
   // Assign dense symbol ids to distinct code points.
   //
-  uint32_t SymbolId(unordered_map<char32_t, uint32_t>& charToId, char32_t c) {
+  Index SymbolId(unordered_map<char32_t, Index>& charToId, char32_t c) {
     auto it = charToId.find(c);
     if (it != charToId.end())
       return it->second;
-    auto id = (uint32_t)charToId.size();
+    auto id = (Index)charToId.size();
     charToId.emplace(c, id);
     return id;
   }
@@ -77,7 +77,7 @@ namespace {
     t.m = (int64_t)s1.size();
     t.n = (int64_t)s2.size();
 
-    unordered_map<char32_t, uint32_t> charToId;
+    unordered_map<char32_t, Index> charToId;
     t.id1.assign((size_t)t.m, 0);
     for (int64_t i = 0; i < t.m; i++)
       t.id1[(size_t)i] = SymbolId(charToId, s1[(size_t)i]);
@@ -97,18 +97,18 @@ namespace {
     // One extra sentinel slot so "first occurrence > j" at j == length (the
     // threshold sentinel) stays in bounds and returns length.
     //
-    t.next1.assign(s, vector<uint32_t>((size_t)t.m + 2, (uint32_t)t.m));
+    t.next1.assign(s, vector<Index>((size_t)t.m + 2, (Index)t.m));
     for (int64_t j = t.m - 1; j >= 0; j--) {
       for (size_t id = 0; id < s; id++)
         t.next1[id][(size_t)j] = t.next1[id][(size_t)j + 1];
-      t.next1[(size_t)t.id1[(size_t)j]][(size_t)j] = (uint32_t)j;
+      t.next1[(size_t)t.id1[(size_t)j]][(size_t)j] = (Index)j;
     }
 
-    t.next2.assign(s, vector<uint32_t>((size_t)t.n + 2, (uint32_t)t.n));
+    t.next2.assign(s, vector<Index>((size_t)t.n + 2, (Index)t.n));
     for (int64_t j = t.n - 1; j >= 0; j--) {
       for (size_t id = 0; id < s; id++)
         t.next2[id][(size_t)j] = t.next2[id][(size_t)j + 1];
-      t.next2[(size_t)t.id2[(size_t)j]][(size_t)j] = (uint32_t)j;
+      t.next2[(size_t)t.id2[(size_t)j]][(size_t)j] = (Index)j;
     }
     return t;
   }
@@ -122,15 +122,15 @@ namespace {
     // Pointer identity compresses symbols: two rows sharing a symbol share the
     // same match-list pointer, so the pointer is the symbol id.
     //
-    unordered_map<const INDEXES*, uint32_t> pointerToId;
+    unordered_map<const INDEXES*, Index> pointerToId;
     vector<const INDEXES*> lists;   // lists[id] = sorted positions of symbol id
-    t.id1.assign(size1, UINT32_MAX);
+    t.id1.assign(size1, NoIndex);
     for (size_t i = 0; i < size1; i++) {
       const auto* matchList = matches[i];
       auto found = pointerToId.find(matchList);
-      uint32_t symbolId;
+      Index symbolId;
       if (found == pointerToId.end()) {
-        symbolId = (uint32_t)lists.size();
+        symbolId = (Index)lists.size();
         pointerToId.emplace(matchList, symbolId);
         lists.push_back(matchList);
       }
@@ -147,12 +147,12 @@ namespace {
 
     //
     // id2[j] = symbol id of s2[j], inverting the match lists.  A position whose
-    // symbol never occurs in s1 stays UINT32_MAX; the sweep skips those.
+    // symbol never occurs in s1 stays NoIndex; the sweep skips those.
     //
-    t.id2.assign(size2, UINT32_MAX);
+    t.id2.assign(size2, NoIndex);
 
     // next2[id][j] = first position >= j in s2 holding symbol id.
-    t.next2.assign(s, vector<uint32_t>((size_t)size2 + 2, (uint32_t)t.n));
+    t.next2.assign(s, vector<Index>((size_t)size2 + 2, (Index)t.n));
     for (size_t symbolId = 0; symbolId < s; symbolId++) {
       const auto& list = *lists[symbolId];   // sorted positions, ascending
       auto& nextTable = t.next2[symbolId];
@@ -161,24 +161,24 @@ namespace {
         while (listIndex < list.size() && (int64_t)list[listIndex] < j)
           listIndex++;
         nextTable[(size_t)j] = listIndex < list.size() ?
-          list[listIndex] : (uint32_t)t.n;
+          list[listIndex] : (Index)t.n;
       }
       for (auto columnIndex : list)
-        t.id2[(size_t)columnIndex] = (uint32_t)symbolId;
+        t.id2[(size_t)columnIndex] = (Index)symbolId;
     }
 
     // next1[id][i] = first position >= i in s1 holding symbol id.
-    t.next1.assign(s, vector<uint32_t>((size_t)size1 + 2, (uint32_t)t.m));
+    t.next1.assign(s, vector<Index>((size_t)size1 + 2, (Index)t.m));
     for (int64_t i = t.m - 1; i >= 0; i--) {
       for (size_t id = 0; id < s; id++)
         t.next1[id][(size_t)i] = t.next1[id][(size_t)i + 1];
-      t.next1[(size_t)t.id1[(size_t)i]][(size_t)i] = (uint32_t)i;
+      t.next1[(size_t)t.id1[(size_t)i]][(size_t)i] = (Index)i;
     }
     return t;
   }
 }
 
-static uint32_t Sweep(
+static Length Sweep(
   shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
   metrics::Progress* progress, const FlexTables& t) {
   auto m = t.m;
@@ -196,10 +196,10 @@ static uint32_t Sweep(
   // colThresh[k] = topmost row of a dominant k-match (m if none).
   // Sized m+2 so the "low" index may advance one past the last class.
   //
-  vector<uint32_t> rowThresh((size_t)m + 2, (uint32_t)n);
-  vector<uint32_t> colThresh((size_t)m + 2, (uint32_t)m);
-  rowThresh[0] = UINT32_MAX;            // virtual origin C_0 (unused)
-  colThresh[0] = UINT32_MAX;
+  vector<Index> rowThresh((size_t)m + 2, (Index)n);
+  vector<Index> colThresh((size_t)m + 2, (Index)m);
+  rowThresh[0] = NoIndex;            // virtual origin C_0 (unused)
+  colThresh[0] = NoIndex;
   int64_t low = 1;                      // smallest class not yet complete
 
   // Recorded dominant matches, grouped by rank.
@@ -246,7 +246,7 @@ static uint32_t Sweep(
     // Row l: dominant matches (l, j) with j >= l.
     //
     int64_t j;
-    if (colThresh[(size_t)low] == l) {
+    if (colThresh[(size_t)low] == (Index)l) {
       // Class C_low is complete: resume from its leftmost column.
       j = t.next2[(size_t)t.id1[(size_t)l]][(size_t)(rowThresh[(size_t)low] + 1)];
       low++;
@@ -256,12 +256,12 @@ static uint32_t Sweep(
     }
     auto k = low;
     while (j != n) {
-      if (j < rowThresh[(size_t)k]) {
+      if ((Index)j < rowThresh[(size_t)k]) {
         auto temp = rowThresh[(size_t)k];
-        rowThresh[(size_t)k] = (uint32_t)j;  // dominant k-match (l, j)
+        rowThresh[(size_t)k] = (Index)j;  // dominant k-match (l, j)
         records++;                      // a dominant match was found
         if (traceLCS) {
-          byRank[(size_t)k].push_back({ .i = (uint32_t)l, .j = (uint32_t)j });
+          byRank[(size_t)k].push_back({ .i = (Index)l, .j = (Index)j });
           if (records > recordBudget) {
             Analysis::WarnRecordingSize(records, recordBudget);
             throw RickTimeBudgetExceeded(
@@ -270,7 +270,7 @@ static uint32_t Sweep(
         }
         j = t.next2[(size_t)t.id1[(size_t)l]][(size_t)(temp + 1)];
       }
-      if (j == rowThresh[(size_t)k])
+      if ((Index)j == rowThresh[(size_t)k])
         j = t.next2[(size_t)t.id1[(size_t)l]][(size_t)(j + 1)];
       k++;
     }
@@ -280,24 +280,24 @@ static uint32_t Sweep(
     //
     int64_t i;
     auto colSymbol = t.id2[(size_t)l];
-    if (rowThresh[(size_t)low] == l) {
+    if (rowThresh[(size_t)low] == (Index)l) {
       // Class C_low is complete: resume from its topmost row.
-      i = colSymbol == UINT32_MAX ? m :
+      i = colSymbol == NoIndex ? m :
         (int64_t)t.next1[(size_t)colSymbol][(size_t)(colThresh[(size_t)low] + 1)];
       low++;
     }
     else {
-      i = colSymbol == UINT32_MAX ? m :
+      i = colSymbol == NoIndex ? m :
         (int64_t)t.next1[(size_t)colSymbol][(size_t)(l + 1)];
     }
     k = low;
     while (i != m) {
-      if (i < colThresh[(size_t)k]) {
+      if ((Index)i < colThresh[(size_t)k]) {
         auto temp = colThresh[(size_t)k];
-        colThresh[(size_t)k] = (uint32_t)i;  // dominant k-match (i, l)
+        colThresh[(size_t)k] = (Index)i;  // dominant k-match (i, l)
         records++;                      // a dominant match was found
         if (traceLCS) {
-          byRank[(size_t)k].push_back({ .i = (uint32_t)i, .j = (uint32_t)l });
+          byRank[(size_t)k].push_back({ .i = (Index)i, .j = (Index)l });
           if (records > recordBudget) {
             Analysis::WarnRecordingSize(records, recordBudget);
             throw RickTimeBudgetExceeded(
@@ -306,7 +306,7 @@ static uint32_t Sweep(
         }
         i = t.next1[(size_t)t.id2[(size_t)l]][(size_t)(temp + 1)];
       }
-      if (i == colThresh[(size_t)k])
+      if ((Index)i == colThresh[(size_t)k])
         i = t.next1[(size_t)t.id2[(size_t)l]][(size_t)(i + 1)];
       k++;
     }
@@ -316,12 +316,12 @@ static uint32_t Sweep(
   // LCS length = number of non-empty classes.  A class may hold dominant matches
   // only above/below the diagonal, so either threshold array can witness it.
   //
-  uint32_t p = 0;
+  Length p = 0;
   for (int64_t k = 1; k <= m; k++)
     if (
-      rowThresh[(size_t)k] < n ||
-      colThresh[(size_t)k] < m)
-      p = (uint32_t)k;
+      rowThresh[(size_t)k] < (Index)n ||
+      colThresh[(size_t)k] < (Index)m)
+      p = (Length)k;
 
   //
   // Reconstruct.  Each rank's dominant matches form an antichain, so sorting
@@ -343,7 +343,7 @@ static uint32_t Sweep(
     for (int64_t k = (int64_t)p - 1; k >= 1; k--) {
       const auto& v = byRank[(size_t)k];
       auto it = lower_bound(v.begin(), v.end(), ci,
-        [](const DomMatch& m, uint32_t x) { return m.i < x; });
+        [](const DomMatch& m, Index x) { return m.i < x; });
       --it;                             // largest i < ci
       ci = it->i;
       cj = it->j;
@@ -360,7 +360,7 @@ static uint32_t Sweep(
   return p;
 }
 
-uint32_t RickTime::Find(
+Length RickTime::Find(
   shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
   metrics::Progress* progress,
   const u32string& s1, const u32string& s2) {
@@ -368,10 +368,10 @@ uint32_t RickTime::Find(
   return Sweep(pairs, statistics, progress, t);
 }
 
-uint32_t RickTime::Find(
+Length RickTime::Find(
   shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
   metrics::Progress* progress,
-  const MATCHES& matches, uint32_t size1, uint32_t size2) {
+  const MATCHES& matches, Length size1, Length size2) {
   auto t = BuildTables(matches, (size_t)size1, (size_t)size2);
   return Sweep(pairs, statistics, progress, t);
 }

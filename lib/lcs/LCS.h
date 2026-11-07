@@ -30,6 +30,7 @@
 //#define SHOW_PAIRS
 //#define SHOW_PREFIXENDS
 
+#include "lcs/Types.h"
 #include "lcs/Delta.h"
 
 #include <cstdint>                      // for uint32_t
@@ -50,7 +51,7 @@ namespace lcs {
   };
 
   typedef std::deque<std::shared_ptr<Pair>> PAIRS;
-  typedef std::deque<std::uint32_t> INDEXES;
+  typedef std::deque<Index> INDEXES;
   typedef std::unordered_map<std::string, INDEXES> STRING_TO_INDEXES_MAP;
   typedef std::deque<INDEXES*> MATCHES;
 
