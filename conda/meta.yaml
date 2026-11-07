@@ -42,6 +42,9 @@ about:
     via automatic dispatch.  It reads FASTA (-F) and emits SAM CIGAR
     alignments (-G).
 
+    Installs both nabla (32-bit positions) and nabla64 (64-bit positions);
+    use nabla64 when an input exceeds 4,294,967,296 positions.
+
 extra:
   recipe-maintainers:
     - CNHume
