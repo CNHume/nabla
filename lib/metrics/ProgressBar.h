@@ -42,6 +42,7 @@ namespace lcs::metrics {
     Stopwatch stopwatch_;               // throttles redraws
     double latest_ = 0.0;
     size_t drawnLength_ = 0;            // visible length of the last bar line
+    size_t lastFilled_ = (size_t)-1;    // glyph count of the last line drawn
   };
 
 } // namespace lcs::metrics

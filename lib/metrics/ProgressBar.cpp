@@ -77,6 +77,9 @@ void ProgressBar::Finish() {
 void ProgressBar::Draw(double fraction) {
   auto filled = (size_t)lround(fraction * (double)progressGlyphCount);
   filled = min(filled, progressGlyphCount);
+  if (filled == lastFilled_)           // bar string unchanged — skip the write
+    return;
+  lastFilled_ = filled;
   auto percent = (int)lround(fraction * 100.0);
   percent = min(percent, 100);
   auto bar = format("\r[{}{}] {:3d}%",
