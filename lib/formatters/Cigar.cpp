@@ -68,7 +68,7 @@ void Cigar::EndResult() {
     query_ += match;
   }
   //
-  // The trace must account for exactly the reference and query lengths.
+  // The trace must account for the reference and query lengths exactly.
   //
   if (reference_ != size1_ || query_ != size2_)
     throw runtime_error("CIGAR trace does not match the input lengths");
