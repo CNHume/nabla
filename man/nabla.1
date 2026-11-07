@@ -83,13 +83,12 @@ recording fits in memory, and RickSpace otherwise.
 .SH ARCHITECTURAL VARIANTS
 .TP
 .B nabla
-The default 32-bit positional variant.  It handles inputs of up to
-4,294,967,296 positions (position indexes 0 through 4,294,967,295), which
+The default 32-bit position variant.  It handles inputs of up to 4GB, which
 includes the human genome (~3.1 billion), and stores each position in 4 bytes
 for maximal cache locality.
 .TP
 .B nabla64
-The 64-bit positional variant.  Use it when the length of one or both inputs
+The 64-bit position variant.  Use it when the length of one or both inputs
 exceeds nabla's 32-bit (4GB) limit.
 .PP
 Both variants accept the same options and produce identical results for inputs
