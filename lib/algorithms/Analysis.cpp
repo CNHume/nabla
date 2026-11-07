@@ -45,10 +45,10 @@ namespace {
   // Stop RickTime's recording before it fills this fraction of available RAM.
   constexpr double recordingMargin = 0.75;
 
-  // A recorded dominant match is an 8-byte DomMatch, but byRank's vector
-  // capacity growth (up to 2x) and per-rank overhead make ~16 bytes per match
-  // the safe estimate; each rank also carries a 24-byte vector object.
-  constexpr uint64_t recordBytes = 16;
+  // A recorded dominant match is a DomMatch (two Index values, 2*sizeof(Index)
+  // bytes); byRank's vector capacity growth (up to 2x) and per-rank overhead
+  // make ~2x that a safe estimate.  Each rank also carries a 24-byte vector.
+  constexpr uint64_t recordBytes = 4 * sizeof(Index);
   constexpr uint64_t vectorHeaderBytes = 24;
 
   //
@@ -83,10 +83,10 @@ void Analysis::WarnTableSize(
 
 uint64_t Analysis::RecordingBudget(uint64_t m, uint64_t n, uint64_t symbols) {
   //
-  // next1/next2 are uint32_t tables; byRank is m+2 vector<DomMatch> objects
-  // plus the recorded matches.  Reserve a safety margin of the available RAM.
+  // next1/next2 are Index tables; byRank is m+2 vector<DomMatch> objects plus
+  // the recorded matches.  Reserve a safety margin of the available RAM.
   //
-  auto tableBytes = 4 * symbols * (m + n + 4);
+  auto tableBytes = sizeof(Index) * symbols * (m + n + 4);
   auto headerBytes = vectorHeaderBytes * (m + 2);
   auto budgetBytes = (uint64_t)((double)files::Host::AvailableBytes() * recordingMargin);
   auto room = budgetBytes > tableBytes + headerBytes ?
@@ -123,11 +123,11 @@ void Analysis::SuggestRickTime(
 uint64_t Analysis::MyersBudget(uint64_t m, uint64_t n) {
   //
   // The reconstruction stores the V frontier for every depth d = 0..D, a total
-  // of (D+1)^2 int64 entries (8 bytes each).  Bound D so that history fits a
-  // safety margin of available RAM; D also cannot exceed the combined length.
+  // of (D+1)^2 Index entries.  Bound D so that history fits a safety margin of
+  // available RAM; D also cannot exceed the combined length.
   //
   auto budgetBytes = (uint64_t)((double)files::Host::AvailableBytes() * recordingMargin);
-  auto maxD = (uint64_t)sqrt((double)(budgetBytes / 8));
+  auto maxD = (uint64_t)sqrt((double)(budgetBytes / sizeof(Index)));
   auto bound = m + n;
   return min(maxD, bound);
 }

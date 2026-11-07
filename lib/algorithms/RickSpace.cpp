@@ -209,7 +209,7 @@ namespace {
     // footprint quadratic.
     //
     Analysis::WarnTableSize(
-      8 * (uint64_t)symbols * ((uint64_t)size1 + (uint64_t)size2 + 1),
+      2 * sizeof(Index) * (uint64_t)symbols * ((uint64_t)size1 + (uint64_t)size2 + 1),
       (uint64_t)symbols, (uint64_t)size1, (uint64_t)size2, "RickSpace");
 
     //
@@ -321,7 +321,7 @@ namespace {
     // overload above).
     //
     Analysis::WarnTableSize(
-      8 * (uint64_t)symbols * ((uint64_t)occ.rows + (uint64_t)occ.columns + 1),
+      2 * sizeof(Index) * (uint64_t)symbols * ((uint64_t)occ.rows + (uint64_t)occ.columns + 1),
       (uint64_t)symbols, (uint64_t)occ.rows, (uint64_t)occ.columns, "RickSpace");
     occ.colId = move(s2Id);
 

@@ -91,7 +91,7 @@ namespace {
     // already gathered above rather than counting distinct symbols again.
     //
     Analysis::WarnTableSize(
-      4 * (uint64_t)s * ((uint64_t)t.m + (uint64_t)t.n + 4),
+      sizeof(Index) * (uint64_t)s * ((uint64_t)t.m + (uint64_t)t.n + 4),
       (uint64_t)s, (uint64_t)t.m, (uint64_t)t.n, "RickTime");
     //
     // One extra sentinel slot so "first occurrence > j" at j == length (the
@@ -142,7 +142,7 @@ namespace {
 
     auto s = lists.size();
     Analysis::WarnTableSize(
-      4 * (uint64_t)s * ((uint64_t)t.m + (uint64_t)t.n + 4),
+      sizeof(Index) * (uint64_t)s * ((uint64_t)t.m + (uint64_t)t.n + 4),
       (uint64_t)s, (uint64_t)t.m, (uint64_t)t.n, "RickTime");
 
     //

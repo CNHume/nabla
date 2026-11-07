@@ -38,8 +38,8 @@ namespace lcs::algorithms {
     static void WarnMatchCount(std::uint64_t matches, std::uint64_t m, std::uint64_t n);
     // Warn when the dense occurrence tables an LCS algorithm is about to
     // allocate would exceed the byte budget.  bytes is the caller's estimate
-    // of the total table footprint (RickTime: two uint32 next tables;
-    // RickSpace: four uint32 next/prev tables); the message reports it and
+    // of the total table footprint (RickTime: two Index next tables;
+    // RickSpace: four Index next/prev tables); the message reports it and
     // names the algorithm.
     static void WarnTableSize(
       std::uint64_t bytes, std::uint64_t symbols, std::uint64_t m, std::uint64_t n,
@@ -56,7 +56,7 @@ namespace lcs::algorithms {
       std::uint32_t length, std::uint64_t shorter, std::uint64_t longer,
       std::uint64_t candidates, std::uint64_t symbols);
     // Myers runs in O(N*D); its reconstruction stores the V frontier for every
-    // D, an O(D^2) int64 history.  Return the largest D whose history fits a
+    // D, an O(D^2) Index history.  Return the largest D whose history fits a
     // memory-derived budget (also bounding the O(D^2) time).
     static std::uint64_t MyersBudget(std::uint64_t m, std::uint64_t n);
     // Warn that Myers' edit distance exceeded its budget.
