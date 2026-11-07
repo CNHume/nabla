@@ -111,6 +111,8 @@ namespace {
   Length MyersFind(
     shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
     const Sequence& s1, const Sequence& s2) {
+    if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
+      throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
     auto m = s1.size();
     auto n = s2.size();
     auto budget = Analysis::MyersBudget(m, n);

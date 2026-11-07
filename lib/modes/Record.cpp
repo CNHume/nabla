@@ -56,6 +56,8 @@ uint64_t Record::Match(
   STRING_TO_INDEXES_MAP& columnsMatchedByString,
   const RECORDS& r1, const RECORDS& r2,
   bool ignorecase, bool ignorespace) {
+  if (ExceedsIndex(r1.size()) || ExceedsIndex(r2.size()))
+    throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
   uint64_t count = 0;
   Index index = 0;
   string buffer;

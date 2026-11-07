@@ -29,7 +29,7 @@ public:
 private:
 #ifdef LENGTH_SIZE_64
   static constexpr const char* programName = "nabla64";
-  static constexpr const char* buildFlavor = " (64-bit positions)";
+  static constexpr const char* buildFlavor = " 64-bit";
 #else
   static constexpr const char* programName = "nabla";
   static constexpr const char* buildFlavor = "";

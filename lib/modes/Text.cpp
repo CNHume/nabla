@@ -46,6 +46,8 @@ uint64_t Text::Match(
   CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
   const u32string& s1, const u32string& s2,
   bool ignorecase, bool ignorespace) {
+  if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
+    throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
   uint64_t count = 0;
   Index index = 0;
   u32string buffer;

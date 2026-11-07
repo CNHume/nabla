@@ -25,6 +25,7 @@
 //
 #pragma once
 
+#include <cstddef>                      // for size_t
 #include <cstdint>                      // for uint32_t, uint64_t
 #include <limits>                       // for numeric_limits
 
@@ -45,5 +46,16 @@ namespace lcs {
 
   // Sentinel Index value meaning "none" (no predecessor, no match, no symbol).
   inline constexpr Index NoIndex = std::numeric_limits<Index>::max();
+
+  //
+  // ExceedsIndex() reports whether a sequence of `size` positions cannot be
+  // addressed by Index: its largest position, size - 1, would not fit.  The
+  // 32-bit build therefore supports up to 2^32 positions (4,294,967,296); the
+  // 64-bit limit is unreachable in practice.  The 32-bit build guards its match
+  // list construction with this so it fails loudly instead of silently wrapping.
+  //
+  inline bool ExceedsIndex(std::size_t size) {
+    return size > 0 && size - 1 > (std::size_t)std::numeric_limits<Index>::max();
+  }
 
 } // namespace lcs
