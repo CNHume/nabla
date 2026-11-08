@@ -42,23 +42,10 @@ thread.
 
 ## Build
 
-- **Ship both binaries in releases and packaging.**  The two-binary build is in
-  place (`nabla` 32-bit default, `nabla64` via `LENGTH_SIZE=64`), but
-  `.github/workflows/release.yml` and the Bioconda recipe still ship only the
-  32-bit `nabla`.  Attach `nabla64` release assets (and, if desired, a `nabla64`
-  Bioconda recipe) as a follow-up.
-
-- **Drop the Bioconda recipe's `BUILD=` workaround at the next tag.**  The
-  Makefile output-directory knob was renamed `BUILD` → `BUILD_DIR` in
-  `cli/Makefile`, `Test/Makefile`, and the root `Makefile`, because
-  conda-forge's compiler activation exports `BUILD` as the build-platform
-  triplet (`x86_64-conda-linux-gnu`), which collided with `BUILD ?= build`.
-  `conda/build.sh` still passes `BUILD=build` because `conda/meta.yaml` points
-  at the v1.1.1 tarball, whose Makefile uses the old name — the two must change
-  together.  When v1.1.2 is tagged, bump `conda/meta.yaml` (version + sha256)
-  and simplify `build.sh` to `make -C cli` (32-bit) and
-  `make -C cli LENGTH_SIZE=64 BUILD_DIR=build64` (64-bit), then re-sync
-  `build.sh`/`meta.yaml` to the Bioconda fork.
+- **Ship `nabla64` in the release workflow.**  The two-binary build is in place
+  (`nabla` 32-bit default, `nabla64` via `LENGTH_SIZE=64`), and the Bioconda
+  recipe now installs both, but `.github/workflows/release.yml` still attaches
+  only the 32-bit `nabla`.  Attach the `nabla64` asset as a follow-up.
 
 ## Testing / Benchmarking
 
