@@ -28,7 +28,7 @@ make -C cli
 ```
 
 The executable is `cli/build/nabla`.  A root-level `make` (or `make all`) builds
-both variants: `cli/build/nabla` and `cli/build64/nabla64`.
+both variants: `cli/build/nabla` and `cli/build/nabla64`.
 
 For inputs longer than 4.29 billion positions, build the 64-bit variant:
 
