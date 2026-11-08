@@ -35,15 +35,15 @@ about:
   license_file:
     - cli/LICENSES/COPYING_LESSER.txt
     - cli/LICENSES/COPYING.txt
-  summary: "Longest common subsequence of two sequences or files, with FASTA input and CIGAR output."
+  summary: "Longest common subsequence of two sequences or files, supporting FASTA input and CIGAR output."
   description: |
     nabla finds the longest common subsequence (LCS) of two files or
-    records, selecting among Myers, Hunt-Szymanski, RickSpace, and RickTime
-    via automatic dispatch.  It reads FASTA (-F) and emits SAM CIGAR
+    records, selecting the Myers, Hunt-Szymanski, RickSpace, or RickTime
+    algorithm automatically.  It reads FASTA (-F) and emits SAM CIGAR
     alignments (-G).
 
-    Installs both nabla (32-bit positions) and nabla64 (64-bit positions);
-    use nabla64 when an input exceeds 4,294,967,296 positions.
+    Installs both nabla (32-bit) and nabla64 (64-bit).  Use nabla64 when
+    either input contains more than 4,294,967,296 positions.
 
 extra:
   recipe-maintainers:
