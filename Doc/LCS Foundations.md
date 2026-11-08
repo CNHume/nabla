@@ -86,12 +86,13 @@ dispatcher measures structure and routes accordingly:
 - dense matches on a small alphabet → RickTime, with RickSpace as the
   linear-space fallback; their occurrence tables are O(s·(m + n)).
 
-Two qualifications keep the claim honest.  First, AHU's lower bound is in the
-comparison model; nabla's algorithms sort and hash to build match lists and
-occurrence tables, so they are not literally bound by it.  Second, the
-quadratic bound applies to *large* alphabets (s ≥ 4n/3).  A small alphabet
-such as DNA (s = 4) is the regime where AHU shows subquadratic is achievable —
-and RickTime/RickSpace realize exactly that O(s·n) behavior.
+Two qualifications keep the claim honest.  First, AHU bounds the number of
+equal-unequal *comparisons*, with all other work free; nabla's algorithms sort
+and hash to build match lists and occurrence tables, so they are not literally
+bound by it.  Second, the quadratic regime (s ≥ 4n/3) needs an alphabet nearly
+as large as the input — mostly-unique symbols — which a bioinformatics alphabet
+(s = 4 or 20) never reaches; there the comparison bound is only Θ(s·n), and the
+alphabet's practical role is the O(s·(m+n)) table *memory*, not the time.
 
 ## Memory parameterization
 
@@ -104,16 +105,22 @@ recording fits, falling back to RickSpace otherwise:
 
 ## Conclusions
 
-The design of -Aa follows from one governing idea in the AHU paper: in the
-equal-unequal decision-tree model, LCS becomes quadratic once the alphabet is a
-constant fraction of the input length (s ≥ 4n/3), so avoiding quadratic
-behavior forces an algorithm to leave the model — to hash, sort, or index by
-symbol value rather than compare positions.  nabla accepts this wholesale: none
-of its four algorithms restricts itself to equal-unequal comparisons.
+The design of -Aa follows from the AHU paper's central distinction.  In the
+equal-unequal decision-tree model, LCS is quadratic only when the alphabet is a
+constant fraction of the input length (s ≥ 4n/3, i.e. mostly-unique symbols);
+for a fixed alphabet — DNA's 4 symbols or proteins' 20 — the model's comparison
+count is merely Θ(s·n).  But that bound counts comparisons, not time: the real
+LCS time is Θ(n²) regardless of alphabet (small alphabets save only log
+factors), so the comparison count is not where nabla's difficulty lies.  The
+alphabet governs *memory* — the O(s·(m+n)) occurrence tables — while *time*
+hardness is carried by the match structure D, r, and p.  nabla therefore leaves
+the model wholesale — hashing, sorting, indexing by symbol value — not to dodge
+a quadratic comparison bound that does not apply to small alphabets, but to
+make time input-sensitive and to identify symbols in O(1) instead of Θ(s).
 
 Leaving the model, however, does not buy a single fast algorithm.  Each escape
-route moves the cost off the comparison count T(n, s) and onto a different
-load-bearing parameter, and each route degenerates in its own regime:
+route carries a distinct load-bearing parameter and degenerates in its own
+regime:
 
 | Algorithm | Load-bearing parameter | Degenerate regime |
 |---|---|---|
