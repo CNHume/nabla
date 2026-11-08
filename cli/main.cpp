@@ -40,24 +40,39 @@
 using namespace std;
 using namespace lcs;
 
+namespace {
+// Select a UTF-8 locale when the platform provides one, degrading to the
+// environment locale and finally to the always-valid "C" locale.  Each
+// std::locale(name) construction can throw std::runtime_error when the
+// requested locale is unavailable (e.g. ".UTF-8" in a minimal container, or
+// an LC_ALL/LANG such as C.UTF-8 on glibc < 2.35), so guard every step.
+std::locale selectLocale() {
+  try {
+    return std::locale(".UTF-8");
+  }
+  catch (const std::exception&) {
+    // Fall through to the environment locale.
+  }
+  try {
+    return std::locale("");
+  }
+  catch (const std::exception&) {
+    // Fall through to the classic "C" locale.
+  }
+  return std::locale::classic();
+}
+}  // namespace
+
 //
 // command line application
 //
 int main(int argc, char* argv[]) {
   auto errorLevel = EXIT_FAILURE;
-  // Force the global runtime and standard streams to use UTF-8
-  // ".UTF-8", and "en_US.UTF-8" configure UTF-8 encoding
-  try {
-    std::locale::global(std::locale(".UTF-8"));
-    std::cout.imbue(std::locale());
-    std::cerr.imbue(std::locale());
-  }
-  catch (const std::exception&) {
-    // Fallback for environments with strict minimal locale installations
-    std::locale::global(std::locale(""));
-    std::cout.imbue(std::locale());
-    std::cerr.imbue(std::locale());
-  }
+  // Force the global runtime and standard streams to use UTF-8 when the
+  // platform provides it, with graceful fallback (see selectLocale()).
+  std::locale::global(selectLocale());
+  std::cout.imbue(std::locale());
+  std::cerr.imbue(std::locale());
 
   try {
     Command command;
