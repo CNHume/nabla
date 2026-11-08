@@ -34,7 +34,7 @@ inputs, cross-checked against the DP reference across all three algorithms.
 Build under AddressSanitizer for memory checking:
 
 ```
-make BUILD=build-asan CXXFLAGS="-std=c++20 -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer"
+make BUILD_DIR=build-asan CXXFLAGS="-std=c++20 -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer"
 ./build-asan/test stress 50000
 ```
 

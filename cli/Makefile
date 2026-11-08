@@ -1,14 +1,14 @@
 # Makefile for nabla — GNU/Linux out-of-source build.
 #
 #   make                                                  release build into build/
-#   make LENGTH_SIZE=64 BUILD=build64                     64-bit build into build64/
-#   make BUILD=build-debug CXXFLAGS="-std=c++20 -O0 -g -Wall -Wextra"
+#   make LENGTH_SIZE=64 BUILD_DIR=build64                 64-bit build into build64/
+#   make BUILD_DIR=build-debug CXXFLAGS="-std=c++20 -O0 -g -Wall -Wextra"
 #                                                         debug build into build-debug/
 #   make clean                                            remove the default build/
-#   make BUILD=build-debug clean                          remove a named build directory
+#   make BUILD_DIR=build-debug clean                      remove a named build directory
 #
-# The executable lands at $(BUILD)/nabla — or $(BUILD)/nabla64 when
-# LENGTH_SIZE=64 — and the object files at $(BUILD)/*.o, so no artifacts are
+# The executable lands at $(BUILD_DIR)/nabla — or $(BUILD_DIR)/nabla64 when
+# LENGTH_SIZE=64 — and the object files at $(BUILD_DIR)/*.o, so no artifacts are
 # written beside the sources.  Each
 # compile also emits a build/*.d header-dependency file (DEPFLAGS), which
 # the -include below pulls in so a header edit rebuilds its dependents.
@@ -32,13 +32,13 @@ ifeq ($(LENGTH_SIZE),64)
 CPPFLAGS += -DLENGTH_SIZE_64
 endif
 
-BUILD   ?= build
+BUILD_DIR ?= build
 SOURCES := $(wildcard *.cpp)
-OBJECTS := $(patsubst %.cpp,$(BUILD)/%.o,$(SOURCES))
+OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
 LIB_SOURCES := $(wildcard ../lib/*.cpp ../lib/*/*.cpp)
-LIB_OBJECTS := $(patsubst ../lib/%.cpp,$(BUILD)/%.o,$(LIB_SOURCES))
+LIB_OBJECTS := $(patsubst ../lib/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES))
 DEPS    := $(OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
-TARGET  := $(BUILD)/$(if $(filter 64,$(LENGTH_SIZE)),nabla64,nabla)
+TARGET  := $(BUILD_DIR)/$(if $(filter 64,$(LENGTH_SIZE)),nabla64,nabla)
 
 .PHONY: all clean
 all: $(TARGET)
@@ -46,18 +46,18 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS) $(LIB_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
-$(BUILD)/%.o: %.cpp | $(BUILD)
+$(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD)/%.o: ../lib/%.cpp | $(BUILD)
+$(BUILD_DIR)/%.o: ../lib/%.cpp | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD):
-	mkdir -p $(BUILD)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 # Pull in the generated .d files so header edits rebuild their dependents.
 -include $(DEPS)
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD_DIR)

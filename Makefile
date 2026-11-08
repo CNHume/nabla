@@ -21,16 +21,16 @@ nabla:
 	$(MAKE) -C cli
 
 nabla64:
-	$(MAKE) -C cli LENGTH_SIZE=64 BUILD=build64
+	$(MAKE) -C cli LENGTH_SIZE=64 BUILD_DIR=build64
 	mkdir -p cli/build
 	cp cli/build64/nabla64 cli/build/nabla64
 
 test:
 	$(MAKE) -C Test test
-	$(MAKE) -C Test LENGTH_SIZE=64 BUILD=build64 test
+	$(MAKE) -C Test LENGTH_SIZE=64 BUILD_DIR=build64 test
 
 clean:
 	$(MAKE) -C cli clean
-	$(MAKE) -C cli BUILD=build64 clean
+	$(MAKE) -C cli BUILD_DIR=build64 clean
 	$(MAKE) -C Test clean
-	$(MAKE) -C Test BUILD=build64 clean
+	$(MAKE) -C Test BUILD_DIR=build64 clean

@@ -20,17 +20,17 @@ ifeq ($(LENGTH_SIZE),64)
 CPPFLAGS += -DLENGTH_SIZE_64
 endif
 
-BUILD   ?= build
+BUILD_DIR ?= build
 
 # Library objects: one per lib/*.cpp.
 LIB_SOURCES := $(wildcard ../lib/*.cpp ../lib/*/*.cpp)
-LIB_OBJECTS := $(patsubst ../lib/%.cpp, $(BUILD)/%.o, $(LIB_SOURCES))
+LIB_OBJECTS := $(patsubst ../lib/%.cpp, $(BUILD_DIR)/%.o, $(LIB_SOURCES))
 
 # Test objects: one per *.cpp in this directory.
 TEST_SOURCES := $(wildcard *.cpp)
-TEST_OBJECTS := $(patsubst %.cpp, $(BUILD)/%.o, $(TEST_SOURCES))
+TEST_OBJECTS := $(patsubst %.cpp, $(BUILD_DIR)/%.o, $(TEST_SOURCES))
 
-TARGET := $(BUILD)/test
+TARGET := $(BUILD_DIR)/test
 DEPS   := $(LIB_OBJECTS:.o=.d) $(TEST_OBJECTS:.o=.d)
 
 .PHONY: all test clean
@@ -43,18 +43,18 @@ $(TARGET): $(LIB_OBJECTS) $(TEST_OBJECTS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 # Compile an LCS library source.
-$(BUILD)/%.o: ../lib/%.cpp | $(BUILD)
+$(BUILD_DIR)/%.o: ../lib/%.cpp | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 # Compile a local test source.
-$(BUILD)/%.o: %.cpp | $(BUILD)
+$(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
 	$(CXX) $(CPPFLAGS) $(DEPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD):
-	mkdir -p $(BUILD)
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 -include $(DEPS)
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD_DIR)
