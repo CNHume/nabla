@@ -102,6 +102,44 @@ recording fits, falling back to RickSpace otherwise:
 
     room = 0.75 · availableRAM − sizeof(Index) · s · (m + n + 4) − overhead
 
+## Conclusions
+
+The design of -Aa follows from one governing idea in the AHU paper: in the
+equal-unequal decision-tree model, LCS becomes quadratic once the alphabet is a
+constant fraction of the input length (s ≥ 4n/3), so avoiding quadratic
+behavior forces an algorithm to leave the model — to hash, sort, or index by
+symbol value rather than compare positions.  nabla accepts this wholesale: none
+of its four algorithms restricts itself to equal-unequal comparisons.
+
+Leaving the model, however, does not buy a single fast algorithm.  Each escape
+route moves the cost off the comparison count T(n, s) and onto a different
+load-bearing parameter, and each route degenerates in its own regime:
+
+| Algorithm | Load-bearing parameter | Degenerate regime |
+|---|---|---|
+| Myers | edit distance D | D ~ n (dissimilar inputs) |
+| Hunt-Szymanski | match count r | r ~ n² (dense matches) |
+| RickTime | alphabet s, LCS length p | large s; p ~ n/2 |
+| RickSpace | alphabet s | large s |
+
+-Aa is therefore a regime detector rather than a fixed ranking.  It measures
+cheap, model-violating statistics — a banded Myers probe for D and a hash-built
+symbol count for r — and routes to whichever escape route's parameter is
+currently favorable, steering around each algorithm's degenerate region.  The
+AHU bound's own load-bearing variable, the alphabet size s, reappears as the
+same structure: dense matches r are the small-s regime (Hunt-Szymanski's worst
+case, Rick's best case), and sparse r is the large-s regime (Hunt-Szymanski's
+best case).
+
+Two refinements close the loop.  First, even the analysis cannot remain inside
+the model: the hash that counts symbols and the banded probe that estimates D
+are themselves hashing and dynamic programming, so the dispatcher has already
+left the model before it makes a choice.  Second, because no single escape
+route dominates, the dispatcher is paired with boundary guards — WarnMatchCount,
+WarnTableSize, WarnRecordingSize, WarnMyersDistance, and SuggestRickTime — that
+fire as an algorithm nears its quadratic or out-of-memory wall, with RickTime's
+fallback to RickSpace on recording overflow as the concrete case.
+
 ## References
 
 1. A. V. Aho, D. S. Hirschberg, and J. D. Ullman, "Bounds on the Complexity of
