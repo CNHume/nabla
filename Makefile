@@ -27,10 +27,10 @@ nabla64:
 
 test:
 	$(MAKE) -C Test test
-	$(MAKE) -C Test LENGTH_SIZE=64 BUILD=build-index64 test
+	$(MAKE) -C Test LENGTH_SIZE=64 BUILD=build64 test
 
 clean:
 	$(MAKE) -C cli clean
 	$(MAKE) -C cli BUILD=build64 clean
 	$(MAKE) -C Test clean
-	$(MAKE) -C Test BUILD=build-index64 clean
+	$(MAKE) -C Test BUILD=build64 clean
