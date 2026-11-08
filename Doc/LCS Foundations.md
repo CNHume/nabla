@@ -48,6 +48,24 @@ merging no longer repays its side-comparison cost and the algorithm is stuck
 at n².  The qualitative message is what matters: comparison-based LCS becomes
 quadratic once the alphabet is a constant fraction of n.
 
+## Unequal lengths
+
+For two strings of lengths n₁ and n₂, with n₁ ≥ n₂, the same lower bounds hold
+with the length parameter generalized.  The paper gives:
+
+| Alphabet size s | Lower bound on T(n₁, n₂, s) |
+|---|---|
+| 0 ≤ s ≤ n₂ | (s/2)(n₁ + n₂ + s) |
+| n₂ ≤ s ≤ 4n₁n₂/(2n₂ + n₁) | (s/4)(2n₂ + n₁) |
+| 4n₁n₂/(2n₂ + n₁) ≤ s ≤ n₁ + n₂ | n₁n₂ |
+
+Setting n₁ = n₂ = n recovers the equal-length results: the quadratic term
+n₁n₂ becomes n², the middle term (s/4)(2n₂+n₁) becomes 3ns/4, and the
+threshold 4n₁n₂/(2n₂+n₁) becomes 4n/3.  The threshold therefore interpolates
+from 4n/3 for equal-length strings down toward 4n₂ as one string becomes much
+shorter — the shorter string caps the number of distinct symbols that can
+matter.
+
 ## The two models
 
 The paper also considers a restricted model in which comparisons between
