@@ -55,7 +55,7 @@ with the length parameter generalized.  The paper gives:
 
 | Alphabet size s | Lower bound on T(n₁, n₂, s) |
 |---|---|
-| 0 ≤ s ≤ n₂ | (s/2)(n₁ + n₂ + s) |
+| 0 ≤ s ≤ n₂ | (s/4)(n₁ + n₂ + s) |
 | n₂ ≤ s ≤ 4n₁n₂/(2n₂ + n₁) | (s/4)(2n₂ + n₁) |
 | 4n₁n₂/(2n₂ + n₁) ≤ s ≤ n₁ + n₂ | n₁n₂ |
 
