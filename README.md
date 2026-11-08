@@ -33,7 +33,7 @@ both variants: `cli/build/nabla` and `cli/build/nabla64`.
 For inputs longer than 4,294,967,296 positions, a 64-bit variant is built, as follows:
 
 ```
-make -C cli LENGTH_SIZE=64 BUILD=build64
+make -C cli LENGTH_SIZE=64 BUILD_DIR=build64
 ```
 
 which produces `cli/build64/nabla64`.  The 32-bit default handles up to 4,294,967,296 positions
