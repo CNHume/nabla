@@ -48,6 +48,17 @@ thread.
   32-bit `nabla`.  Attach `nabla64` release assets (and, if desired, a `nabla64`
   Bioconda recipe) as a follow-up.
 
+- **Rename the Makefile `BUILD` output variable.**  conda-forge's compiler
+  activation exports `BUILD` as the build-platform triplet
+  (`x86_64-conda-linux-gnu`), so the Makefile's `BUILD ?= build` default is
+  silently bypassed under conda-build and the artifacts land in
+  `cli/x86_64-conda-linux-gnu/`.  The Bioconda recipe works around it by
+  passing `BUILD=build` (and `BUILD=build64`) on the make command line, but
+  renaming the variable (e.g. to `OUTDIR`) in `cli/Makefile`, `Test/Makefile`,
+  and the root `Makefile` would remove the footgun for any conda-build consumer.
+  Would need a re-tag (bumping the recipe's sha256) before the recipe could
+  drop its `BUILD=` workaround.
+
 ## Testing / Benchmarking
 
 - **Boundary test: where `nabla` (32-bit) breaks and `nabla64` is required.**  A
