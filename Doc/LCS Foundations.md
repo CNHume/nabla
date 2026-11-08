@@ -21,7 +21,7 @@ The paper's principal results are:
 | Alphabet size s | T(n, s) |
 |---|---|
 | s = 2 | exactly 2n − 1 (linear) |
-| 2 ≤ s ≤ n | (s/2)(n+s) ≤ T(n,s) ≤ min(n², (s−1)(2n−s)) |
+| 2 ≤ s ≤ n | (s/2)(n + s/2) ≤ T(n,s) ≤ min(n², (s−1)(2n − s/2)) |
 | n ≤ s ≤ 4n/3 | 3ns/4 ≤ T(n,s) ≤ n² |
 | s ≥ 4n/3 | exactly n² (quadratic) |
 
@@ -41,7 +41,7 @@ and none in common, so the LCS is empty.  Merging positions into a group
 therefore costs ~s/2 side comparisons, while cross comparisons are at least
 gA·gB for gA, gB groups.  Optimizing this trade-off gives a lower bound of
 
-    min( n², 3ns/4, (s/2)(n+s) ).
+    min( n², 3ns/4, (s/2)(n + s/2) ).
 
 The threshold 4n/3 is exactly where 3ns/4 = n² — i.e. s = 4n/3.  Beyond that,
 merging no longer repays its side-comparison cost and the algorithm is stuck
@@ -59,8 +59,9 @@ with the length parameter generalized.  The paper gives:
 | n₂ ≤ s ≤ 4n₁n₂/(2n₂ + n₁) | (s/4)(2n₂ + n₁) |
 | 4n₁n₂/(2n₂ + n₁) ≤ s ≤ n₁ + n₂ | n₁n₂ |
 
-Setting n₁ = n₂ = n recovers the equal-length results: the quadratic term
-n₁n₂ becomes n², the middle term (s/4)(2n₂+n₁) becomes 3ns/4, and the
+Setting n₁ = n₂ = n recovers the equal-length results: the small-s term
+(s/4)(n₁+n₂+s) becomes (s/4)(2n+s) = (s/2)(n + s/2), the middle term
+(s/4)(2n₂+n₁) becomes 3ns/4, the quadratic term n₁n₂ becomes n², and the
 threshold 4n₁n₂/(2n₂+n₁) becomes 4n/3.  The threshold therefore interpolates
 from 4n/3 for equal-length strings down toward 4n₂ as one string becomes much
 shorter — the shorter string caps the number of distinct symbols that can
