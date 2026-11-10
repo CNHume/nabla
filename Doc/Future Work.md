@@ -40,6 +40,23 @@ thread.
   (RAM-derived, × 0.75).**  Intriguing.  Decide whether the dense-table warning
   should also follow available RAM, or document why it stays a fixed threshold.
 
+## Algorithms
+
+- **Bit-vector (word-level) LCS length engine (CIPR) — candidate.**  The
+  Crochemore–Iliopoulos–Pinzon–Reid algorithm computes the LCS length in
+  O(n·m/w) time and O(m/w) space (n ≥ m) by delta-encoding the DP columns as
+  bit-vectors and updating each with a four-operation bit-parallel formula.
+  It works over any finite alphabet and is most efficient when the shorter
+  string fits in a machine word (m ≤ w), giving O(n) time.  O(n²/log n) is the
+  word-RAM idealization; on real hardware (w = 64) it is a ~64× constant-factor
+  speedup over the O(n·m) DP, not an asymptotic one.  Length-only; the trace is
+  recovered via Hirschberg divide-and-conquer, still O(n·m/w).  It complements
+  RickTime: RickTime is O(p·n) and wins when p is small, while CIPR wins when
+  p ≈ n/2.  Reference: Crochemore, Iliopoulos, Pinzon, and Reid, "A fast and
+  practical bit-vector algorithm for the longest common subsequence problem",
+  Information Processing Letters, 80(6):279–285, 2001 (PDF in Doc/References/).
+  Recommended by D. Hirschberg.
+
 ## Build
 
 - **Ship `nabla64` in the release workflow.**  The two-binary build is in place
