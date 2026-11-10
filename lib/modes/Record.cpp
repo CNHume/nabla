@@ -225,7 +225,7 @@ Length Record::Compare(
       shorter, longer, ignorecase, ignorespace);
     if (algorithm == Algorithm::Matches) {
       algorithms::Analysis::WarnMatchCount(count, shorter.size(), longer.size());
-      length = algorithms::HuntSzymanski::Find(ppairs, columnsMatchedByRow);
+      length = algorithms::HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
       if (statistics) {
         statistics->algorithm = Algorithm::Matches;
         statistics->matches = count;

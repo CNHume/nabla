@@ -238,7 +238,7 @@ Length Text::Compare(
     auto count = Match(
       columnsMatchedByRow, columnsMatchedByChar, s1, s2, ignorecase, ignorespace);
     algorithms::Analysis::WarnMatchCount(count, s1.size(), s2.size());
-    length = algorithms::HuntSzymanski::Find(ppairs, columnsMatchedByRow);
+    length = algorithms::HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
     if (statistics) {
       statistics->algorithm = Algorithm::Matches;
       statistics->matches = count;

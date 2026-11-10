@@ -105,7 +105,8 @@ namespace {
 }
 
 Length HuntSzymanski::Find(
-  shared_ptr<Pair>* pairs, MATCHES& columnsMatchedByRow) {
+  shared_ptr<Pair>* pairs, metrics::Progress* progress,
+  MATCHES& columnsMatchedByRow) {
   auto traceLCS = pairs != nullptr;
   vector<MatchNode> nodes;              // arena: one node per THRESH change
   vector<Index> links;                  // LINK array: arena index per LCS length
@@ -116,7 +117,14 @@ Length HuntSzymanski::Find(
   // such that the LCS of s1[0:row] and s2[0:column] has length rank + 1
   //
   Index row = 0;
+  const auto rowCount = columnsMatchedByRow.size();
   for (const auto& it1 : columnsMatchedByRow) {
+    //
+    // Report the fraction of the m rows processed.  Monotonic across the row
+    // sweep, like RickTime's diagonal fraction.
+    //
+    if (progress)
+      progress->Update((double)row / (double)rowCount);
     const auto& dq2 = *it1;
 #ifdef SHOW_MATCHES
     cout << format("L1[{}] = {}\n", row, join(dq2, " "));

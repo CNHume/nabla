@@ -21,6 +21,7 @@
 #pragma once
 
 #include "lcs/LCS.h"
+#include "metrics/Progress.h"           // for metrics::Progress
 
 #include <cstdint>                      // for uint32_t
 #include <memory>                       // for shared_ptr
@@ -30,7 +31,8 @@ namespace lcs::algorithms {
   class HuntSzymanski {
   public:
     static Length Find(
-      std::shared_ptr<Pair>* pairs, MATCHES& columnsMatchedByRow);
+      std::shared_ptr<Pair>* pairs, metrics::Progress* progress,
+      MATCHES& columnsMatchedByRow);
   };
 
 } // namespace lcs::algorithms
