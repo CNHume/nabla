@@ -52,8 +52,7 @@ namespace lcs::modes {
 // time will be O(log(m+n)), at most.
 //
 uint64_t Record::Match(
-  MATCHES& columnsMatchedByRow,
-  STRING_TO_INDEXES_MAP& columnsMatchedByString,
+  MATCHES& columnsMatchedByRow, STRING_TO_INDEXES_MAP& columnsMatchedByString,
   const RECORDS& r1, const RECORDS& r2,
   bool ignorecase, bool ignorespace) {
   if (ExceedsIndex(r1.size()) || ExceedsIndex(r2.size()))
@@ -80,17 +79,16 @@ uint64_t Record::Match(
 }
 
 Length Record::Correspondence(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
-  const RECORDS& r1, const RECORDS& r2,
-  Algorithm algorithm,
+  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isjoin, bool isverbose,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
   if (intervals == nullptr)
     return Compare(
       nullptr, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
 
-  auto length = Compare(intervals, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
+  auto length = Compare(
+    intervals, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
   auto size1 = r1.size();               // empty final delta
   auto size2 = r2.size();
   Delta::Context(*intervals, size1, size2, prefix, suffix);
@@ -100,10 +98,8 @@ Length Record::Correspondence(
 }
 
 Length Record::Difference(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
-  const RECORDS& r1, const RECORDS& r2,
-  Algorithm algorithm,
+  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isjoin, bool isverbose,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
   if (intervals == nullptr)
@@ -121,10 +117,8 @@ Length Record::Difference(
 }
 
 Length Record::Compare(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
-  const RECORDS& r1, const RECORDS& r2,
-  Algorithm algorithm,
+  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isverbose) {
   if (isverbose)
     cerr << format("Started at {}\n", metrics::Duration::WallClock());
@@ -214,8 +208,7 @@ Length Record::Compare(
     // symmetric.  Match() consumes the (possibly swapped) inputs, so the swap
     // must precede the shared match-list build.
     //
-    isswapped =
-      algorithm != Algorithm::Matches && r2.size() < r1.size();
+    isswapped = algorithm != Algorithm::Matches && r2.size() < r1.size();
     const auto& shorter = isswapped ? r2 : r1;
     const auto& longer = isswapped ? r1 : r2;
     STRING_TO_INDEXES_MAP columnsMatchedByString;

@@ -42,8 +42,7 @@ namespace lcs::modes {
 // Compare with STRING_TO_INDEXES_MAP used for RECORDS
 //
 uint64_t Text::Match(
-  MATCHES& columnsMatchedByRow,
-  CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
+  MATCHES& columnsMatchedByRow, CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
   const u32string& s1, const u32string& s2,
   bool ignorecase, bool ignorespace) {
   if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
@@ -68,10 +67,8 @@ uint64_t Text::Match(
 }
 
 Length Text::Correspondence(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
-  const u32string& s1, const u32string& s2,
-  Algorithm algorithm,
+  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  const u32string& s1, const u32string& s2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isjoin, bool isverbose,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
   //
@@ -92,7 +89,8 @@ Length Text::Correspondence(
     vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
-    auto length = Compare(intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
+    auto length = Compare(
+      intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
     auto size1 = t1.size();
     auto size2 = t2.size();
     Delta::Context(*intervals, size1, size2, prefix, suffix);
@@ -113,12 +111,10 @@ Length Text::Correspondence(
   return length;
 }
 
-Length Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
-  const u32string& s1, const u32string& s2,
-  Algorithm algorithm,
-  bool ignorecase, bool ignorespace,
-  bool isjoin, bool isverbose,
+Length Text::Difference(
+  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  const u32string& s1, const u32string& s2, Algorithm algorithm,
+  bool ignorecase, bool ignorespace, bool isjoin, bool isverbose,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
   // A null interval pointer requests length only.
   if (intervals == nullptr)
@@ -130,7 +126,8 @@ Length Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* stati
     vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
-    auto length = Compare(intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
+    auto length = Compare(
+      intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
     auto size1 = t1.size();
     auto size2 = t2.size();
     auto deltas = Delta::Complement(*intervals, size1, size2);
@@ -143,7 +140,8 @@ Length Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* stati
   }
 
   auto length = Compare(
-    intervals, statistics, progress, s1, s2, algorithm, ignorecase, ignorespace, isverbose);
+    intervals, statistics, progress, s1, s2,
+    algorithm, ignorecase, ignorespace, isverbose);
   auto size1 = s1.size();               // empty final delta
   auto size2 = s2.size();
   auto deltas = Delta::Complement(*intervals, size1, size2);
@@ -153,10 +151,8 @@ Length Text::Difference(shared_ptr<Delta>* intervals, metrics::Statistics* stati
 }
 
 Length Text::Compare(
-  shared_ptr<Delta>* deltas, metrics::Statistics* statistics,
-  metrics::Progress* progress,
-  const u32string& s1, const u32string& s2,
-  Algorithm algorithm,
+  shared_ptr<Delta>* deltas, metrics::Statistics* statistics, metrics::Progress* progress,
+  const u32string& s1, const u32string& s2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isverbose) {
   if (isverbose)
     cerr << format("Started at {}\n", metrics::Duration::WallClock());
@@ -234,7 +230,7 @@ Length Text::Compare(
   }
   case Algorithm::Matches: {
     CHAR_TO_INDEXES_MAP columnsMatchedByChar;
-    MATCHES columnsMatchedByRow;  // holds references into columnsMatchedByChar
+    MATCHES columnsMatchedByRow;        // holds references into columnsMatchedByChar
     auto count = Match(
       columnsMatchedByRow, columnsMatchedByChar, s1, s2, ignorecase, ignorespace);
     algorithms::Analysis::WarnMatchCount(count, s1.size(), s2.size());

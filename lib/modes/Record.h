@@ -34,37 +34,27 @@ namespace lcs::modes {
     typedef std::vector<std::string> RECORDS;
 
     static Length Correspondence(
-      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-      metrics::Progress* progress,
-      const RECORDS& r1, const RECORDS& r2,
-      Algorithm algorithm = Algorithm::Automatic,
-      bool ignorecase = false, bool ignorespace = false,
-      bool isjoin = false, bool isverbose = false,
+      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+      const RECORDS& r1, const RECORDS& r2, Algorithm algorithm = Algorithm::Automatic,
+      bool ignorecase = false, bool ignorespace = false, bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
     static Length Difference(
-      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-      metrics::Progress* progress,
-      const RECORDS& r1, const RECORDS& r2,
-      Algorithm algorithm = Algorithm::Automatic,
-      bool ignorecase = false, bool ignorespace = false,
-      bool isjoin = false, bool isverbose = false,
+      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+      const RECORDS& r1, const RECORDS& r2, Algorithm algorithm = Algorithm::Automatic,
+      bool ignorecase = false, bool ignorespace = false, bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
     static Length Compare(
-      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-      metrics::Progress* progress,
-      const RECORDS& r1, const RECORDS& r2,
-      Algorithm algorithm = Algorithm::Automatic,
-      bool ignorecase = false, bool ignorespace = false,
-      bool isverbose = false);
+      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+      const RECORDS& r1, const RECORDS& r2, Algorithm algorithm = Algorithm::Automatic,
+      bool ignorecase = false, bool ignorespace = false, bool isverbose = false);
 
     static RECORDS Read(const std::string& filename, bool isword);
 
   protected:
     static std::uint64_t Match(
-      MATCHES& columnsMatchedByRow,
-      STRING_TO_INDEXES_MAP& columnsMatchedByString,
+      MATCHES& columnsMatchedByRow, STRING_TO_INDEXES_MAP& columnsMatchedByString,
       const RECORDS& r1, const RECORDS& r2,
       bool ignorecase = false, bool ignorespace = false);
   };

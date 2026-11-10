@@ -33,30 +33,21 @@ namespace lcs::modes {
   class Text {
   public:
     static Length Correspondence(
-      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-      metrics::Progress* progress,
-      const std::u32string& s1, const std::u32string& s2,
-      Algorithm algorithm = Algorithm::Automatic,
-      bool ignorecase = false, bool ignorespace = false,
-      bool isjoin = false, bool isverbose = false,
+      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+      const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
+      bool ignorecase = false, bool ignorespace = false, bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
     static Length Difference(
-      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-      metrics::Progress* progress,
-      const std::u32string& s1, const std::u32string& s2,
-      Algorithm algorithm = Algorithm::Automatic,
-      bool ignorecase = false, bool ignorespace = false,
-      bool isjoin = false, bool isverbose = false,
+      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+      const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
+      bool ignorecase = false, bool ignorespace = false, bool isjoin = false, bool isverbose = false,
       std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
     static Length Compare(
-      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-      metrics::Progress* progress,
-      const std::u32string& s1, const std::u32string& s2,
-      Algorithm algorithm = Algorithm::Automatic,
-      bool ignorecase = false, bool ignorespace = false,
-      bool isverbose = false);
+      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+      const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
+      bool ignorecase = false, bool ignorespace = false, bool isverbose = false);
 
     static std::u32string Read(const std::string& filename);
     static std::u32string StripFasta(const std::u32string& s);
@@ -70,8 +61,7 @@ namespace lcs::modes {
     typedef std::unordered_map<char32_t, INDEXES> CHAR_TO_INDEXES_MAP;
 
     static std::uint64_t Match(
-      MATCHES& columnsMatchedByRow,
-      CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
+      MATCHES& columnsMatchedByRow, CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
       const std::u32string& s1, const std::u32string& s2,
       bool ignorecase, bool ignorespace);
 
