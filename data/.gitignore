@@ -8,5 +8,6 @@
 !/Test/
 !/Test/**
 
-# The data generator is source, not data: track it.
+# The data generator and this README are source/docs, not data: track them.
 !makedata.cpp
+!README.md
