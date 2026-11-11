@@ -51,11 +51,7 @@ namespace lcs::algorithms {
 
 namespace {
   //
-  // MatchNode is an arena record for the trace.  It combines a match (row,
-  // column) with a back-pointer next to its predecessor in the chain, i.e. it
-  // is the paper's "list node" (newnode).  next indexes the arena
-  // (NoIndex = none), matching Pair::next's "toward the chain head"
-  // direction without per-node shared_ptr allocation.
+  // MatchNode is a space-optimization of Pair used for traceLCS
   //
   struct MatchNode {
     Index row = 0;
@@ -64,17 +60,20 @@ namespace {
   };
 
   //
+  // Returns the new node's arena index.  links[] is the paper's LINK array;
+  // and each MatchNode is a new list node.
+  //
   // pushNode() is Hunt & Szymanski (1977) Algorithm 2's trace, verbatim:
   //
   //   LINK[k] := newnode(i, j, LINK[k-1])
   //
-  // where row = i, column = j, and prefix = the predecessor node
-  // links[rank - 1] = LINK[k-1].  links[] is the paper's LINK array and each
-  // MatchNode is a newnode list node.  The predecessor is snapshotted here at
-  // creation time: a later update to links[rank - 1] must not disturb nodes
-  // already built on it (see Doc/References/HuntSzymanski.pdf, "The Algorithm",
-  // Theorem 1, which bounds this trace at O(r) space).  Returns the new node's
-  // arena index.
+  // where row = i, column = j, and prefix = links[rank - 1] = LINK[k-1].
+  //
+  // The predecessor is snapshotted here at creation time: later updates
+  // to links[rank - 1] must not disturb nodes already built on it.
+  //
+  // See Doc/References/HuntSzymanski.pdf, "The Algorithm", Theorem 1,
+  // which bounds this trace at O(r) space.
   //
   Index pushNode(
     vector<MatchNode>& nodes, const vector<Index>& links,
@@ -86,10 +85,11 @@ namespace {
 
   //
   // Reconstruct() returns the LCS as a Pair chain in ascending order by
-  // walking the arena from the head of the longest chain.  next links toward
-  // the chain head, so each match is prepended as it is visited.  This
-  // embodies the work formerly done by Pair::Reverse(chains.back()) when the
-  // trace was stored as a chain of Pair nodes.
+  // walking the arena from the head of the longest chain.  next links
+  // toward the chain head, so each match is prepended as it is visited.
+  //
+  // This mirrors the work formerly done by Pair::Reverse(chains.back())
+  // when the trace was stored as a chain of Pair nodes.
   //
   shared_ptr<Pair> Reconstruct(
     const vector<MatchNode>& nodes, const vector<Index>& links) {
