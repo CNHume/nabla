@@ -72,8 +72,8 @@ namespace {
   // The predecessor is snapshotted here at creation time: later updates
   // to links[rank - 1] must not disturb nodes already built on it.
   //
-  // See Doc/References/HuntSzymanski.pdf, "The Algorithm", Theorem 1,
-  // which bounds this trace at O(r) space.
+  // See Doc/References/HuntSzymanski.pdf, "The Algorithm", Theorem 1
+  // (whose proof bounds the list-node trace at O(r) space).
   //
   Index pushNode(
     vector<MatchNode>& nodes, const vector<Index>& links,
