@@ -15,8 +15,8 @@
 //
 // 2026-10-09 CNHume  Created HuntSzymanski class
 //
-// Hunt-Szymanski LCS: O((r + n) log n) using a threshold array over the
-// match lists built by Match().  Parallel to RickSpace::Find().
+// Hunt-Szymanski LCS: O((r + n) log n) using a threshold array over
+// the match lists built by Match().  Parallel to RickSpace::Find().
 //
 #pragma once
 

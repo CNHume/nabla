@@ -39,11 +39,12 @@ namespace lcs::algorithms {
   class RickSpace {
   public:
     //
-    // Find the LCS length and matched positions.  On return, *pairs (when
-    // non-null) is a linked list of matched (begin1, begin2) positions in
-    // ascending order.  The match-list overload serves the record path; the
-    // code-point overload builds O(ns) tables directly from the strings and
-    // serves the character (-t -r) path.  Both assume size1 <= size2.
+    // Find the LCS length and matched positions.  When non-null, *pairs is a
+    // linked list of matched (begin1, begin2) positions in ascending order.
+    //
+    // The match-list overload serves the record path; the code-point overload
+    // builds O(ns) tables directly from the strings and serves the character
+    // path.  Both assume size1 <= size2.
     //
     static Length Find(
       std::shared_ptr<Pair>* pairs, metrics::Statistics* statistics,

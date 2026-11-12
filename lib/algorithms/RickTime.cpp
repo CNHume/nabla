@@ -185,12 +185,14 @@ static Length Sweep(
   auto n = t.n;
 
   //
-  //[Assert]For each class k, rowThresh[k] is the leftmost column of a dominant
-  // k-match found so far (n if none) and colThresh[k] the topmost row (m if
-  // none).  A row-l match (l, j) is a new dominant k-match exactly when
+  //[Assert]For each class k, rowThresh[k] is the leftmost column of
+  // a dominant k-match found so far (n if none) and colThresh[k] the
+  // topmost row (m if none).
+  //
+  // A row-l match (l, j) is a new dominant k-match exactly when
   // j < rowThresh[k], and a column-l match (i, l) when i < colThresh[k];
-  // assigning one shrinks the threshold toward the diagonal, which keeps each
-  // class an antichain.
+  // assigning one shrinks the threshold toward the diagonal, which keeps
+  // each class an antichain.
   //
   // rowThresh[k] = leftmost column of a dominant k-match (n if none);
   // colThresh[k] = topmost row of a dominant k-match (m if none).
@@ -221,18 +223,19 @@ static Length Sweep(
       (uint64_t)m, (uint64_t)n, t.next1.size());
 
   //
-  // "Single diagonal sweep": one forward pass over the m diagonals.  At each
+  // Single diagonal sweep: one forward pass over the m diagonals.  At each
   // diagonal l the sweep handles two frontiers in the same pass — row l
-  // (dominant matches (l, j) with j >= l, i.e. at/right of the diagonal) and
-  // column l (dominant matches (i, l) with i > l, i.e. below the diagonal).
+  // (dominant matches (l, j) with j >= l, i.e., at/right of the diagonal) and
+  // column l (dominant matches (i, l) with i > l, i.e., below the diagonal).
+  //
   // There is no separate forward/backward alternation as in Rick (2000); the
   // single pass is possible because each dominant match is found exactly once,
   // via an O(1) next1/next2 occurrence probe.
   //
   for (int64_t l = 0; l < m; l++) {
     //
-    // Report the fraction of the single diagonal sweep completed.  The one
-    // pass over the m diagonals makes this monotonic.
+    // Report the fraction of the single diagonal sweep completed.
+    // The one pass over the m diagonals makes this monotonic.
     //
     if (progress)
       progress->Update((double)l / (double)m);
@@ -259,7 +262,7 @@ static Length Sweep(
       if ((Index)j < rowThresh[(size_t)k]) {
         auto temp = rowThresh[(size_t)k];
         rowThresh[(size_t)k] = (Index)j;  // dominant k-match (l, j)
-        records++;                      // a dominant match was found
+        records++;                        // a dominant match was found
         if (traceLCS) {
           byRank[(size_t)k].push_back({ .i = (Index)l, .j = (Index)j });
           if (records > recordBudget) {
@@ -295,7 +298,7 @@ static Length Sweep(
       if ((Index)i < colThresh[(size_t)k]) {
         auto temp = colThresh[(size_t)k];
         colThresh[(size_t)k] = (Index)i;  // dominant k-match (i, l)
-        records++;                      // a dominant match was found
+        records++;                        // a dominant match was found
         if (traceLCS) {
           byRank[(size_t)k].push_back({ .i = (Index)i, .j = (Index)l });
           if (records > recordBudget) {

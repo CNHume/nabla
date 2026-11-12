@@ -40,13 +40,14 @@ namespace lcs::algorithms {
 // subsequence of the prefixes s1[0..row] and s2[0..column] ending at
 // (row, column) has length k.  The k-th forward contour FC[k] is the
 // antichain of "dominant" (minimal under the product order) rank-k matches.
+//
 // Backward contours BC[k] are the symmetric notion applied to the reversed
 // strings.  Two contours are computed in an alternating fashion until they
 // cross, which fixes the LCS length and a midpoint match.  Hirschberg
 // recursion reconstructs the full LCS from the midpoints.
 //
-// Each contour scan needs, per row, the first (or last) occurrence of s1[row]
-// relative to a bound.  These queries are answered in O(1) by the
+// Each contour scan needs, per row, the first (or last) occurrence of
+// s1[row] relative to a bound.  These queries are answered in O(1) by
 // next/previous occurrence tables built from the shared match lists.
 //
 namespace {
@@ -166,8 +167,8 @@ namespace {
   }
 
   //
-  // Builds O(1) next/previous occurrence tables from the shared match lists in
-  // O(s*n + r) time and space, where s is the number of distinct symbols
+  // Builds O(1) next/previous occurrence tables from the shared match lists
+  // in O(s*n + r) time and space, where s is the number of distinct symbols
   // (match-list pointers) and r the total number of matches.
   //
   // This is the "LeftPos/TopPos" preprocessing that lets each contour scan jump
@@ -184,7 +185,7 @@ namespace {
     // identity compresses the symbols without needing the symbol values.
     //
     unordered_map<const INDEXES*, uint32_t> pointerToId;
-    vector<const INDEXES*> lists;  // lists[id] = sorted positions of symbol id
+    vector<const INDEXES*> lists;       // lists[id] = sorted positions of symbol id
     occ.rowId.assign(size1, NoIndex);
     for (size_t rowIndex = 0; rowIndex < size1; rowIndex++) {
       const auto* matchList = matches[rowIndex];
@@ -317,8 +318,8 @@ namespace {
     auto symbols = charToId.size();
     occ.symbols = (int64_t)symbols;
     //
-    // Warn before allocating the four dense next/prev tables (see the MATCHES
-    // overload above).
+    // Warn before allocating the four dense next/prev tables
+    // (see the MATCHES overload above).
     //
     Analysis::WarnTableSize(
       2 * sizeof(Index) * (uint64_t)symbols * ((uint64_t)occ.rows + (uint64_t)occ.columns + 1),
@@ -698,10 +699,10 @@ namespace {
   //
   // BC[k + 1]: dominant matches strictly top-left of some BC[k] match.
   //
-  // The backward dual sweep, the mirror image of NextForward: a row sweep for
-  // the backward horizontal stripe (column - column0 <= row - row0)
-  // and a column sweep for the backward vertical stripe, interleaved over the
-  // anti-diagonal and stopped by the symmetric completeness test.
+  // The backward dual sweep, the mirror image of NextForward: a row sweep
+  // for the backward horizontal stripe (column - column0 <= row - row0)
+  // and a column sweep for the backward vertical stripe, interleaved over
+  // the anti-diagonal and stopped by the symmetric completeness test.
   //
   Contour NextBackward(
     const Contour& contour, const Occurrences& occ,
@@ -893,9 +894,9 @@ Length RickSpace::Find(
   metrics::Progress* progress,
   const u32string& s1, const u32string& s2) {
   //
-  // Build O(ns) occurrence tables directly from the code points and amortize them
-  // over the whole Hirschberg recursion.  No match lists are ever materialized,
-  // so this path stays feasible for very long strings.
+  // Build O(ns) occurrence tables from code points and amortize them
+  // over the whole Hirschberg recursion.  No match lists are ever
+  // materialized, so this path stays feasible for very long strings.
   //
   ResetCounters();
   auto occ = BuildOccurrences(s1, s2);
