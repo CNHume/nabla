@@ -55,7 +55,16 @@ thread.
   p ≈ n/2.  Reference: Crochemore, Iliopoulos, Pinzon, and Reid, "A fast and
   practical bit-vector algorithm for the longest common subsequence problem",
   Information Processing Letters, 80(6):279–285, 2001 (PDF in Doc/References/).
-  Recommended by D. Hirschberg.
+  Recommended by D. Hirschberg.  Provenance: the delta-encoding of a DP column
+  plus the carry-by-addition trick descend from Myers' bit-vector edit-distance
+  algorithm (reference [10] in the CIPR paper) — Myers, "A fast bit-vector
+  algorithm for approximate string matching based on dynamic programming",
+  J. ACM 46(3):395–415, 1999 (PDF in Doc/References/).  Myers encodes edit
+  deltas Dv ∈ {-1, 0, +1} in two vectors and computes Xh = (((E&P) + P) ^ P) | E;
+  CIPR specializes this to the LCS delta ΔL ∈ {0, 1} (one vector, four ops).
+  CIPR notes that porting Myers to LCS "only adds extra overheads", hence the
+  direct derivation.  Not a standalone candidate for nabla: it solves approximate
+  substring matching, not exact global LCS.
 
 ## Build
 
