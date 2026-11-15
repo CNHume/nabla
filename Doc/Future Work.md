@@ -66,6 +66,23 @@ thread.
   direct derivation.  Not a standalone candidate for nabla: it solves approximate
   substring matching, not exact global LCS.
 
+- **Batch candidate-scoring mode (query vs. reference shortlist).**  Generalize
+  the two-operand CLI to treat file1 as a *set* of reference records and file2
+  as a single query, preserving the -G convention (file1 = reference, file2 =
+  query).  This is exact scoring of an already-narrowed shortlist — not search:
+  no database index, no seeding, no heuristics.  The query (file2) side is
+  fixed, so its preprocessing is built once and reused across candidates:
+  Hunt-Szymanski's `columnsMatchedByChar` (keyed on s2) and Rick's `next2`/`id2`
+  tables (over s2).  Score all candidates length-first (cheap), then reconstruct
+  only the top-k; the CIPR bit-vector engine is the natural ranker since ranking
+  needs length only.  Emit a ranked table plus CIGAR for the winners.  The
+  candidate set arrives as one multi-FASTA file whose '>' headers name each
+  reference; a folder of files is the same stream after concatenation (FASTA is
+  self-delimiting), read in sorted order with duplicate headers detected.  Two
+  caveats: Rick's internal shorter-first swap must not disturb the file1 =
+  reference / file2 = query roles in CIGAR output; and the mode is O(N · pairwise)
+  across N candidates, so N is a shortlist (tens to thousands), not a database.
+
 ## Build
 
 - **Ship `nabla64` in the release workflow.**  The two-binary build is in place
