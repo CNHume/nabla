@@ -343,7 +343,7 @@ u32string Text::StripFasta(const u32string& s) {
     if (i < j && s[i] != U'>') {        // sequence line
       for (auto k = i; k < j; k++) {
         auto c = s[k];
-        if (c != U' ' && c != U'\t' && c != U'\r')
+        if (U" \t\r"sv.find(c) == std::u32string_view::npos)
           buffer.push_back(c);
       }
     }
