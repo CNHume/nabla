@@ -77,11 +77,16 @@ thread.
   only the top-k; the CIPR bit-vector engine is the natural ranker since ranking
   needs length only.  Emit a ranked table plus CIGAR for the winners.  The
   candidate set arrives as one multi-FASTA file whose '>' headers name each
-  reference; a folder of files is the same stream after concatenation (FASTA is
-  self-delimiting), read in sorted order with duplicate headers detected.  Two
-  caveats: Rick's internal shorter-first swap must not disturb the file1 =
-  reference / file2 = query roles in CIGAR output; and the mode is O(N · pairwise)
-  across N candidates, so N is a shortlist (tens to thousands), not a database.
+  reference.  Implement multi-FASTA first, then the folder form: a folder of
+  files is the same record stream after concatenation (FASTA is self-delimiting),
+  but the reader should inject a synthetic '>filename' header per file rather
+  than rely on each file's own (possibly colliding) '>' header, so filename
+  identity survives; fall back to a file's own header for single-record files.
+  Folder reads must sort the directory listing for reproducible ranking and
+  filter by extension/glob.  Two caveats: Rick's internal shorter-first swap
+  must not disturb the file1 = reference / file2 = query roles in CIGAR output;
+  and the mode is O(N · pairwise) across N candidates, so N is a shortlist (tens
+  to thousands), not a database.
 
 ## Build
 
