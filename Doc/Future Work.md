@@ -66,27 +66,32 @@ thread.
   direct derivation.  Not a standalone candidate for nabla: it solves approximate
   substring matching, not exact global LCS.
 
-- **Batch candidate-scoring mode (query vs. reference shortlist).**  Generalize
-  the two-operand CLI to treat file1 as a *set* of reference records and file2
-  as a single query, preserving the -G convention (file1 = reference, file2 =
-  query).  This is exact scoring of an already-narrowed shortlist — not search:
-  no database index, no seeding, no heuristics.  The query (file2) side is
-  fixed, so its preprocessing is built once and reused across candidates:
-  Hunt-Szymanski's `columnsMatchedByChar` (keyed on s2) and Rick's `next2`/`id2`
-  tables (over s2).  Score all candidates length-first (cheap), then reconstruct
-  only the top-k; the CIPR bit-vector engine is the natural ranker since ranking
-  needs length only.  Emit a ranked table plus CIGAR for the winners.  The
-  candidate set arrives as one multi-FASTA file whose '>' headers name each
-  reference.  Implement multi-FASTA first, then the folder form: a folder of
-  files is the same record stream after concatenation (FASTA is self-delimiting),
-  but the reader should inject a synthetic '>filename' header per file rather
-  than rely on each file's own (possibly colliding) '>' header, so filename
-  identity survives; fall back to a file's own header for single-record files.
-  Folder reads must sort the directory listing for reproducible ranking and
-  filter by extension/glob.  Two caveats: Rick's internal shorter-first swap
-  must not disturb the file1 = reference / file2 = query roles in CIGAR output;
-  and the mode is O(N · pairwise) across N candidates, so N is a shortlist (tens
-  to thousands), not a database.
+- **Batch candidate-scoring (query vs. reference shortlist) — likely a separate
+  tool over `lib/`, not a `nabla` flag.**  The contract differs from pairwise
+  LCS — N references in, a ranked table plus top-k CIGAR out — and the new
+  machinery (record cursor, top-k heap, directory handling, ranking output) is
+  orchestration, not LCS.  So this should be a second thin executable (e.g.
+  `nabla-score`) that loops `lib/`'s per-pair `Find` over candidates, leaving the
+  single-pair `nabla` CLI untouched; `StripFasta` stays concatenate-only and the
+  cursor lives in the new tool.  The scoring is exact, not search: no database
+  index, no seeding, no heuristics; file1 = reference shortlist, file2 = query,
+  preserving the -G roles.  The query (file2) side is fixed, so its preprocessing
+  is amortized across candidates: Hunt-Szymanski's `columnsMatchedByChar` (keyed
+  on s2) reuses cleanly, Rick's `next2`/`id2` less so (shared union symbol-id map
+  plus the shorter-first swap).  Score all candidates length-first, then
+  reconstruct only the top-k; CIPR is the natural ranker (length only).  Input
+  is one multi-FASTA file whose '>' headers name each reference, then the folder
+  form (concatenate with injected per-file headers, sorted listing, extension
+  filter).  Caveats: Rick's shorter-first swap must not disturb reference/query
+  roles in CIGAR; and O(N · pairwise) bounds N to a shortlist, not a database.
+  Build gate: a native scorer only pays when N (hundreds to thousands) makes
+  rebuilt query indices cost more than the loop; for tens of candidates a shell
+  loop over `nabla` already covers it.  Alternative worth considering before
+  committing to a new binary: have `nabla` optionally emit its query-side
+  preprocessed index (normalized query plus symbol map/occurrence tables) as an
+  intermediate artifact that later invocations reload instead of rebuild, so the
+  outer shell loop amortizes the same preprocessing without a long-lived scorer
+  process — trading a serialize/reload round-trip for in-memory reuse.
 
 ## Build
 
