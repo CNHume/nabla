@@ -24,9 +24,41 @@
 #include "modes/Record.h"
 #include "modes/Text.h"
 
+#include <format>                       // for format
+#include <iostream>                     // for cerr
+
 using namespace std;
 using namespace lcs;
 using namespace lcs::files;
+
+namespace {
+  //
+  // Report one file argument's FASTA header under -v, and warn when the file
+  // holds several FASTA records that StripFasta() concatenated.
+  //
+  void ReportFastaHeader(const string& filename, const modes::Text::FastaInfo& info) {
+    if (info.recordCount == 0)
+      cerr << format("{}: (no FASTA header)\n", filename);
+    else {
+      cerr << format("{}: >{}\n", filename, Encoding::ToUtf8(info.header));
+      if (info.recordCount > 1)
+        cerr << format(
+          "{}: Warning: {} FASTA records; concatenated\n",
+          filename, info.recordCount);
+    }
+  }
+
+  //
+  // Strip FASTA headers from one text file, reporting them under -v.
+  //
+  u32string PrepareFasta(const string& filename, const u32string& raw, bool isverbose) {
+    modes::Text::FastaInfo info;
+    auto text = modes::Text::StripFasta(raw, isverbose ? &info : nullptr);
+    if (isverbose)
+      ReportFastaHeader(filename, info);
+    return text;
+  }
+}
 
 Length File::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
@@ -46,8 +78,8 @@ Length File::Correspondence(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        s1 = modes::Text::StripFasta(s1);
-        s2 = modes::Text::StripFasta(s2);
+        s1 = PrepareFasta(options.file1, s1, options.isverbose);
+        s2 = PrepareFasta(options.file2, s2, options.isverbose);
       }
     }
     length = modes::Text::Correspondence(
@@ -92,8 +124,8 @@ Length File::Difference(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        s1 = modes::Text::StripFasta(s1);
-        s2 = modes::Text::StripFasta(s2);
+        s1 = PrepareFasta(options.file1, s1, options.isverbose);
+        s2 = PrepareFasta(options.file2, s2, options.isverbose);
       }
     }
     length = modes::Text::Difference(

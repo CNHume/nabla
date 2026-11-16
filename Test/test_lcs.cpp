@@ -188,6 +188,46 @@ TEST_CASE("Myers aborts when the edit distance exceeds its budget") {
     std::runtime_error);
 }
 
+TEST_CASE("StripFasta reports the first header and counts records") {
+  // Single record: header captured, count == 1.
+  {
+    modes::Text::FastaInfo info;
+    auto seq = modes::Text::StripFasta(toU32(">chr21\nACGT\nACGT\n"), &info);
+    CHECK(info.recordCount == 1);
+    CHECK(info.header == toU32("chr21"));
+    CHECK(seq == toU32("ACGTACGT"));
+  }
+  // Multi-record FASTA: first header captured, count reflects concatenation.
+  {
+    modes::Text::FastaInfo info;
+    auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b\nGT\n"), &info);
+    CHECK(info.recordCount == 2);
+    CHECK(info.header == toU32("a"));
+    CHECK(seq == toU32("ACGT"));
+  }
+  // CRLF header: trailing CR is trimmed from the captured defline.
+  {
+    modes::Text::FastaInfo info;
+    auto seq = modes::Text::StripFasta(toU32(">chr21\r\nACGT\n"), &info);
+    CHECK(info.recordCount == 1);
+    CHECK(info.header == toU32("chr21"));
+    CHECK(seq == toU32("ACGT"));
+  }
+  // No header: empty header, zero count, sequence passes through.
+  {
+    modes::Text::FastaInfo info;
+    auto seq = modes::Text::StripFasta(toU32("ACGT\n"), &info);
+    CHECK(info.recordCount == 0);
+    CHECK(info.header.empty());
+    CHECK(seq == toU32("ACGT"));
+  }
+  // Null info pointer: original concatenate behavior, no crash.
+  {
+    auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b\nGT\n"));
+    CHECK(seq == toU32("ACGT"));
+  }
+}
+
 TEST_CASE("automatic dispatch returns a correct LCS") {
   // -Aa should select a working algorithm: the length and trace must match the
   // O(m*n) DP reference regardless of which algorithm it picks.

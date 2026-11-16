@@ -331,7 +331,11 @@ u32string Text::Read(const string& filename) {
 // whitespace removed.  Wrapped sequence is thereby unrolled into one
 // unbroken sequence, and multi-FASTA records are concatenated.
 //
-u32string Text::StripFasta(const u32string& s) {
+// When info is non-null, the first '>' defline is captured in info->header
+// and every '>' header line is counted in info->recordCount, so the caller
+// can report the header (and detect concatenated records) under -v.
+//
+u32string Text::StripFasta(const u32string& s, FastaInfo* info) {
   u32string buffer;
   buffer.reserve(s.size());
   auto n = s.size();
@@ -346,6 +350,20 @@ u32string Text::StripFasta(const u32string& s) {
         if (U" \t\r"sv.find(c) == std::u32string_view::npos)
           buffer.push_back(c);
       }
+    }
+    else if (info != nullptr && i < j) { // header line (s[i] == U'>')
+      if (info->recordCount == 0) {
+        //
+        // First header: capture the defline after '>', trimming a trailing
+        // CR so a CRLF header reports cleanly.
+        //
+        auto begin = i + 1;
+        auto end = j;
+        while (end > begin && s[end - 1] == U'\r')
+          end--;
+        info->header.assign(s.begin() + begin, s.begin() + end);
+      }
+      info->recordCount++;
     }
 
     // advance past the line terminator
