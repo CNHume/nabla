@@ -332,10 +332,11 @@ u32string Text::Read(const string& filename) {
 // sequence.  Only the first FASTA record is used: additional records, each
 // introduced by a further '>' header, are ignored.
 //
-// When info is non-null, the first '>' defline is captured in info->header,
-// the deflines of any ignored records in info->ignored, and the total number
-// of '>' header lines in info->recordCount, so the caller can report the used
-// header and the ignored records.
+// When info is non-null, the first '>' defline is split at its first whitespace
+// run into info->name and info->description, the deflines of any ignored
+// records are collected in info->ignored, and the total number of '>' header
+// lines in info->recordCount.  The name is not subdivided further, since a
+// delimiter such as '|' cannot be presupposed.
 //
 u32string Text::StripFasta(const u32string& s, FastaInfo* info) {
   u32string buffer;
@@ -364,10 +365,32 @@ u32string Text::StripFasta(const u32string& s, FastaInfo* info) {
         while (end > begin && s[end - 1] == U'\r')
           end--;
         auto defline = u32string(s.begin() + begin, s.begin() + end);
-        if (records == 1)
-          info->header = std::move(defline);
-        else
-          info->ignored.push_back(std::move(defline));
+        if (records == 1) {
+          //
+          // Split the defline at its first whitespace run.  The identifier is
+          // the first token; the description is the remainder.  Whitespace is
+          // the only delimiter we may presuppose, so a pipe-delimited id such
+          // as gi|123|ref|NC_000913.3| stays in name whole.
+          //
+          auto ws = defline.find_first_of(U" \t");
+          u32string name, description;
+          if (ws == u32string::npos) {
+            name = defline;
+          }
+          else {
+            name = defline.substr(0, ws);
+            auto rest = ws;
+            while (rest < defline.size() &&
+              (defline[rest] == U' ' || defline[rest] == U'\t'))
+              rest++;
+            description = defline.substr(rest);
+          }
+          info->name = files::Encoding::ToUtf8(name);
+          info->description = files::Encoding::ToUtf8(description);
+        }
+        else {
+          info->ignored.push_back(files::Encoding::ToUtf8(defline));
+        }
       }
     }
 

@@ -129,11 +129,16 @@ differences.
 .B -F
 Treat the input files as FASTA and strip header lines; implies
 .BR -T .
-Only the first FASTA record is used; any additional records in a file are
-ignored, with a warning written to standard error.  Under
+Only the first FASTA record of each file is used; any additional records are
+ignored, with a warning to standard error naming the file and the first
+record's name.  A FASTA defline is split at its first whitespace run into a
+name (the identifier) and a description; the name is not subdivided further,
+since a delimiter such as
+.B |
+cannot be presupposed.  Under
 .BR -v ,
-each file argument is listed to standard error with its first FASTA header
-and the headers of any ignored records.
+each file argument is listed to standard error with its filename, name, and
+description, followed by the deflines of any ignored records.
 .TP
 .B -G
 Emit the (gapped) CIGAR alignment string; file1 is the reference and
@@ -219,7 +224,8 @@ is not yet implemented.
 Enable verbose output: print the LCS length, the start and finish wall-clock
 times, and a timing summary; by default only the differences are shown.  With
 .BR -F ,
-also report each file's FASTA header and the headers of any ignored records.
+also report each file's FASTA name and description, and the deflines of any
+ignored records.
 .TP
 .B -V
 Print the version and exit.

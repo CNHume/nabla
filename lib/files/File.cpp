@@ -33,36 +33,45 @@ using namespace lcs::files;
 
 namespace {
   //
-  // Report one file argument's FASTA records.  The first (used) defline is
-  // listed under -v, as are the deflines of any additional records, which are
-  // ignored.  Whenever -F is given and a file holds extra records, a warning
-  // is emitted.
+  // Report one file argument's FASTA records.  The first (used) record's
+  // filename, name, and description are listed under -v, as are the deflines
+  // of any additional records, which are ignored.  Whenever -F is given and a
+  // file holds extra records, a warning naming the filename and the used
+  // record's name is emitted, so the context is clear even without -v.
   //
-  void ReportFastaHeader(const string& filename, const modes::Text::FastaInfo& info, bool isverbose) {
+  void ReportFastaHeader(const modes::Text::FastaInfo& info, bool isverbose) {
+    const auto& filename = info.filename;
     if (info.recordCount == 0) {
       if (isverbose)
         cerr << format("{}: (no FASTA header)\n", filename);
       return;
     }
-    if (isverbose)
-      cerr << format("{}: >{}\n", filename, Encoding::ToUtf8(info.header));
+    if (isverbose) {
+      if (info.description.empty())
+        cerr << format("{}: >{}\n", filename, info.name);
+      else
+        cerr << format("{}: >{} {}\n", filename, info.name, info.description);
+    }
     if (info.recordCount > 1) {
-      cerr << format("Warning: Additional FASTA record ignored\n");
+      cerr << format(
+        "{}: Warning: Additional FASTA record ignored (first record: {})\n",
+        filename, info.name);
       if (isverbose)
         for (const auto& defline : info.ignored)
-          cerr << format("{}: >{}\n", filename, Encoding::ToUtf8(defline));
+          cerr << format("{}: >{}\n", filename, defline);
     }
   }
 
   //
   // Strip FASTA headers from one text file, keeping only the first record.
   // The record count is needed for the warning even without -v, so info is
-  // always collected.
+  // always collected; filename is filled in for reporting.
   //
   u32string PrepareFasta(const string& filename, const u32string& raw, bool isverbose) {
     modes::Text::FastaInfo info;
+    info.filename = filename;
     auto text = modes::Text::StripFasta(raw, &info);
-    ReportFastaHeader(filename, info, isverbose);
+    ReportFastaHeader(info, isverbose);
     return text;
   }
 }
