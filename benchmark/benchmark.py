@@ -34,8 +34,14 @@ RATES = [0.01, 0.05, 0.10, 0.20, 0.40]
 
 
 def load_sequence(path, n):
+  seq = []
   with open(path) as f:
-    return f.read().strip().upper()[:n]
+    for line in f:
+      line = line.strip()
+      if line.startswith(">"):
+        continue
+      seq.append(line)
+  return "".join(seq).upper()[:n]
 
 
 def synthetic_base(length, alphabet_size, rng):

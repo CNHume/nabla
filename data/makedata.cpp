@@ -4,11 +4,18 @@
 //   makedata <input.fa> <output-prefix> <K1> [K2 ...]
 //
 // Reads <input.fa>, extracts the sequence (strips '>' header lines, drops
-// whitespace, uppercases) and writes it as <output-prefix>.seq (one line).
-// Then, for each K, applies K distinct random substitutions — each changed to
-// a different symbol drawn from the sequence's own alphabet — and writes
-// <output-prefix>_<K>subs.seq.  The xorshift32 generator is seeded, so a given
-// input reproduces identical mutants on any platform.
+// whitespace, uppercases) and writes it as <output-prefix>.seq — a single
+// FASTA record whose defline names the source file.  Then, for each K, it
+// applies K distinct random substitutions — each changed to a different symbol
+// drawn from the sequence's own alphabet — and writes <output-prefix>_<K>subs.seq,
+// a FASTA record whose defline records the source file and the mutation
+// parameters (the substitution count and the xorshift32 seed).
+//
+// The generator is reseeded with the same fixed value before every K, so each
+// output is reproducible on its own from the parameters in its defline, and a
+// given input reproduces identical mutants on any platform.  Because the
+// position shuffle is likewise repeated, each larger K reuses the smaller K's
+// positions and adds more: the mutants nest.
 //
 // Build (Linux):   g++ -std=c++20 -O2 -Wall -Wextra makedata.cpp -o makedata
 // Build (Windows): cl /std:c++20 /O2 /EHsc makedata.cpp
@@ -16,7 +23,7 @@
 #include <algorithm>                    // for sort, unique
 #include <cctype>                       // for isspace, toupper
 #include <cstdint>                      // for uint32_t
-#include <cstdio>                       // for fprintf
+#include <cstdio>                       // for fprintf, snprintf
 #include <cstdlib>                      // for exit, strtoull
 #include <fstream>                      // for ifstream, ofstream
 #include <string>                       // for string, to_string
@@ -24,7 +31,10 @@
 
 using namespace std;
 
-static uint32_t rngState = 0x12345678u;
+// Fixed xorshift32 seed.  Every mutant is generated from this same seed, so a
+// defline's "seed=" and "subs=" values reproduce that exact file.
+static const uint32_t kSeed = 0x12345678u;
+static uint32_t rngState = kSeed;
 static uint32_t NextRand() {
   uint32_t x = rngState;
   x ^= x << 13;
@@ -54,9 +64,15 @@ static string ReadSequence(const string& path) {
   return seq;
 }
 
-static void WriteSequence(const string& path, const string& seq) {
+// Write one FASTA record: a '>' defline carrying the name and, when present, a
+// space-separated description, followed by the sequence on one line.
+static void WriteFasta(const string& path, const string& name,
+                       const string& description, const string& seq) {
   ofstream out(path, ios::binary);
-  out << seq << '\n';
+  out << '>' << name;
+  if (!description.empty())
+    out << ' ' << description;
+  out << '\n' << seq << '\n';
 }
 
 int main(int argc, char** argv) {
@@ -65,9 +81,12 @@ int main(int argc, char** argv) {
     return 2;
   }
 
-  auto seq = ReadSequence(argv[1]);
-  auto prefix = string(argv[2]);
-  WriteSequence(prefix + ".seq", seq);
+  const string source = argv[1];
+  const string prefix = argv[2];
+  auto seq = ReadSequence(source);
+
+  // The base sequence, named by its source file.
+  WriteFasta(prefix + ".seq", prefix, "source=" + source, seq);
 
   // The sequence's own distinct symbols, used for substitutions.
   vector<char> symbols(seq.begin(), seq.end());
@@ -76,13 +95,18 @@ int main(int argc, char** argv) {
 
   auto n = seq.size();
   vector<size_t> pos(n);
-  for (size_t i = 0; i < n; i++)
-    pos[i] = i;
 
   for (int a = 3; a < argc; a++) {
     auto K = (size_t)strtoull(argv[a], nullptr, 10);
     if (K > n)
       K = n;
+
+    // Regenerate each mutant independently: the same seed and the same initial
+    // permutation, so the defline's "seed=" and "subs=" reproduce it alone and
+    // larger K values nest over smaller ones.
+    rngState = kSeed;
+    for (size_t i = 0; i < n; i++)
+      pos[i] = i;
 
     // Fisher-Yates shuffle to select K distinct positions.
     for (size_t i = n - 1; i > 0; i--) {
@@ -99,7 +123,13 @@ int main(int argc, char** argv) {
       } while (c == mut[p]);
       mut[p] = c;
     }
-    WriteSequence(prefix + "_" + to_string(K) + "subs.seq", mut);
+
+    char seedBuf[16];
+    snprintf(seedBuf, sizeof seedBuf, "0x%08lx", (unsigned long)kSeed);
+    string name = prefix + "_" + to_string(K) + "subs";
+    string description = "source=" + source + " subs=" + to_string(K) +
+                         " seed=" + seedBuf;
+    WriteFasta(prefix + "_" + to_string(K) + "subs.seq", name, description, mut);
   }
   return 0;
 }
