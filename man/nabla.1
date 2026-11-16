@@ -130,13 +130,13 @@ differences.
 Treat the input files as FASTA and strip header lines; implies
 .BR -T .
 Only one FASTA record of each file is used (either the first, or the record
-specified by a
+selected by the
 .I record_id
-selected by
-.BR -r
-for the reference and
+specified via
 .BR -q
-for the query).  Any other FASTA records will be ignored (with a warning issued
+for the query file, or via
+.BR -r
+for the reference file).  Any other FASTA records will be ignored (with a warning issued
 for each.)
 .TP
 .B -G
@@ -164,7 +164,7 @@ records of each other.  In unified
 mode it also merges intervals within that distance.
 .TP
 .B -l
-Report only the LCS length; skip reconstructing the differences.
+Report only the LCS length.  Skip reconstruction and formatting of the differences.
 .TP
 .BI -p " prefix"
 Print
@@ -230,7 +230,7 @@ line (defline).  A
 .I record_id
 that matches no record is an error.  Under
 .BR -v ,
-the filename, name, and description of the record actually processed are
+the filename, name, and description of those records actually processed are
 listed to standard error.
 .TP
 .BI -s " suffix"
