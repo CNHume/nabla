@@ -189,7 +189,7 @@ A
 .I record_id
 names a FASTA record, as described below; without
 .BR -q ,
-file2's first record is used.
+the first record of file2 will be used by default.
 .TP
 .B -Q
 Treat
@@ -208,15 +208,19 @@ A
 .I record_id
 names a FASTA record, as described below; without
 .BR -r ,
-file1's first record is used.
+the first record of file1 will be used by default.
 .PP
-A
+A FASTA
 .I record_id
-names a FASTA record in either of two ways.  It is a 1-based index, or it is a
-record name: an exact, case-sensitive match on the identifier, the first
-whitespace-delimited token of the '>' defline.  A leading
-.B =
-forces name interpretation, so a record whose name is all digits is written
+identifies a record in one of two ways: If it is a numeric string, it is
+interpreted as a 1-based record index.  Otherwise it will be interpreted as a
+record name.  A valid record name must be an exact, case-sensitive match on
+the identifier, the first whitespace-delimited token of the '>' defline.
+Record names may be preceded by an equal sign
+.B (=)
+to indicate that the subsequent string is to be interpreted as a record name,
+even if it may appear to be a numeric string.  So a record whose name is all
+digits is written
 .BR \-q " =42"
 or
 .BR \-r " =42" ,
