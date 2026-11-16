@@ -211,10 +211,7 @@ identifies a record in one of two ways: If it is a numeric string, it is
 interpreted as a 1-based record index.  Otherwise it will be interpreted as a
 record name.  A valid record name must be an exact, case-sensitive match on
 the identifier, the first whitespace-delimited token of the '>' definition
-line (defline).  Under
-.BR -v ,
-the filename, name, and description of the record actually processed are
-listed to standard error.
+line (defline).
 .PP
 Record names may be preceded by an equal sign
 .B (=)
@@ -230,7 +227,10 @@ or
 .BR \-r " 42" .
 A
 .I record_id
-that matches no record is an error.
+that matches no record is an error.  Under
+.BR -v ,
+the filename, name, and description of the record actually processed are
+listed to standard error.
 .TP
 .BI -s " suffix"
 Print
