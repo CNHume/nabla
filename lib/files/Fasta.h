@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, see <https://www.gnu.org/licenses/>.
 //
-// 2026-11-15 CNHume  Created FastaInfo class
+// 2026-11-15 CNHume  Created Fasta class
 //
 #pragma once
 
@@ -23,13 +23,13 @@
 namespace lcs::files {
 
   //
-  // FastaInfo parses one FASTA file's text.  Only the first record's sequence
-  // is used; every additional record is ignored.  Each record's '>' defline is
+  // Fasta parses one FASTA file's text.  Only the first record's sequence is
+  // used; every additional record is ignored.  Each record's '>' defline is
   // split at its first whitespace run into a name (the identifier) and a
   // description (the remainder); the name is not subdivided further, so
   // pipe-delimited identifiers such as gi|...|ref|... are kept intact.
   //
-  class FastaInfo {
+  class Fasta {
   public:
     //
     // A FASTA record's '>' defline.
@@ -42,7 +42,7 @@ namespace lcs::files {
     //
     // Parse text, moving it in; filename names the source for reporting.
     //
-    FastaInfo(const std::string& filename, std::u32string text);
+    Fasta(const std::string& filename, std::u32string text);
 
     const std::string& Filename() const { return filename_; }
     const std::vector<Record>& Records() const { return records_; }
@@ -53,9 +53,14 @@ namespace lcs::files {
     std::u32string TakeSequence() { return std::move(sequence_); }
 
     //
-    // Report the processed record under -v and warn for every ignored record.
+    // Report the processed record; call only under -v.
     //
-    void Show(bool isverbose) const;
+    void Show() const;
+
+    //
+    // Warn for every record that is not processed; call unconditionally.
+    //
+    void WarnExtra() const;
 
   private:
     std::string filename_;

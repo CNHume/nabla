@@ -20,7 +20,7 @@
 //
 #include "doctest/doctest.h"
 #include "modes/Text.h"
-#include "files/FastaInfo.h"
+#include "files/Fasta.h"
 #include "lcs/Delta.h"
 #include "algorithms/Myers.h"
 #include "modes/Record.h"
@@ -189,56 +189,56 @@ TEST_CASE("Myers aborts when the edit distance exceeds its budget") {
     std::runtime_error);
 }
 
-TEST_CASE("FastaInfo keeps the first record and reports name/description") {
+TEST_CASE("Fasta keeps the first record and reports name/description") {
   // Single record with description: name and description split on whitespace.
   {
-    files::FastaInfo info("chr21.fa", toU32(">chr21 chromosome 21\nACGT\nACGT\n"));
-    REQUIRE(info.Records().size() == 1);
-    CHECK(info.Records()[0].name == "chr21");
-    CHECK(info.Records()[0].description == "chromosome 21");
-    CHECK(info.TakeSequence() == toU32("ACGTACGT"));
+    files::Fasta fasta("chr21.fa", toU32(">chr21 chromosome 21\nACGT\nACGT\n"));
+    REQUIRE(fasta.Records().size() == 1);
+    CHECK(fasta.Records()[0].name == "chr21");
+    CHECK(fasta.Records()[0].description == "chromosome 21");
+    CHECK(fasta.TakeSequence() == toU32("ACGTACGT"));
   }
   // Pipe-delimited identifier: kept whole, since no delimiter is presupposed.
   {
-    files::FastaInfo info(
+    files::Fasta fasta(
       "ecoli.fa", toU32(">gi|123|ref|NC_000913.3| Escherichia coli\nAC\n"));
-    REQUIRE(info.Records().size() == 1);
-    CHECK(info.Records()[0].name == "gi|123|ref|NC_000913.3|");
-    CHECK(info.Records()[0].description == "Escherichia coli");
-    CHECK(info.TakeSequence() == toU32("AC"));
+    REQUIRE(fasta.Records().size() == 1);
+    CHECK(fasta.Records()[0].name == "gi|123|ref|NC_000913.3|");
+    CHECK(fasta.Records()[0].description == "Escherichia coli");
+    CHECK(fasta.TakeSequence() == toU32("AC"));
   }
   // Multi-record FASTA: only the first record is used; the second is ignored.
   {
-    files::FastaInfo info("multi.fa", toU32(">a\nAC\n>b desc\nGT\n"));
-    REQUIRE(info.Records().size() == 2);
-    CHECK(info.Records()[0].name == "a");
-    CHECK(info.Records()[0].description.empty());
-    CHECK(info.Records()[1].name == "b");
-    CHECK(info.Records()[1].description == "desc");
-    CHECK(info.TakeSequence() == toU32("AC"));
+    files::Fasta fasta("multi.fa", toU32(">a\nAC\n>b desc\nGT\n"));
+    REQUIRE(fasta.Records().size() == 2);
+    CHECK(fasta.Records()[0].name == "a");
+    CHECK(fasta.Records()[0].description.empty());
+    CHECK(fasta.Records()[1].name == "b");
+    CHECK(fasta.Records()[1].description == "desc");
+    CHECK(fasta.TakeSequence() == toU32("AC"));
   }
   // Three records: the vector holds all of them; the last two are ignored.
   {
-    files::FastaInfo info("three.fa", toU32(">a\nAC\n>b\nGT\n>c\nTT\n"));
-    REQUIRE(info.Records().size() == 3);
-    CHECK(info.Records()[0].name == "a");
-    CHECK(info.Records()[1].name == "b");
-    CHECK(info.Records()[2].name == "c");
-    CHECK(info.TakeSequence() == toU32("AC"));
+    files::Fasta fasta("three.fa", toU32(">a\nAC\n>b\nGT\n>c\nTT\n"));
+    REQUIRE(fasta.Records().size() == 3);
+    CHECK(fasta.Records()[0].name == "a");
+    CHECK(fasta.Records()[1].name == "b");
+    CHECK(fasta.Records()[2].name == "c");
+    CHECK(fasta.TakeSequence() == toU32("AC"));
   }
   // CRLF header: trailing CR is trimmed from the captured defline.
   {
-    files::FastaInfo info("crlf.fa", toU32(">chr21 desc\r\nACGT\n"));
-    REQUIRE(info.Records().size() == 1);
-    CHECK(info.Records()[0].name == "chr21");
-    CHECK(info.Records()[0].description == "desc");
-    CHECK(info.TakeSequence() == toU32("ACGT"));
+    files::Fasta fasta("crlf.fa", toU32(">chr21 desc\r\nACGT\n"));
+    REQUIRE(fasta.Records().size() == 1);
+    CHECK(fasta.Records()[0].name == "chr21");
+    CHECK(fasta.Records()[0].description == "desc");
+    CHECK(fasta.TakeSequence() == toU32("ACGT"));
   }
   // No header: empty records vector, sequence passes through.
   {
-    files::FastaInfo info("plain.fa", toU32("ACGT\n"));
-    CHECK(info.Records().empty());
-    CHECK(info.TakeSequence() == toU32("ACGT"));
+    files::Fasta fasta("plain.fa", toU32("ACGT\n"));
+    CHECK(fasta.Records().empty());
+    CHECK(fasta.TakeSequence() == toU32("ACGT"));
   }
 }
 

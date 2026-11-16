@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, see <https://www.gnu.org/licenses/>.
 //
-// 2026-11-15 CNHume  Created FastaInfo class
+// 2026-11-15 CNHume  Created Fasta class
 //
-#include "files/FastaInfo.h"
+#include "files/Fasta.h"
 #include "files/Encoding.h"
 
 #include <format>                       // for format
@@ -28,7 +28,7 @@ using namespace lcs;
 
 namespace lcs::files {
 
-FastaInfo::FastaInfo(const string& filename, u32string text) {
+Fasta::Fasta(const string& filename, u32string text) {
   filename_ = filename;
   sequence_.reserve(text.size());
   auto n = text.size();
@@ -86,19 +86,19 @@ FastaInfo::FastaInfo(const string& filename, u32string text) {
   }
 }
 
-void FastaInfo::Show(bool isverbose) const {
+void Fasta::Show() const {
   if (records_.empty()) {
-    if (isverbose)
-      cerr << format("{}: (no FASTA header)\n", filename_);
+    cerr << format("{}: (no FASTA header)\n", filename_);
     return;
   }
-  if (isverbose) {
-    const auto& used = records_[0];
-    if (used.description.empty())
-      cerr << format("{}: >{}\n", filename_, used.name);
-    else
-      cerr << format("{}: >{} {}\n", filename_, used.name, used.description);
-  }
+  const auto& used = records_[0];
+  if (used.description.empty())
+    cerr << format("{}: >{}\n", filename_, used.name);
+  else
+    cerr << format("{}: >{} {}\n", filename_, used.name, used.description);
+}
+
+void Fasta::WarnExtra() const {
   for (size_t k = 1; k < records_.size(); ++k) {
     const auto& ignored = records_[k];
     if (ignored.description.empty())
