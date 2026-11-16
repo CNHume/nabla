@@ -50,19 +50,24 @@ namespace lcs::modes {
       bool ignorecase = false, bool ignorespace = false, bool isverbose = false);
 
     //
-    // FastaInfo describes the FASTA input to StripFasta().  The first '>'
-    // defline is split at its first whitespace run into an identifier (name)
-    // and the remainder (description); the name is not subdivided further, so
-    // pipe-delimited identifiers such as gi|...|ref|... are kept intact.  Any
-    // additional records are ignored and their deflines collected.  A file
-    // with no FASTA header has recordCount == 0 and an empty name.
+    // FastaRecord describes one FASTA record's '>' defline: the name (first
+    // whitespace-delimited token) and the description (the remainder).  The
+    // name is not subdivided further, so pipe-delimited identifiers such as
+    // gi|...|ref|... are kept intact.
+    //
+    struct FastaRecord {
+      std::string name;                  // first token of the '>' defline
+      std::string description;           // remainder of the defline after the name
+    };
+
+    //
+    // FastaInfo describes the FASTA input to StripFasta().  records[0] is the
+    // record that is used; any later records are ignored.  The vector's size
+    // is the record count.  A file with no FASTA header yields an empty vector.
     //
     struct FastaInfo {
       std::string filename;              // source file, set by the caller
-      std::string name;                  // first token of the '>' defline
-      std::string description;           // remainder of the defline after the name
-      std::uint64_t recordCount = 0;     // number of '>' header lines
-      std::vector<std::string> ignored;  // deflines of records after the first
+      std::vector<FastaRecord> records;
     };
 
     static std::u32string Read(const std::string& filename);

@@ -33,39 +33,43 @@ using namespace lcs::files;
 
 namespace {
   //
-  // Report one file argument's FASTA records.  The first (used) record's
-  // filename, name, and description are listed under -v, as are the deflines
-  // of any additional records, which are ignored.  Whenever -F is given and a
-  // file holds extra records, a warning naming the filename and the used
-  // record's name is emitted, so the context is clear even without -v.
+  // Report one file argument's FASTA records.  Under -v the filename and every
+  // record's name and description are listed.  Whenever -F is given and a file
+  // holds extra records, a warning identifies the first ignored record (the
+  // second record) and its description, so the context is clear without -v.
   //
   void ReportFastaHeader(const modes::Text::FastaInfo& info, bool isverbose) {
     const auto& filename = info.filename;
-    if (info.recordCount == 0) {
+    if (info.records.empty()) {
       if (isverbose)
         cerr << format("{}: (no FASTA header)\n", filename);
       return;
     }
     if (isverbose) {
-      if (info.description.empty())
-        cerr << format("{}: >{}\n", filename, info.name);
-      else
-        cerr << format("{}: >{} {}\n", filename, info.name, info.description);
+      for (const auto& record : info.records) {
+        if (record.description.empty())
+          cerr << format("{}: >{}\n", filename, record.name);
+        else
+          cerr << format("{}: >{} {}\n", filename, record.name, record.description);
+      }
     }
-    if (info.recordCount > 1) {
-      cerr << format(
-        "{}: Warning: Additional FASTA record ignored (first record: {})\n",
-        filename, info.name);
-      if (isverbose)
-        for (const auto& defline : info.ignored)
-          cerr << format("{}: >{}\n", filename, defline);
+    if (info.records.size() > 1) {
+      const auto& ignored = info.records[1];
+      if (ignored.description.empty())
+        cerr << format(
+          "{}: Warning: Additional FASTA record ignored (record: {})\n",
+          filename, ignored.name);
+      else
+        cerr << format(
+          "{}: Warning: Additional FASTA record ignored (record: {} {})\n",
+          filename, ignored.name, ignored.description);
     }
   }
 
   //
   // Strip FASTA headers from one text file, keeping only the first record.
-  // The record count is needed for the warning even without -v, so info is
-  // always collected; filename is filled in for reporting.
+  // The records are needed for the warning even without -v, so info is always
+  // collected; filename is filled in for reporting.
   //
   u32string PrepareFasta(const string& filename, const u32string& raw, bool isverbose) {
     modes::Text::FastaInfo info;

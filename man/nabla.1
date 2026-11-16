@@ -131,9 +131,9 @@ Treat the input files as FASTA and strip header lines; implies
 .BR -T .
 Only the first FASTA record of each file is used; any additional records are
 ignored, with a warning to standard error naming the file and the first
-record's name.  A FASTA defline is split at its first whitespace run into a
-name (the identifier) and a description; the name is not subdivided further,
-since a delimiter such as
+ignored record (the second record), along with its description.  A FASTA
+defline is split at its first whitespace run into a name (the identifier) and
+a description; the name is not subdivided further, since a delimiter such as
 .B |
 cannot be presupposed.  Under
 .BR -v ,

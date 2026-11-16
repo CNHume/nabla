@@ -194,10 +194,9 @@ TEST_CASE("StripFasta keeps the first record and reports name/description") {
     modes::Text::FastaInfo info;
     auto seq = modes::Text::StripFasta(
       toU32(">chr21 chromosome 21\nACGT\nACGT\n"), &info);
-    CHECK(info.recordCount == 1);
-    CHECK(info.name == "chr21");
-    CHECK(info.description == "chromosome 21");
-    CHECK(info.ignored.empty());
+    REQUIRE(info.records.size() == 1);
+    CHECK(info.records[0].name == "chr21");
+    CHECK(info.records[0].description == "chromosome 21");
     CHECK(seq == toU32("ACGTACGT"));
   }
   // Pipe-delimited identifier: kept whole, since no delimiter is presupposed.
@@ -205,48 +204,46 @@ TEST_CASE("StripFasta keeps the first record and reports name/description") {
     modes::Text::FastaInfo info;
     auto seq = modes::Text::StripFasta(
       toU32(">gi|123|ref|NC_000913.3| Escherichia coli\nAC\n"), &info);
-    CHECK(info.name == "gi|123|ref|NC_000913.3|");
-    CHECK(info.description == "Escherichia coli");
+    REQUIRE(info.records.size() == 1);
+    CHECK(info.records[0].name == "gi|123|ref|NC_000913.3|");
+    CHECK(info.records[0].description == "Escherichia coli");
     CHECK(seq == toU32("AC"));
   }
   // Multi-record FASTA: only the first record is used; the second is ignored.
   {
     modes::Text::FastaInfo info;
-    auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b\nGT\n"), &info);
-    CHECK(info.recordCount == 2);
-    CHECK(info.name == "a");
-    CHECK(info.description.empty());
-    REQUIRE(info.ignored.size() == 1);
-    CHECK(info.ignored[0] == "b");
+    auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b desc\nGT\n"), &info);
+    REQUIRE(info.records.size() == 2);
+    CHECK(info.records[0].name == "a");
+    CHECK(info.records[0].description.empty());
+    CHECK(info.records[1].name == "b");
+    CHECK(info.records[1].description == "desc");
     CHECK(seq == toU32("AC"));
   }
-  // Three records: the last two are both ignored.
+  // Three records: the vector holds all of them; the last two are ignored.
   {
     modes::Text::FastaInfo info;
     auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b\nGT\n>c\nTT\n"), &info);
-    CHECK(info.recordCount == 3);
-    REQUIRE(info.ignored.size() == 2);
-    CHECK(info.ignored[0] == "b");
-    CHECK(info.ignored[1] == "c");
+    REQUIRE(info.records.size() == 3);
+    CHECK(info.records[0].name == "a");
+    CHECK(info.records[1].name == "b");
+    CHECK(info.records[2].name == "c");
     CHECK(seq == toU32("AC"));
   }
   // CRLF header: trailing CR is trimmed from the captured defline.
   {
     modes::Text::FastaInfo info;
     auto seq = modes::Text::StripFasta(toU32(">chr21 desc\r\nACGT\n"), &info);
-    CHECK(info.recordCount == 1);
-    CHECK(info.name == "chr21");
-    CHECK(info.description == "desc");
+    REQUIRE(info.records.size() == 1);
+    CHECK(info.records[0].name == "chr21");
+    CHECK(info.records[0].description == "desc");
     CHECK(seq == toU32("ACGT"));
   }
-  // No header: empty name, zero count, sequence passes through.
+  // No header: empty records vector, sequence passes through.
   {
     modes::Text::FastaInfo info;
     auto seq = modes::Text::StripFasta(toU32("ACGT\n"), &info);
-    CHECK(info.recordCount == 0);
-    CHECK(info.name.empty());
-    CHECK(info.description.empty());
-    CHECK(info.ignored.empty());
+    CHECK(info.records.empty());
     CHECK(seq == toU32("ACGT"));
   }
   // Null info pointer: same first-record-only behavior, no crash.
