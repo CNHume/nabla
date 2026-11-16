@@ -129,20 +129,15 @@ differences.
 .B -F
 Treat the input files as FASTA and strip header lines; implies
 .BR -T .
-Only one FASTA record of each file is used (the first, or the one selected by
+Only one FASTA record of each file is used (either the first, or the record
+specified by a
+.I record_id
+selected by
 .BR -r
 for the reference and
 .BR -q
-for the query);
-every other record is ignored, each with its own warning to standard error
-naming the file, the record, and its description.  A FASTA defline is split at
-its first whitespace run into a name (the identifier) and a description; the
-name is not subdivided further, since a delimiter such as
-.B |
-cannot be presupposed.  Under
-.BR -v ,
-the filename, name, and description of the record actually processed are
-listed to standard error.
+for the query).  Any other FASTA records will be ignored (with a warning issued
+for each.)
 .TP
 .B -G
 Emit the (gapped) CIGAR alignment string; file1 is the reference and
@@ -215,7 +210,12 @@ A FASTA
 identifies a record in one of two ways: If it is a numeric string, it is
 interpreted as a 1-based record index.  Otherwise it will be interpreted as a
 record name.  A valid record name must be an exact, case-sensitive match on
-the identifier, the first whitespace-delimited token of the '>' defline.
+the identifier, the first whitespace-delimited token of the '>' definition
+line (defline).  Under
+.BR -v ,
+the filename, name, and description of the record actually processed are
+listed to standard error.
+.PP
 Record names may be preceded by an equal sign
 .B (=)
 to indicate that the subsequent string is to be interpreted as a record name,
