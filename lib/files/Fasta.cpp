@@ -20,6 +20,7 @@
 
 #include <format>                       // for format
 #include <iostream>                     // for cerr
+#include <locale>                       // for locale
 #include <string_view>                  // for u32string_view
 #include <utility>                      // for move
 
@@ -88,27 +89,31 @@ Fasta::Fasta(const string& filename, u32string text) {
 
 void Fasta::Show() const {
   if (records_.empty()) {
-    cerr << format("{}: (no FASTA header)\n", filename_);
+    cerr << format("{}: No FASTA Header\n", filename_);
     return;
   }
   const auto& used = records_[0];
   if (used.description.empty())
-    cerr << format("{}: >{}\n", filename_, used.name);
+    cerr << format(
+      std::locale(), "{}: {:L} >{}\n",
+      filename_, sequence_.size(), used.name);
   else
-    cerr << format("{}: >{} {}\n", filename_, used.name, used.description);
+    cerr << format(
+      std::locale(), "{}: {:L} >{} {}\n",
+      filename_, sequence_.size(), used.name, used.description);
 }
 
 void Fasta::WarnExtra() const {
   for (size_t k = 1; k < records_.size(); ++k) {
-    const auto& ignored = records_[k];
-    if (ignored.description.empty())
+    const auto& extra = records_[k];
+    if (extra.description.empty())
       cerr << format(
-        "{}: Warning: Additional FASTA record ignored (record: {})\n",
-        filename_, ignored.name);
+        "Warning: Extra FASTA record in {}: {}\n",
+        filename_, extra.name);
     else
       cerr << format(
-        "{}: Warning: Additional FASTA record ignored (record: {} {})\n",
-        filename_, ignored.name, ignored.description);
+        "Warning: Extra FASTA record in {}: {} {}\n",
+        filename_, extra.name, extra.description);
   }
 }
 

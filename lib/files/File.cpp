@@ -57,8 +57,8 @@ Length File::Correspondence(
         }
         fasta1.WarnExtra();
         fasta2.WarnExtra();
-        s1 = fasta1.TakeSequence();
-        s2 = fasta2.TakeSequence();
+        s1 = fasta1.Sequence();
+        s2 = fasta2.Sequence();
       }
     }
     length = modes::Text::Correspondence(
@@ -111,8 +111,8 @@ Length File::Difference(
         }
         fasta1.WarnExtra();
         fasta2.WarnExtra();
-        s1 = fasta1.TakeSequence();
-        s2 = fasta2.TakeSequence();
+        s1 = fasta1.Sequence();
+        s2 = fasta2.Sequence();
       }
     }
     length = modes::Text::Difference(

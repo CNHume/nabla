@@ -50,7 +50,7 @@ namespace lcs::files {
     //
     // The first record's sequence, with '>' headers and whitespace removed.
     //
-    std::u32string TakeSequence() { return std::move(sequence_); }
+    std::u32string Sequence() { return std::move(sequence_); }
 
     //
     // Report the processed record; call only under -v.

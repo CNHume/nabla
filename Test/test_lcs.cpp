@@ -196,7 +196,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "chr21");
     CHECK(fasta.Records()[0].description == "chromosome 21");
-    CHECK(fasta.TakeSequence() == toU32("ACGTACGT"));
+    CHECK(fasta.Sequence() == toU32("ACGTACGT"));
   }
   // Pipe-delimited identifier: kept whole, since no delimiter is presupposed.
   {
@@ -205,7 +205,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "gi|123|ref|NC_000913.3|");
     CHECK(fasta.Records()[0].description == "Escherichia coli");
-    CHECK(fasta.TakeSequence() == toU32("AC"));
+    CHECK(fasta.Sequence() == toU32("AC"));
   }
   // Multi-record FASTA: only the first record is used; the second is ignored.
   {
@@ -215,7 +215,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
     CHECK(fasta.Records()[0].description.empty());
     CHECK(fasta.Records()[1].name == "b");
     CHECK(fasta.Records()[1].description == "desc");
-    CHECK(fasta.TakeSequence() == toU32("AC"));
+    CHECK(fasta.Sequence() == toU32("AC"));
   }
   // Three records: the vector holds all of them; the last two are ignored.
   {
@@ -224,7 +224,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
     CHECK(fasta.Records()[0].name == "a");
     CHECK(fasta.Records()[1].name == "b");
     CHECK(fasta.Records()[2].name == "c");
-    CHECK(fasta.TakeSequence() == toU32("AC"));
+    CHECK(fasta.Sequence() == toU32("AC"));
   }
   // CRLF header: trailing CR is trimmed from the captured defline.
   {
@@ -232,13 +232,13 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "chr21");
     CHECK(fasta.Records()[0].description == "desc");
-    CHECK(fasta.TakeSequence() == toU32("ACGT"));
+    CHECK(fasta.Sequence() == toU32("ACGT"));
   }
   // No header: empty records vector, sequence passes through.
   {
     files::Fasta fasta("plain.fa", toU32("ACGT\n"));
     CHECK(fasta.Records().empty());
-    CHECK(fasta.TakeSequence() == toU32("ACGT"));
+    CHECK(fasta.Sequence() == toU32("ACGT"));
   }
 }
 
