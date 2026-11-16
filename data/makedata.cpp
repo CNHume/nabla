@@ -4,12 +4,12 @@
 //   makedata <input.fa> <output-prefix> <K1> [K2 ...]
 //
 // Reads <input.fa>, extracts the sequence (strips '>' header lines, drops
-// whitespace, uppercases) and writes it as <output-prefix>.seq — a single
-// FASTA record whose defline names the source file.  Then, for each K, it
-// applies K distinct random substitutions — each changed to a different symbol
-// drawn from the sequence's own alphabet — and writes <output-prefix>_<K>subs.seq,
-// a FASTA record whose defline records the source file and the mutation
-// parameters (the substitution count and the xorshift32 seed).
+// whitespace, uppercases) and writes it as <output-prefix>.seq — a header-free
+// plain sequence (the .seq convention).  Then, for each K, it applies K
+// distinct random substitutions — each changed to a different symbol drawn from
+// the sequence's own alphabet — and writes <output-prefix>_<K>subs.fna, a FASTA
+// record whose defline records the source file and the mutation parameters
+// (the substitution count and the xorshift32 seed).
 //
 // The generator is reseeded with the same fixed value before every K, so each
 // output is reproducible on its own from the parameters in its defline, and a
@@ -64,6 +64,12 @@ static string ReadSequence(const string& path) {
   return seq;
 }
 
+// Write a header-free plain sequence on one line (the .seq convention).
+static void WriteSequence(const string& path, const string& seq) {
+  ofstream out(path, ios::binary);
+  out << seq << '\n';
+}
+
 // Write one FASTA record: a '>' defline carrying the name and, when present, a
 // space-separated description, followed by the sequence on one line.
 static void WriteFasta(const string& path, const string& name,
@@ -85,8 +91,8 @@ int main(int argc, char** argv) {
   const string prefix = argv[2];
   auto seq = ReadSequence(source);
 
-  // The base sequence, named by its source file.
-  WriteFasta(prefix + ".seq", prefix, "source=" + source, seq);
+  // The base sequence, header-free: a plain copy of the source.
+  WriteSequence(prefix + ".seq", seq);
 
   // The sequence's own distinct symbols, used for substitutions.
   vector<char> symbols(seq.begin(), seq.end());
@@ -129,7 +135,7 @@ int main(int argc, char** argv) {
     string name = prefix + "_" + to_string(K) + "subs";
     string description = "source=" + source + " subs=" + to_string(K) +
                          " seed=" + seedBuf;
-    WriteFasta(prefix + "_" + to_string(K) + "subs.seq", name, description, mut);
+    WriteFasta(prefix + "_" + to_string(K) + "subs.fna", name, description, mut);
   }
   return 0;
 }

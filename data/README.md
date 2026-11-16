@@ -27,33 +27,34 @@ g++ -std=c++20 -O2 -Wall -Wextra makedata.cpp -o makedata
 ./makedata ecoli_mg1655.fna ecoli_mg1655 100 1000 10000
 ```
 
-Every output is a FASTA record whose defline records its provenance.  This
-writes `ecoli_mg1655.seq` (the extracted sequence, one line, uppercased) with a
-defline naming the source file, and, for each K, `ecoli_mg1655_<K>subs.seq` —
-K distinct positions changed to a *different* symbol drawn from the sequence's
-own alphabet — whose defline records the source and the mutation parameters
-(the substitution count and the xorshift32 seed).  The generator is reseeded
-with the same fixed value for each K, so every output is reproducible on its
-own, a given input reproduces identical mutants on any platform, and each
-larger K nests over the smaller K values.
+This writes `ecoli_mg1655.seq` — the extracted sequence as a header-free plain
+`.seq` (one line, uppercased) — and, for each K, `ecoli_mg1655_<K>subs.fna`, a
+FASTA record whose defline records the source and the mutation parameters (the
+substitution count and the xorshift32 seed).  K distinct positions are changed
+to a *different* symbol drawn from the sequence's own alphabet.  The generator
+is reseeded with the same fixed value for each K, so every output is
+reproducible on its own, a given input reproduces identical mutants on any
+platform, and each larger K nests over the smaller K values.
 
 ## Naming convention
 
-Files follow `<name>[_<prefix>][_<mutant>].seq`, each a FASTA record — a `>`
-defline followed by the one-line sequence:
+A `.seq` file is a header-free plain sequence; a `.fna` file is FASTA — a `>`
+defline followed by the one-line sequence.  Files follow
+`<name>[_<prefix>][_<mutant>]` with the matching extension:
 
-- `<name>.seq` — the extracted sequence (one line).
+- `<name>.seq` — the extracted sequence (one line, no defline).
 - `<name>_16M.seq`, `_4M.seq`, `_100K.seq` — the first 16M / 4M / 100K symbols
-  (a truncation of the `.seq`, dropping its defline).
-- `<name>_<K>subs.seq` — K random substitutions (from `makedata.cpp`).
-- `<name>_999permil.seq` — ≈ 99.9% identity (about one symbol in 1,000 changed).
+  (a truncation of the `.seq`).
+- `<name>_<K>subs.fna` — K random substitutions (from `makedata.cpp`), whose
+  defline records the source and the mutation parameters.
+- `<name>_999permil.fna` — ≈ 99.9% identity (about one symbol in 1,000 changed).
 
-`makedata.cpp` produces the base `.seq` and the `_<K>subs` mutants directly;
-the prefix and `999permil` variants are further simple steps over the `.seq`
+`makedata.cpp` produces the base `.seq` and the `_<K>subs.fna` mutants directly;
+the prefix and `999permil` variants are further simple steps over the base
 files.
 
 ## Example
 
 ```
-nabla -As -C -F ecoli_mg1655.seq ecoli_mg1655_100subs.seq
+nabla -As -C -F ecoli_mg1655.seq ecoli_mg1655_100subs.fna
 ```
