@@ -17,17 +17,19 @@
 //
 #pragma once
 
+#include <cstdint>                      // for uint32_t
 #include <string>                       // for string, u32string
 #include <vector>                       // for vector
 
 namespace lcs::files {
 
   //
-  // Fasta parses one FASTA file's text.  Only the first record's sequence is
-  // used; every additional record is ignored.  Each record's '>' defline is
-  // split at its first whitespace run into a name (the identifier) and a
-  // description (the remainder); the name is not subdivided further, so
-  // pipe-delimited identifiers such as gi|...|ref|... are kept intact.
+  // Fasta parses one FASTA file's text.  One record's sequence is used — the
+  // first, or the one named by recordName / numbered by recordIndex — and
+  // every other record is ignored.  Each record's '>' defline is split at its
+  // first whitespace run into a name (the identifier) and a description (the
+  // remainder); the name is not subdivided further, so pipe-delimited
+  // identifiers such as gi|...|ref|... are kept intact.
   //
   class Fasta {
   public:
@@ -40,32 +42,38 @@ namespace lcs::files {
     };
 
     //
-    // Parse text, moving it in; filename names the source for reporting.
+    // Parse text, moving it in; filename names the source for reporting.  When
+    // recordIndex is non-zero it selects a 1-based record; otherwise a non-empty
+    // recordName selects the first record with that exact name.  With neither,
+    // the first record is used.
     //
-    Fasta(const std::string& filename, std::u32string text);
+    Fasta(
+      const std::string& filename, std::u32string text,
+      const std::string& recordName = {}, std::uint32_t recordIndex = 0);
 
     const std::string& Filename() const { return filename_; }
     const std::vector<Record>& Records() const { return records_; }
 
     //
-    // The first record's sequence, with '>' headers and whitespace removed.
+    // The selected record's sequence, with '>' headers and whitespace removed.
     //
     std::u32string Sequence() { return std::move(sequence_); }
 
     //
-    // Report the processed record; call only under -v.
+    // Report the selected record; call only under -v.
     //
     void Show() const;
 
     //
-    // Warn for every record that is not processed; call unconditionally.
+    // Warn for every record that is not selected; call unconditionally.
     //
-    void WarnExtra() const;
+    void WarnIgnored() const;
 
   private:
     std::string filename_;
     std::u32string sequence_;
     std::vector<Record> records_;
+    std::size_t selected_ = 0;           // index of the record actually used
   };
 
 } // namespace lcs::files

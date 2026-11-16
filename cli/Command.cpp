@@ -38,8 +38,8 @@ using namespace lcs;
 namespace {
   constexpr const char* usageSynopsis =
     "Usage: nabla [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] "
-    "[-j <join>] [-l] [-p <prefix>] [-P] [-Q] [-s <suffix>] [-t <tabsize>] "
-    "[-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] file1 file2";
+    "[-j <join>] [-l] [-p <prefix>] [-P] [-Q] [-R <record>] [-s <suffix>] "
+    "[-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] file1 file2";
 
   constexpr uint32_t edit_context_affix = 3;  // -u default context
 }
@@ -228,6 +228,31 @@ void Command::Parse(int argc, char* argv[]) {
         }
         break;
 
+      case 'R':                         // the FASTA record switch
+        {
+          const char* value = nullptr;
+          if (len > 2)                  // whitespace optional
+            value = &token[2];
+          else if (n + 1 < argc)        // whitespace allowed
+            value = argv[++n];
+          else
+            usage = true;
+          if (value != nullptr) {
+            //
+            // An argument that parses as an unsigned integer is a 1-based
+            // record index; anything else is a record name.
+            //
+            char* pEnd = nullptr;
+            errno = 0;
+            auto index = strtoul(value, &pEnd, 10);
+            if (errno == 0 && pEnd != value && *pEnd == '\0')
+              recordIndex = (uint32_t)index;
+            else
+              recordName = value;
+          }
+        }
+        break;
+
       case 's':                         // the suffix switch
         if (len > 2)                    // whitespace optional
           suffix = parse_uint32(&token[2], "suffix");
@@ -331,6 +356,10 @@ void Command::Parse(int argc, char* argv[]) {
   if (iscorrespondence && isgapped)
     throw invalid_argument(
       "-C (correspondence) cannot be combined with -G (CIGAR)");
+
+  // -R selects a FASTA record, so it requires -F.
+  if ((!recordName.empty() || recordIndex != 0) && !isfasta)
+    throw invalid_argument("-R (record) requires -F (FASTA)");
 
   // The output-format switches are mutually exclusive.
   if ((isparallel && isgapped) ||

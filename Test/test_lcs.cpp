@@ -242,6 +242,42 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
 }
 
+TEST_CASE("Fasta selects a record by index or name") {
+  const auto text = toU32(">a\nAC\n>b desc\nGTAC\n>c\nTT\n");
+  // 1-based index selects the third record.
+  {
+    files::Fasta fasta("multi.fa", text, {}, 3);
+    REQUIRE(fasta.Records().size() == 3);
+    CHECK(fasta.Sequence() == toU32("TT"));
+  }
+  // Name selects the matching record (exact identifier match).
+  {
+    files::Fasta fasta("multi.fa", text, "b");
+    CHECK(fasta.Sequence() == toU32("GTAC"));
+  }
+  // Pipe-delimited name selects its record whole.
+  {
+    files::Fasta fasta(
+      "ecoli.fa", toU32(">a\nAC\n>gi|1|ref|NC|\nGT\n"), "gi|1|ref|NC|");
+    CHECK(fasta.Sequence() == toU32("GT"));
+  }
+  // Index out of range throws.
+  {
+    CHECK_THROWS_AS(
+      (files::Fasta("multi.fa", text, {}, 4)), std::runtime_error);
+  }
+  // Name not found throws.
+  {
+    CHECK_THROWS_AS(
+      (files::Fasta("multi.fa", text, "zzz")), std::runtime_error);
+  }
+  // Index zero is treated as "no index": the first record is used.
+  {
+    files::Fasta fasta("multi.fa", text, {}, 0);
+    CHECK(fasta.Sequence() == toU32("AC"));
+  }
+}
+
 TEST_CASE("automatic dispatch returns a correct LCS") {
   // -Aa should select a working algorithm: the length and trace must match the
   // O(m*n) DP reference regardless of which algorithm it picks.

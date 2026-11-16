@@ -49,14 +49,14 @@ Length File::Correspondence(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        Fasta fasta1(options.file1, std::move(s1));
-        Fasta fasta2(options.file2, std::move(s2));
+        Fasta fasta1(options.file1, std::move(s1), options.recordName, options.recordIndex);
+        Fasta fasta2(options.file2, std::move(s2), options.recordName, options.recordIndex);
         if (options.isverbose) {
           fasta1.Show();
           fasta2.Show();
         }
-        fasta1.WarnExtra();
-        fasta2.WarnExtra();
+        fasta1.WarnIgnored();
+        fasta2.WarnIgnored();
         s1 = fasta1.Sequence();
         s2 = fasta2.Sequence();
       }
@@ -103,14 +103,14 @@ Length File::Difference(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        Fasta fasta1(options.file1, std::move(s1));
-        Fasta fasta2(options.file2, std::move(s2));
+        Fasta fasta1(options.file1, std::move(s1), options.recordName, options.recordIndex);
+        Fasta fasta2(options.file2, std::move(s2), options.recordName, options.recordIndex);
         if (options.isverbose) {
           fasta1.Show();
           fasta2.Show();
         }
-        fasta1.WarnExtra();
-        fasta2.WarnExtra();
+        fasta1.WarnIgnored();
+        fasta2.WarnIgnored();
         s1 = fasta1.Sequence();
         s2 = fasta2.Sequence();
       }

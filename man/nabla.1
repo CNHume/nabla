@@ -129,11 +129,12 @@ differences.
 .B -F
 Treat the input files as FASTA and strip header lines; implies
 .BR -T .
-Only the first FASTA record of each file is used; every additional record is
-ignored, each with its own warning to standard error naming the file, the
-record, and its description.  A FASTA defline is split at its first whitespace
-run into a name (the identifier) and a description; the name is not subdivided
-further, since a delimiter such as
+Only one FASTA record of each file is used (the first, or the one selected by
+.BR -R );
+every other record is ignored, each with its own warning to standard error
+naming the file, the record, and its description.  A FASTA defline is split at
+its first whitespace run into a name (the identifier) and a description; the
+name is not subdivided further, since a delimiter such as
 .B |
 cannot be presupposed.  Under
 .BR -v ,
@@ -183,6 +184,15 @@ and
 .I file2
 as literal strings rather than filenames; implies
 .BR -T .
+.TP
+.BI -R " record"
+Select which FASTA record of each file is used; requires
+.BR -F .
+.I record
+may be a 1-based index or a record name (an exact, case-sensitive match on the
+identifier, the first token of the '>' defline).  Without
+.BR -R ,
+the first record is used.  A selection that matches no record is an error.
 .TP
 .BI -s " suffix"
 Print
