@@ -188,22 +188,35 @@ TEST_CASE("Myers aborts when the edit distance exceeds its budget") {
     std::runtime_error);
 }
 
-TEST_CASE("StripFasta reports the first header and counts records") {
-  // Single record: header captured, count == 1.
+TEST_CASE("StripFasta keeps the first record and reports the rest") {
+  // Single record: header captured, count == 1, no ignored records.
   {
     modes::Text::FastaInfo info;
     auto seq = modes::Text::StripFasta(toU32(">chr21\nACGT\nACGT\n"), &info);
     CHECK(info.recordCount == 1);
     CHECK(info.header == toU32("chr21"));
+    CHECK(info.ignored.empty());
     CHECK(seq == toU32("ACGTACGT"));
   }
-  // Multi-record FASTA: first header captured, count reflects concatenation.
+  // Multi-record FASTA: only the first record is used; the second is ignored.
   {
     modes::Text::FastaInfo info;
     auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b\nGT\n"), &info);
     CHECK(info.recordCount == 2);
     CHECK(info.header == toU32("a"));
-    CHECK(seq == toU32("ACGT"));
+    REQUIRE(info.ignored.size() == 1);
+    CHECK(info.ignored[0] == toU32("b"));
+    CHECK(seq == toU32("AC"));
+  }
+  // Three records: the last two are both ignored.
+  {
+    modes::Text::FastaInfo info;
+    auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b\nGT\n>c\nTT\n"), &info);
+    CHECK(info.recordCount == 3);
+    REQUIRE(info.ignored.size() == 2);
+    CHECK(info.ignored[0] == toU32("b"));
+    CHECK(info.ignored[1] == toU32("c"));
+    CHECK(seq == toU32("AC"));
   }
   // CRLF header: trailing CR is trimmed from the captured defline.
   {
@@ -219,12 +232,13 @@ TEST_CASE("StripFasta reports the first header and counts records") {
     auto seq = modes::Text::StripFasta(toU32("ACGT\n"), &info);
     CHECK(info.recordCount == 0);
     CHECK(info.header.empty());
+    CHECK(info.ignored.empty());
     CHECK(seq == toU32("ACGT"));
   }
-  // Null info pointer: original concatenate behavior, no crash.
+  // Null info pointer: same first-record-only behavior, no crash.
   {
     auto seq = modes::Text::StripFasta(toU32(">a\nAC\n>b\nGT\n"));
-    CHECK(seq == toU32("ACGT"));
+    CHECK(seq == toU32("AC"));
   }
 }
 

@@ -33,29 +33,36 @@ using namespace lcs::files;
 
 namespace {
   //
-  // Report one file argument's FASTA header under -v, and warn when the file
-  // holds several FASTA records that StripFasta() concatenated.
+  // Report one file argument's FASTA records.  The first (used) defline is
+  // listed under -v, as are the deflines of any additional records, which are
+  // ignored.  Whenever -F is given and a file holds extra records, a warning
+  // is emitted.
   //
-  void ReportFastaHeader(const string& filename, const modes::Text::FastaInfo& info) {
-    if (info.recordCount == 0)
-      cerr << format("{}: (no FASTA header)\n", filename);
-    else {
+  void ReportFastaHeader(const string& filename, const modes::Text::FastaInfo& info, bool isverbose) {
+    if (info.recordCount == 0) {
+      if (isverbose)
+        cerr << format("{}: (no FASTA header)\n", filename);
+      return;
+    }
+    if (isverbose)
       cerr << format("{}: >{}\n", filename, Encoding::ToUtf8(info.header));
-      if (info.recordCount > 1)
-        cerr << format(
-          "{}: Warning: {} FASTA records; concatenated\n",
-          filename, info.recordCount);
+    if (info.recordCount > 1) {
+      cerr << format("Warning: Additional FASTA record ignored\n");
+      if (isverbose)
+        for (const auto& defline : info.ignored)
+          cerr << format("{}: >{}\n", filename, Encoding::ToUtf8(defline));
     }
   }
 
   //
-  // Strip FASTA headers from one text file, reporting them under -v.
+  // Strip FASTA headers from one text file, keeping only the first record.
+  // The record count is needed for the warning even without -v, so info is
+  // always collected.
   //
   u32string PrepareFasta(const string& filename, const u32string& raw, bool isverbose) {
     modes::Text::FastaInfo info;
-    auto text = modes::Text::StripFasta(raw, isverbose ? &info : nullptr);
-    if (isverbose)
-      ReportFastaHeader(filename, info);
+    auto text = modes::Text::StripFasta(raw, &info);
+    ReportFastaHeader(filename, info, isverbose);
     return text;
   }
 }

@@ -50,13 +50,15 @@ namespace lcs::modes {
       bool ignorecase = false, bool ignorespace = false, bool isverbose = false);
 
     //
-    // FastaInfo reports the FASTA header lines StripFasta() removes: the first
-    // '>' header (defline) and the number of '>' header lines seen.  A file
-    // with no FASTA header has recordCount == 0 and an empty header.
+    // FastaInfo reports the FASTA records StripFasta() encounters: the first
+    // '>' defline (which is used) and the deflines of any additional records
+    // (which are ignored).  A file with no FASTA header has recordCount == 0
+    // and an empty header.
     //
     struct FastaInfo {
       std::u32string header;             // first '>' defline, without the '>'
       std::uint64_t recordCount = 0;     // number of '>' header lines
+      std::vector<std::u32string> ignored; // deflines of records after the first
     };
 
     static std::u32string Read(const std::string& filename);

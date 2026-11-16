@@ -72,8 +72,8 @@ thread.
   machinery (record cursor, top-k heap, directory handling, ranking output) is
   orchestration, not LCS.  So this should be a second thin executable (e.g.
   `nabla-score`) that loops `lib/`'s per-pair `Find` over candidates, leaving the
-  single-pair `nabla` CLI untouched; `StripFasta` stays concatenate-only and the
-  cursor lives in the new tool.  The scoring is exact, not search: no database
+  single-pair `nabla` CLI untouched; `StripFasta` stays first-record-only and
+  the cursor lives in the new tool.  The scoring is exact, not search: no database
   index, no seeding, no heuristics; file1 = reference shortlist, file2 = query,
   preserving the -G roles.  The query (file2) side is fixed, so its preprocessing
   is amortized across candidates: Hunt-Szymanski's `columnsMatchedByChar` (keyed

@@ -327,49 +327,56 @@ u32string Text::Read(const string& filename) {
 
 //
 // StripFasta() removes FASTA header lines, which begin with '>' in column
-// zero, and joins the remaining sequence lines into a single string with
-// whitespace removed.  Wrapped sequence is thereby unrolled into one
-// unbroken sequence, and multi-FASTA records are concatenated.
+// zero, and joins the first record's sequence lines into a single string with
+// whitespace removed.  Wrapped sequence is thereby unrolled into one unbroken
+// sequence.  Only the first FASTA record is used: additional records, each
+// introduced by a further '>' header, are ignored.
 //
-// When info is non-null, the first '>' defline is captured in info->header
-// and every '>' header line is counted in info->recordCount, so the caller
-// can report the header (and detect concatenated records) under -v.
+// When info is non-null, the first '>' defline is captured in info->header,
+// the deflines of any ignored records in info->ignored, and the total number
+// of '>' header lines in info->recordCount, so the caller can report the used
+// header and the ignored records.
 //
 u32string Text::StripFasta(const u32string& s, FastaInfo* info) {
   u32string buffer;
   buffer.reserve(s.size());
   auto n = s.size();
   size_t i = 0;
+  size_t records = 0;                  // '>' header lines seen
   while (i < n) {
     auto j = s.find(U'\n', i);
     if (j == u32string::npos)
       j = n;
-    if (i < j && s[i] != U'>') {        // sequence line
-      for (auto k = i; k < j; k++) {
-        auto c = s[k];
-        if (U" \t\r"sv.find(c) == std::u32string_view::npos)
-          buffer.push_back(c);
+    if (i < j && s[i] != U'>') {       // sequence line
+      if (records < 2) {               // first record only
+        for (auto k = i; k < j; k++) {
+          auto c = s[k];
+          if (U" \t\r"sv.find(c) == std::u32string_view::npos)
+            buffer.push_back(c);
+        }
       }
     }
-    else if (info != nullptr && i < j) { // header line (s[i] == U'>')
-      if (info->recordCount == 0) {
-        //
-        // First header: capture the defline after '>', trimming a trailing
-        // CR so a CRLF header reports cleanly.
-        //
+    else if (i < j) {                  // header line (s[i] == U'>')
+      records++;
+      if (info != nullptr) {
         auto begin = i + 1;
         auto end = j;
         while (end > begin && s[end - 1] == U'\r')
           end--;
-        info->header.assign(s.begin() + begin, s.begin() + end);
+        auto defline = u32string(s.begin() + begin, s.begin() + end);
+        if (records == 1)
+          info->header = std::move(defline);
+        else
+          info->ignored.push_back(std::move(defline));
       }
-      info->recordCount++;
     }
 
     // advance past the line terminator
     i = j < n ?
       j + 1 : n;
   }
+  if (info != nullptr)
+    info->recordCount = records;
   return buffer;
 }
 
