@@ -18,67 +18,18 @@
 //
 #include "files/File.h"
 #include "files/Encoding.h"
+#include "files/FastaInfo.h"
 #include "formatters/Edit.h"
 #include "formatters/RecordDriver.h"
 #include "formatters/TextDriver.h"
 #include "modes/Record.h"
 #include "modes/Text.h"
 
-#include <format>                       // for format
-#include <iostream>                     // for cerr
+#include <utility>                      // for move
 
 using namespace std;
 using namespace lcs;
 using namespace lcs::files;
-
-namespace {
-  //
-  // Report one file argument's FASTA records.  Under -v only the record that
-  // is actually processed (the first) is listed, with its filename, name, and
-  // description.  Every record that is not processed gets its own warning,
-  // naming the file, the record, and its description, so the context is clear
-  // without -v.
-  //
-  void ReportFastaHeader(const modes::Text::FastaInfo& info, bool isverbose) {
-    const auto& filename = info.filename;
-    if (info.records.empty()) {
-      if (isverbose)
-        cerr << format("{}: (no FASTA header)\n", filename);
-      return;
-    }
-    if (isverbose) {
-      const auto& used = info.records[0];
-      if (used.description.empty())
-        cerr << format("{}: >{}\n", filename, used.name);
-      else
-        cerr << format("{}: >{} {}\n", filename, used.name, used.description);
-    }
-    for (size_t k = 1; k < info.records.size(); ++k) {
-      const auto& ignored = info.records[k];
-      if (ignored.description.empty())
-        cerr << format(
-          "{}: Warning: Additional FASTA record ignored (record: {})\n",
-          filename, ignored.name);
-      else
-        cerr << format(
-          "{}: Warning: Additional FASTA record ignored (record: {} {})\n",
-          filename, ignored.name, ignored.description);
-    }
-  }
-
-  //
-  // Strip FASTA headers from one text file, keeping only the first record.
-  // The records are needed for the warning even without -v, so info is always
-  // collected; filename is filled in for reporting.
-  //
-  u32string PrepareFasta(const string& filename, const u32string& raw, bool isverbose) {
-    modes::Text::FastaInfo info;
-    info.filename = filename;
-    auto text = modes::Text::StripFasta(raw, &info);
-    ReportFastaHeader(info, isverbose);
-    return text;
-  }
-}
 
 Length File::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
@@ -98,8 +49,12 @@ Length File::Correspondence(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        s1 = PrepareFasta(options.file1, s1, options.isverbose);
-        s2 = PrepareFasta(options.file2, s2, options.isverbose);
+        FastaInfo info1(options.file1, std::move(s1));
+        FastaInfo info2(options.file2, std::move(s2));
+        info1.Show(options.isverbose);
+        info2.Show(options.isverbose);
+        s1 = info1.TakeSequence();
+        s2 = info2.TakeSequence();
       }
     }
     length = modes::Text::Correspondence(
@@ -144,8 +99,12 @@ Length File::Difference(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        s1 = PrepareFasta(options.file1, s1, options.isverbose);
-        s2 = PrepareFasta(options.file2, s2, options.isverbose);
+        FastaInfo info1(options.file1, std::move(s1));
+        FastaInfo info2(options.file2, std::move(s2));
+        info1.Show(options.isverbose);
+        info2.Show(options.isverbose);
+        s1 = info1.TakeSequence();
+        s2 = info2.TakeSequence();
       }
     }
     length = modes::Text::Difference(

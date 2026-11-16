@@ -49,30 +49,7 @@ namespace lcs::modes {
       const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
       bool ignorecase = false, bool ignorespace = false, bool isverbose = false);
 
-    //
-    // FastaRecord describes one FASTA record's '>' defline: the name (first
-    // whitespace-delimited token) and the description (the remainder).  The
-    // name is not subdivided further, so pipe-delimited identifiers such as
-    // gi|...|ref|... are kept intact.
-    //
-    struct FastaRecord {
-      std::string name;                 // first token of the '>' defline
-      std::string description;          // remainder of the defline after the name
-    };
-
-    //
-    // FastaInfo describes the FASTA input to StripFasta().  records[0] is the
-    // record that is used; any later records are ignored.  The vector's size
-    // is the record count.  A file with no FASTA header yields an empty vector.
-    //
-    struct FastaInfo {
-      std::string filename;             // source file, set by the caller
-      std::vector<FastaRecord> records;
-    };
-
     static std::u32string Read(const std::string& filename);
-    static std::u32string StripFasta(
-      const std::u32string& s, FastaInfo* info = nullptr);
 
     //
     // String Methods compare individual Unicode code points rather than
