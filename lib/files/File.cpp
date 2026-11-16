@@ -33,10 +33,11 @@ using namespace lcs::files;
 
 namespace {
   //
-  // Report one file argument's FASTA records.  Under -v the filename and every
-  // record's name and description are listed.  Whenever -F is given and a file
-  // holds extra records, a warning identifies the first ignored record (the
-  // second record) and its description, so the context is clear without -v.
+  // Report one file argument's FASTA records.  Under -v only the record that
+  // is actually processed (the first) is listed, with its filename, name, and
+  // description.  Every record that is not processed gets its own warning,
+  // naming the file, the record, and its description, so the context is clear
+  // without -v.
   //
   void ReportFastaHeader(const modes::Text::FastaInfo& info, bool isverbose) {
     const auto& filename = info.filename;
@@ -46,15 +47,14 @@ namespace {
       return;
     }
     if (isverbose) {
-      for (const auto& record : info.records) {
-        if (record.description.empty())
-          cerr << format("{}: >{}\n", filename, record.name);
-        else
-          cerr << format("{}: >{} {}\n", filename, record.name, record.description);
-      }
+      const auto& used = info.records[0];
+      if (used.description.empty())
+        cerr << format("{}: >{}\n", filename, used.name);
+      else
+        cerr << format("{}: >{} {}\n", filename, used.name, used.description);
     }
-    if (info.records.size() > 1) {
-      const auto& ignored = info.records[1];
+    for (size_t k = 1; k < info.records.size(); ++k) {
+      const auto& ignored = info.records[k];
       if (ignored.description.empty())
         cerr << format(
           "{}: Warning: Additional FASTA record ignored (record: {})\n",
