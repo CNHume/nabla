@@ -11,22 +11,30 @@ permissions:
 
 jobs:
   build:
-    name: build ${{ matrix.artifact }}
+    name: build ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
             artifact: nabla-linux-x86_64
+            artifact64: nabla64-linux-x86_64
           - os: macos-latest
             artifact: nabla-macos
+            artifact64: nabla64-macos
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build
+      - name: Build nabla (32-bit)
         run: make -C cli -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
-      - name: Rename binary
-        run: mv cli/build/nabla "${{ matrix.artifact }}"
-      - name: Upload release asset
+      - name: Build nabla64 (64-bit)
+        run: make -C cli LENGTH_SIZE=64 BUILD_DIR=build64 -j"$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
+      - name: Rename binaries
+        run: |
+          mv cli/build/nabla "${{ matrix.artifact }}"
+          mv cli/build64/nabla64 "${{ matrix.artifact64 }}"
+      - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.artifact }}
+          files: |
+            ${{ matrix.artifact }}
+            ${{ matrix.artifact64 }}
