@@ -56,8 +56,8 @@ namespace lcs::modes {
     // gi|...|ref|... are kept intact.
     //
     struct FastaRecord {
-      std::string name;                  // first token of the '>' defline
-      std::string description;           // remainder of the defline after the name
+      std::string name;                 // first token of the '>' defline
+      std::string description;          // remainder of the defline after the name
     };
 
     //
@@ -66,12 +66,13 @@ namespace lcs::modes {
     // is the record count.  A file with no FASTA header yields an empty vector.
     //
     struct FastaInfo {
-      std::string filename;              // source file, set by the caller
+      std::string filename;             // source file, set by the caller
       std::vector<FastaRecord> records;
     };
 
     static std::u32string Read(const std::string& filename);
-    static std::u32string StripFasta(const std::u32string& s, FastaInfo* info = nullptr);
+    static std::u32string StripFasta(
+      const std::u32string& s, FastaInfo* info = nullptr);
 
     //
     // String Methods compare individual Unicode code points rather than
@@ -88,11 +89,13 @@ namespace lcs::modes {
 
   private:
     // Map normalized-space Delta intervals back to original-space spans.
-    static void MapDeltas(std::shared_ptr<Delta> deltas,
+    static void MapDeltas(
+      std::shared_ptr<Delta> deltas,
       const std::vector<Index>& mapBegin1, const std::vector<Index>& mapEnd1,
       const std::vector<Index>& mapBegin2, const std::vector<Index>& mapEnd2,
       std::size_t size1, std::size_t size2);
-    static void MapSide(Index& begin, Index& end,
+    static void MapSide(
+      Index& begin, Index& end,
       const std::vector<Index>& mapBegin, const std::vector<Index>& mapEnd,
       std::size_t size);
   };

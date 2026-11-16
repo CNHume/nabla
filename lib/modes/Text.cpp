@@ -342,13 +342,13 @@ u32string Text::StripFasta(const u32string& s, FastaInfo* info) {
   buffer.reserve(s.size());
   auto n = s.size();
   size_t i = 0;
-  size_t records = 0;                  // '>' header lines seen
+  size_t records = 0;                   // '>' header lines seen
   while (i < n) {
     auto j = s.find(U'\n', i);
     if (j == u32string::npos)
       j = n;
-    if (i < j && s[i] != U'>') {       // sequence line
-      if (records < 2) {               // first record only
+    if (i < j && s[i] != U'>') {        // sequence line
+      if (records < 2) {                // first record only
         for (auto k = i; k < j; k++) {
           auto c = s[k];
           if (U" \t\r"sv.find(c) == std::u32string_view::npos)
@@ -356,7 +356,7 @@ u32string Text::StripFasta(const u32string& s, FastaInfo* info) {
         }
       }
     }
-    else if (i < j) {                  // header line (s[i] == U'>')
+    else if (i < j) {                   // header line (s[i] == U'>')
       records++;
       if (info != nullptr) {
         auto begin = i + 1;
@@ -379,7 +379,8 @@ u32string Text::StripFasta(const u32string& s, FastaInfo* info) {
         else {
           name = defline.substr(0, ws);
           auto rest = ws;
-          while (rest < defline.size() &&
+          while (
+            rest < defline.size() &&
             (defline[rest] == U' ' || defline[rest] == U'\t'))
             rest++;
           description = defline.substr(rest);
