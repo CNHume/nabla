@@ -76,4 +76,12 @@ namespace lcs::files {
     std::size_t selected_ = 0;           // index of the record actually used
   };
 
+  //
+  // Parse a record_id as a 1-based index or a record name.  A leading '='
+  // forces the name interpretation: "=42" names the record "42", while "42"
+  // means the 42nd record.
+  //
+  void ParseRecordId(
+    const std::string& id, std::string& name, std::uint32_t& index);
+
 } // namespace lcs::files

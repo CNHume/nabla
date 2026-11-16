@@ -18,6 +18,8 @@
 #include "files/Fasta.h"
 #include "files/Encoding.h"
 
+#include <cerrno>                       // for errno
+#include <cstdlib>                      // for strtoul
 #include <format>                       // for format
 #include <iostream>                     // for cerr
 #include <locale>                       // for locale
@@ -84,6 +86,34 @@ namespace {
     }
     return sequence;
   }
+}
+
+//
+// Parse a record_id as a 1-based index or a record name.  A leading '=' forces
+// the name interpretation: "=42" names the record "42", while "42" means the
+// 42nd record.
+//
+void ParseRecordId(
+  const std::string& id, std::string& name, std::uint32_t& index) {
+  auto s = id.c_str();
+  if (*s == '=') {
+    name = id.substr(1);
+    return;
+  }
+  //
+  // Interpret an unsigned integer as a 1-based index; otherwise id is a record
+  // name.  Reset errno before strtoul(): it sets errno only on failure and
+  // leaves it unchanged on success, so a stale non-zero errno left by an
+  // earlier call would otherwise make a valid numeric argument look like an
+  // overflow error.
+  //
+  errno = 0;
+  char* pEnd = nullptr;
+  auto result = strtoul(s, &pEnd, 10);
+  if (errno != 0 || pEnd == s || *pEnd != '\0')
+    name = id;
+  else
+    index = (uint32_t)result;
 }
 
 Fasta::Fasta(

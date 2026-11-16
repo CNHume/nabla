@@ -278,6 +278,40 @@ TEST_CASE("Fasta selects a record by index or name") {
   }
 }
 
+TEST_CASE("record_id parses as a 1-based index or a record name") {
+  //
+  // A record_id is a numeric string -> 1-based index, otherwise a record name.
+  // A leading '=' forces the name interpretation: "=42" names the record "42",
+  // while "42" means the 42nd record.
+  //
+  auto parse = [](const char* id) {
+    string name = "<unset>";
+    uint32_t index = 0xDEADBEEFu;
+    files::ParseRecordId(id, name, index);
+    return pair<string, uint32_t>(name, index);
+  };
+
+  // Numeric strings are 1-based indices and leave the name untouched.
+  CHECK(parse("1").second == 1);
+  CHECK(parse("1").first == "<unset>");
+  CHECK(parse("42").second == 42);
+  CHECK(parse("4294967295").second == 4294967295u);
+
+  // A leading '=' forces the name interpretation.
+  CHECK(parse("=42").first == "42");
+  CHECK(parse("=42").second == 0xDEADBEEFu);
+  CHECK(parse("=100").first == "100");
+
+  // Non-numeric strings are names and leave the index untouched.
+  CHECK(parse("abc").first == "abc");
+  CHECK(parse("abc").second == 0xDEADBEEFu);
+  CHECK(parse("=abc").first == "abc");
+
+  // An empty id is treated as a name (empty), not as index 0.
+  CHECK(parse("").first == "");
+  CHECK(parse("").second == 0xDEADBEEFu);
+}
+
 TEST_CASE("automatic dispatch returns a correct LCS") {
   // -Aa should select a working algorithm: the length and trace must match the
   // O(m*n) DP reference regardless of which algorithm it picks.

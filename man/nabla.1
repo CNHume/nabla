@@ -416,10 +416,18 @@ nabla -i -l -T a.fa b.fa
 .RE
 .fi
 .TP
-Compare two FASTA genomes with the linear-space algorithm and show matches:
+Compare a FASTA genome with one of its recorded variants (record named "100"),
+using the linear-space algorithm and showing the matches:
 .nf
 .RS
-nabla -As -C -F ecoli_mg1655.seq ecoli_mg1655_100subs.seq
+nabla -As -C -F -q =100 ecoli_mg1655.seq ecoli_mg1655_variants.fna
+.RE
+.fi
+.TP
+Compare two records of the variants file, the "100" reference vs the "1000" query:
+.nf
+.RS
+nabla -As -C -F -r =100 -q =1000 ecoli_mg1655_variants.fna ecoli_mg1655_variants.fna
 .RE
 .fi
 .TP

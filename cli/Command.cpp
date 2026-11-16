@@ -21,6 +21,7 @@
 // thrown by Parse() when the command line fails to parse.
 //
 #include "Command.h"
+#include "files/Fasta.h"
 #include "files/Host.h"
 #include "SuspectDash.h"
 #include "Version.h"
@@ -70,27 +71,7 @@ uint32_t Command::parse_uint32(const char* s, const string& name) {
 
 void Command::parse_record_id(
   const char* id, string& name, uint32_t& index) {
-  //
-  // -r =42 specifies the record named "42",
-  // while -r 42 specifies the 42nd record.
-  //
-  // A leading '=' forces the record name interpretation.
-  //
-  if (*id == '=') {
-    name = id + 1;
-    return;
-  }
-  //
-  // Interpret unsigned integer as a 1-based index;
-  // otherwise id is a record name.
-  //
-  errno = 0;
-  char* pEnd = nullptr;
-  auto result = strtoul(id, &pEnd, 10);
-  if (errno != 0 || pEnd == id || *pEnd != '\0')
-    name = id;
-  else
-    index = (uint32_t)result;
+  files::ParseRecordId(id, name, index);
 }
 
 //
