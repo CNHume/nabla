@@ -53,7 +53,7 @@ namespace lcs::algorithms {
     // and its dominant-match recording would fit in memory, the regime where
     // RickTime is ~2.6x faster.
     static void SuggestRickTime(
-      std::uint32_t length, std::uint64_t shorter, std::uint64_t longer,
+      std::uint64_t length, std::uint64_t shorter, std::uint64_t longer,
       std::uint64_t candidates, std::uint64_t symbols);
     // Myers runs in O(N*D); its reconstruction stores the V frontier for every
     // D, an O(D^2) Index history.  Return the largest D whose history fits a

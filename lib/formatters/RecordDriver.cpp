@@ -34,7 +34,7 @@ modes::Record::RECORDS RecordDriver::Select(
   Length length1, length2;
   Delta::Lengths(deltas, length1, length2);
   RECORDS list;
-  list.reserve(isright ? length2 : length1);
+  list.reserve((size_t)(isright ? length2 : length1));
   for (auto next = deltas; next != nullptr;
     next = dynamic_pointer_cast<Delta>(next->next)) {
     auto begin = isright ? next->begin2 : next->begin1;

@@ -43,8 +43,8 @@ namespace lcs::formatters {
     Length size1_ = 0;                  // reference length
     Length size2_ = 0;                  // query length
     Index prevEnd1_ = 0;                // previous delta's reference end
-    Index reference_ = 0;               // reference positions accounted for
-    Index query_ = 0;                   // query positions accounted for
+    Length reference_ = 0;              // reference positions accounted for
+    Length query_ = 0;                  // query positions accounted for
     std::string cigar_;
   };
 

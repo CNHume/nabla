@@ -103,7 +103,7 @@ void Analysis::WarnRecordingSize(uint64_t records, uint64_t recordBudget) {
 }
 
 void Analysis::SuggestRickTime(
-  uint32_t length, uint64_t shorter, uint64_t longer,
+  uint64_t length, uint64_t shorter, uint64_t longer,
   uint64_t candidates, uint64_t symbols) {
   auto edits = shorter - length;
   if (edits > nearIdenticalEdits || edits * 100 > shorter)
