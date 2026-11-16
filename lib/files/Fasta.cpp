@@ -89,7 +89,9 @@ Fasta::Fasta(const string& filename, u32string text) {
 
 void Fasta::Show() const {
   if (records_.empty()) {
-    cerr << format("{}: No FASTA Header\n", filename_);
+    cerr << format(
+      std::locale(), "{}: {:L} No FASTA Header\n",
+      filename_, sequence_.size());
     return;
   }
   const auto& used = records_[0];
