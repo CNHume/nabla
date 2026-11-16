@@ -95,10 +95,8 @@ thread.
 
 ## Build
 
-- **Ship `nabla64` in the release workflow.**  The two-binary build is in place
-  (`nabla` 32-bit default, `nabla64` via `LENGTH_SIZE=64`), and the Bioconda
-  recipe now installs both, but `.github/workflows/release.yml` still attaches
-  only the 32-bit `nabla`.  Attach the `nabla64` asset as a follow-up.
+- ~~Ship `nabla64` in the release workflow.~~  Done in v1.2.0: the release
+  workflow now builds and uploads both `nabla` and `nabla64` on Linux and macOS.
 
 ## Testing / Benchmarking
 
