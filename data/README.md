@@ -24,19 +24,21 @@ reproducible (seeded) random substitutions:
 
 ```
 g++ -std=c++20 -O2 -Wall -Wextra makedata.cpp -o makedata
-./makedata ecoli_mg1655.fna ecoli_mg1655 100 1000 10000
+./makedata ecoli_mg1655.fna ecoli_mg1655 100 1000 10000 999permil
 ```
 
 This writes `ecoli_mg1655.seq` — the extracted sequence as a header-free plain
 `.seq` (one line, uppercased) — and `ecoli_mg1655_variants.fna`, a multi-record
-FASTA file: an unmutated `0` record followed by one record per K.  Each mutant
-record is named by its K, applies K distinct substitutions — each changed to a
-*different* symbol drawn from the sequence's own alphabet — and its defline
-records the source and the mutation parameters (the substitution count and the
-xorshift32 seed).  The generator is reseeded with the same fixed value for each
-K, so every record is reproducible on its own, a given input reproduces
-identical mutants on any platform, and each larger K nests over the smaller K
-values.
+FASTA file: an unmutated `0` record followed by one record per argument.  Each
+argument is a substitution count `K`, or a `Npermil` rate (N per mille identity,
+e.g. `999permil` ≈ 99.9% identity).  Count records are named by their K; a
+permil record is named by its rate.  Each mutant applies K distinct
+substitutions — each changed to a *different* symbol drawn from the sequence's
+own alphabet — and its defline records the source and the mutation parameters
+(the substitution count and the xorshift32 seed).  The generator is reseeded
+with the same fixed value for each argument, so every record is reproducible on
+its own, a given input reproduces identical mutants on any platform, and each
+larger K nests over the smaller K values.
 
 ## Naming convention
 
@@ -47,14 +49,12 @@ defline followed by the one-line sequence.  Files follow
 - `<name>.seq` — the extracted sequence (one line, no defline).
 - `<name>_16M.seq`, `_4M.seq`, `_100K.seq` — the first 16M / 4M / 100K symbols
   (a truncation of the `.seq`).
-- `<name>_variants.fna` — the unmutated `0` record and one record per K
-  substitution count (from `makedata.cpp`), each defline recording the source
-  and the mutation parameters.
-- `<name>_999permil.fna` — ≈ 99.9% identity (about one symbol in 1,000 changed).
+- `<name>_variants.fna` — the unmutated `0` record, one record per substitution
+  count, and a `999permil` record (≈ 99.9% identity, about one symbol in 1,000
+  changed), each defline recording the source and the mutation parameters.
 
 `makedata.cpp` produces the base `.seq` and the `_variants.fna` file directly;
-the prefix and `999permil` variants are further simple steps over the base
-files.
+the prefix truncations are further simple steps over the base files.
 
 ## Example
 

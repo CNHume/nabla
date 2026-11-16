@@ -42,7 +42,7 @@ namespace lcs::files {
     static std::string ReadBytes(const std::string& filename);
     static std::u32string DecodeCodePoints(const std::string& bytes, Kind encoding);
     static std::u32string DecodeUtf8(const std::string& bytes);
-    static std::u32string NormalizeCrlf(const std::u32string& codePoints);
+    static std::u32string NormalizeCrlf(std::u32string codePoints);
 
     const static std::vector<std::vector<unsigned char>> BOM;
     const static std::vector<Kind> encodings;

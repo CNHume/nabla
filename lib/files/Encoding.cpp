@@ -258,7 +258,11 @@ u32string Encoding::DecodeUtf8(const string& bytes) {
   return codePoints;
 }
 
-u32string Encoding::NormalizeCrlf(const u32string& codePoints) {
+u32string Encoding::NormalizeCrlf(u32string codePoints) {
+  // Fast path: no CR at all, so there is no CRLF to normalize — return the
+  // input unchanged rather than copying it into a second buffer.
+  if (codePoints.find(U'\r') == u32string::npos)
+    return codePoints;
   u32string normalized;
   normalized.reserve(codePoints.size());
   for (size_t i = 0; i < codePoints.size(); i++) {

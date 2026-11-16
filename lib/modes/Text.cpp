@@ -321,7 +321,7 @@ u32string Text::Read(const string& filename) {
   // Normalize CRLF to LF so -t text will ignore end-of-line differences
   // as is done for Record::Read()
   //
-  return files::Encoding::NormalizeCrlf(codePoints);
+  return files::Encoding::NormalizeCrlf(std::move(codePoints));
 #endif
 }
 

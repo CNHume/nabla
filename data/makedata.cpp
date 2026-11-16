@@ -1,17 +1,20 @@
 // makedata.cpp — Generate LCS benchmark data from a FASTA (or plain) sequence.
 //
 // Usage:
-//   makedata <input.fa> <output-prefix> <K1> [K2 ...]
+//   makedata <input.fa> <output-prefix> <K1> [K2 ...]  (Ki = count or Npermil)
 //
 // Reads <input.fa>, extracts the sequence (strips '>' header lines, drops
 // whitespace, uppercases) and writes it as <output-prefix>.seq — a header-free
 // plain sequence (the .seq convention).  It also writes <output-prefix>_variants.fna,
-// a multi-record FASTA file: an unmutated "0" record, then one record per K.
-// Each mutant applies K distinct random substitutions — each changed to a
-// different symbol drawn from the sequence's own alphabet — and is named by its
-// K (an all-digit name, so -q =K selects it while -q K means the Kth record);
-// its defline records the source file and the mutation parameters (the
-// substitution count and the xorshift32 seed).
+// a multi-record FASTA file: an unmutated "0" record, then one record per
+// mutation argument.  Each argument is a substitution count K, or a "Npermil"
+// rate (N per mille identity, so roughly one symbol in 1000/(1000-N) is
+// changed).  Each mutant applies K distinct random substitutions — each changed
+// to a different symbol drawn from the sequence's own alphabet.  A count record
+// is named by its K (an all-digit name, so -q =K selects it while -q K means
+// the Kth record); a permil record is named by its rate (for example
+// "999permil").  Each defline records the source file and the mutation
+// parameters (the substitution count and the xorshift32 seed).
 //
 // The generator is reseeded with the same fixed value before every K, so each
 // output is reproducible on its own from the parameters in its defline, and a
@@ -24,6 +27,7 @@
 //
 #include <algorithm>                    // for sort, unique
 #include <cctype>                       // for isspace, toupper
+#include <cerrno>                       // for errno
 #include <cstdint>                      // for uint32_t
 #include <cstdio>                       // for fprintf, snprintf
 #include <cstdlib>                      // for exit, strtoull
@@ -83,6 +87,46 @@ static void WriteFastaRecord(ostream& out, const string& name,
   out << '\n' << seq << '\n';
 }
 
+//
+// Parse one mutation argument as either a substitution count (a non-negative
+// integer) or a "Npermil" rate (N per mille identity, so roughly one symbol in
+// 1000/(1000-N) is changed).  Sets name (the record name) and K (the number of
+// substitutions, clamped to the sequence length); returns false if malformed.
+//
+static bool ParseMutationArg(
+  const char* arg, size_t n, string& name, size_t& K) {
+  const string s(arg);
+  const string suffix("permil");
+  auto isRate = s.size() > suffix.size() &&
+    s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+
+  if (isRate) {
+    // "Npermil": N per mille identity.
+    auto digits = s.substr(0, s.size() - suffix.size());
+    errno = 0;
+    char* pEnd = nullptr;
+    auto N = strtoull(digits.c_str(), &pEnd, 10);
+    if (errno != 0 || pEnd == digits.c_str() || *pEnd != '\0' || N > 1000)
+      return false;
+    auto changed = 1000 - (size_t)N;    // symbols changed per 1000
+    K = (n / 1000) * changed + (n % 1000) * changed / 1000;
+  }
+  else {
+    // A plain substitution count.
+    errno = 0;
+    char* pEnd = nullptr;
+    auto count = strtoull(s.c_str(), &pEnd, 10);
+    if (errno != 0 || pEnd == s.c_str() || *pEnd != '\0')
+      return false;
+    K = (size_t)count;
+  }
+
+  if (K > n)
+    K = n;
+  name = isRate ? s : to_string(K);
+  return true;
+}
+
 int main(int argc, char** argv) {
   if (argc < 4) {
     fprintf(stderr, "usage: makedata <input.fa> <output-prefix> <K1> [K2 ...]\n");
@@ -114,9 +158,12 @@ int main(int argc, char** argv) {
   vector<size_t> pos(n);
 
   for (int a = 3; a < argc; a++) {
-    auto K = (size_t)strtoull(argv[a], nullptr, 10);
-    if (K > n)
-      K = n;
+    string name;
+    size_t K;
+    if (!ParseMutationArg(argv[a], n, name, K)) {
+      fprintf(stderr, "makedata: invalid mutation argument: %s\n", argv[a]);
+      return 1;
+    }
 
     // Regenerate each mutant independently: the same seed and the same initial
     // permutation, so the defline's "seed=" and "subs=" reproduce it alone and
@@ -145,7 +192,7 @@ int main(int argc, char** argv) {
     snprintf(seedBuf, sizeof seedBuf, "0x%08lx", (unsigned long)kSeed);
     string description = "source=" + source + " subs=" + to_string(K) +
                          " seed=" + seedBuf;
-    WriteFastaRecord(variants, to_string(K), description, mut);
+    WriteFastaRecord(variants, name, description, mut);
   }
   return 0;
 }
