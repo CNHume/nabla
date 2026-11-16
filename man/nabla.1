@@ -130,9 +130,9 @@ differences.
 Treat the input files as FASTA and strip header lines; implies
 .BR -T .
 Only one FASTA record of each file is used (the first, or the one selected by
-.BR -R
+.BR -r
 for the reference and
-.BR -Q
+.BR -q
 for the query);
 every other record is ignored, each with its own warning to standard error
 naming the file, the record, and its description.  A FASTA defline is split at
@@ -180,7 +180,13 @@ lines of context before each difference.
 Draw a progress bar to standard error while the LCS is computed.  The bar is
 shown only when standard error is a terminal.
 .TP
-.B -q
+.BI -q " record"
+Select which FASTA record of
+.I file2
+(the query) is used; requires
+.BR -F .
+.TP
+.B -Q
 Treat
 .I file1
 and
@@ -188,13 +194,7 @@ and
 as literal strings rather than filenames; implies
 .BR -T .
 .TP
-.BI -Q " record"
-Select which FASTA record of
-.I file2
-(the query) is used; requires
-.BR -F .
-.TP
-.BI -R " record"
+.BI -r " record"
 Select which FASTA record of
 .I file1
 (the reference) is used; requires
@@ -204,11 +204,11 @@ may be a 1-based index or a record name (an exact, case-sensitive match on the
 identifier, the first token of the '>' defline).  A leading
 .B =
 forces name interpretation, so a record whose name is all digits is written
-.BR -R " =42" ,
+.BR -r " =42" ,
 distinct from the 42nd record,
-.BR -R " 42" .
+.BR -r " 42" .
 Without
-.BR -R ,
+.BR -r ,
 a file's first record is used.  A selection that matches no record is an error.
 .TP
 .BI -s " suffix"

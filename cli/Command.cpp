@@ -38,7 +38,7 @@ using namespace lcs;
 namespace {
   constexpr const char* usageSynopsis =
     "Usage: nabla [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] "
-    "[-j <join>] [-l] [-p <prefix>] [-P] [-q] [-Q <record>] [-R <record>] "
+    "[-j <join>] [-l] [-p <prefix>] [-P] [-q <record>] [-Q] [-r <record>] "
     "[-s <suffix>] [-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] "
     "[-y] file1 file2";
 
@@ -70,8 +70,8 @@ uint32_t Command::parse_uint32(const char* s, const string& name) {
 
 void Command::parse_record(const char* s, string& name, uint32_t& index) {
   //
-  // A leading '=' forces name interpretation: -R =42 selects the record named
-  // "42", while -R 42 selects the 42nd record.
+  // A leading '=' forces name interpretation: -r =42 selects the record named
+  // "42", while -r 42 selects the 42nd record.
   //
   if (*s == '=') {
     name = s + 1;
@@ -242,16 +242,7 @@ void Command::Parse(int argc, char* argv[]) {
           isprogress = true;
         break;
 
-      case 'q':                         // the quote switch, which implies text
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else {
-          isquote = true;
-          istext = true;                // -q implies -T
-        }
-        break;
-
-      case 'Q':                         // the query (file2) FASTA record switch
+      case 'q':                         // the query (file2) FASTA record switch
         {
           const char* value = nullptr;
           if (len > 2)                  // whitespace optional
@@ -265,7 +256,16 @@ void Command::Parse(int argc, char* argv[]) {
         }
         break;
 
-      case 'R':                         // the reference (file1) FASTA record switch
+      case 'Q':                         // the quote switch, which implies text
+        if (len > 2)                    // superfluous value specified
+          usage = true;
+        else {
+          isquote = true;
+          istext = true;                // -Q implies -T
+        }
+        break;
+
+      case 'r':                         // the reference (file1) FASTA record switch
         {
           const char* value = nullptr;
           if (len > 2)                  // whitespace optional
@@ -383,10 +383,10 @@ void Command::Parse(int argc, char* argv[]) {
     throw invalid_argument(
       "-C (correspondence) cannot be combined with -G (CIGAR)");
 
-  // -R and -Q select FASTA records, so they require -F.
+  // -r and -q select FASTA records, so they require -F.
   if ((!referenceName.empty() || referenceIndex != 0 ||
        !queryName.empty() || queryIndex != 0) && !isfasta)
-    throw invalid_argument("-R and -Q (record selection) require -F (FASTA)");
+    throw invalid_argument("-r and -q (record selection) require -F (FASTA)");
 
   // The output-format switches are mutually exclusive.
   if ((isparallel && isgapped) ||

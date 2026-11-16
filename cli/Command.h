@@ -45,7 +45,7 @@ protected:
   //
   // Parse a FASTA record selector into a name or a 1-based index.  A leading
   // '=' forces name interpretation, so a record whose name is all digits is
-  // written -R =42 (or -Q =42), distinct from the 42nd record (-R 42).
+  // written -r =42 (or -q =42), distinct from the 42nd record (-r 42).
   //
   static void parse_record(const char* s, std::string& name, std::uint32_t& index);
 };
