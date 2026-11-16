@@ -49,8 +49,8 @@ Length File::Correspondence(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        Fasta fasta1(options.file1, std::move(s1), options.recordName, options.recordIndex);
-        Fasta fasta2(options.file2, std::move(s2), options.recordName, options.recordIndex);
+        Fasta fasta1(options.file1, std::move(s1), options.referenceName, options.referenceIndex);
+        Fasta fasta2(options.file2, std::move(s2), options.queryName, options.queryIndex);
         if (options.isverbose) {
           fasta1.Show();
           fasta2.Show();
@@ -103,8 +103,8 @@ Length File::Difference(
       s1 = modes::Text::Read(options.file1);
       s2 = modes::Text::Read(options.file2);
       if (options.isfasta) {
-        Fasta fasta1(options.file1, std::move(s1), options.recordName, options.recordIndex);
-        Fasta fasta2(options.file2, std::move(s2), options.recordName, options.recordIndex);
+        Fasta fasta1(options.file1, std::move(s1), options.referenceName, options.referenceIndex);
+        Fasta fasta2(options.file2, std::move(s2), options.queryName, options.queryIndex);
         if (options.isverbose) {
           fasta1.Show();
           fasta2.Show();

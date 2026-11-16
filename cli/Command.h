@@ -42,4 +42,10 @@ public:
 protected:
   static std::string arg_msg(const std::string& s, const std::string& name = "argument");
   static std::uint32_t parse_uint32(const char* s, const std::string& name = "argument");
+  //
+  // Parse a FASTA record selector into a name or a 1-based index.  A leading
+  // '=' forces name interpretation, so a record whose name is all digits is
+  // written -R =42 (or -Q =42), distinct from the 42nd record (-R 42).
+  //
+  static void parse_record(const char* s, std::string& name, std::uint32_t& index);
 };

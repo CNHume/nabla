@@ -45,8 +45,10 @@ namespace lcs::files {
     bool istext = false;
     bool isverbose = false;
     bool isword = false;
-    std::string recordName;              // -R FASTA record name; empty = none
-    std::uint32_t recordIndex = 0;       // -R FASTA record index (1-based); 0 = none
+    std::string referenceName;           // -R record name for file1 (reference)
+    std::uint32_t referenceIndex = 0;    // -R record index for file1; 0 = none
+    std::string queryName;               // -Q record name for file2 (query)
+    std::uint32_t queryIndex = 0;        // -Q record index for file2; 0 = none
     std::uint32_t join = 0;
     std::uint32_t prefix = 0;
     std::uint32_t suffix = 0;

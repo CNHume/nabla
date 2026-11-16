@@ -38,8 +38,9 @@ using namespace lcs;
 namespace {
   constexpr const char* usageSynopsis =
     "Usage: nabla [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] "
-    "[-j <join>] [-l] [-p <prefix>] [-P] [-Q] [-R <record>] [-s <suffix>] "
-    "[-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] file1 file2";
+    "[-j <join>] [-l] [-p <prefix>] [-P] [-q] [-Q <record>] [-R <record>] "
+    "[-s <suffix>] [-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] "
+    "[-y] file1 file2";
 
   constexpr uint32_t edit_context_affix = 3;  // -u default context
 }
@@ -65,6 +66,28 @@ uint32_t Command::parse_uint32(const char* s, const string& name) {
   if (errno != 0 || *pEnd != '\0')
     throw invalid_argument(arg_msg(s, name));
   return result;
+}
+
+void Command::parse_record(const char* s, string& name, uint32_t& index) {
+  //
+  // A leading '=' forces name interpretation: -R =42 selects the record named
+  // "42", while -R 42 selects the 42nd record.
+  //
+  if (*s == '=') {
+    name = s + 1;
+    return;
+  }
+  //
+  // An argument that parses as an unsigned integer is a 1-based record index;
+  // anything else is a record name.
+  //
+  char* pEnd = nullptr;
+  errno = 0;
+  auto value = strtoul(s, &pEnd, 10);
+  if (errno == 0 && pEnd != s && *pEnd == '\0')
+    index = (uint32_t)value;
+  else
+    name = s;
 }
 
 //
@@ -219,16 +242,16 @@ void Command::Parse(int argc, char* argv[]) {
           isprogress = true;
         break;
 
-      case 'Q':                         // the quote switch, which implies text
+      case 'q':                         // the quote switch, which implies text
         if (len > 2)                    // superfluous value specified
           usage = true;
         else {
           isquote = true;
-          istext = true;                // -Q implies -T
+          istext = true;                // -q implies -T
         }
         break;
 
-      case 'R':                         // the FASTA record switch
+      case 'Q':                         // the query (file2) FASTA record switch
         {
           const char* value = nullptr;
           if (len > 2)                  // whitespace optional
@@ -237,19 +260,22 @@ void Command::Parse(int argc, char* argv[]) {
             value = argv[++n];
           else
             usage = true;
-          if (value != nullptr) {
-            //
-            // An argument that parses as an unsigned integer is a 1-based
-            // record index; anything else is a record name.
-            //
-            char* pEnd = nullptr;
-            errno = 0;
-            auto index = strtoul(value, &pEnd, 10);
-            if (errno == 0 && pEnd != value && *pEnd == '\0')
-              recordIndex = (uint32_t)index;
-            else
-              recordName = value;
-          }
+          if (value != nullptr)
+            parse_record(value, queryName, queryIndex);
+        }
+        break;
+
+      case 'R':                         // the reference (file1) FASTA record switch
+        {
+          const char* value = nullptr;
+          if (len > 2)                  // whitespace optional
+            value = &token[2];
+          else if (n + 1 < argc)        // whitespace allowed
+            value = argv[++n];
+          else
+            usage = true;
+          if (value != nullptr)
+            parse_record(value, referenceName, referenceIndex);
         }
         break;
 
@@ -357,9 +383,10 @@ void Command::Parse(int argc, char* argv[]) {
     throw invalid_argument(
       "-C (correspondence) cannot be combined with -G (CIGAR)");
 
-  // -R selects a FASTA record, so it requires -F.
-  if ((!recordName.empty() || recordIndex != 0) && !isfasta)
-    throw invalid_argument("-R (record) requires -F (FASTA)");
+  // -R and -Q select FASTA records, so they require -F.
+  if ((!referenceName.empty() || referenceIndex != 0 ||
+       !queryName.empty() || queryIndex != 0) && !isfasta)
+    throw invalid_argument("-R and -Q (record selection) require -F (FASTA)");
 
   // The output-format switches are mutually exclusive.
   if ((isparallel && isgapped) ||
