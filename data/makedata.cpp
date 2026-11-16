@@ -5,11 +5,13 @@
 //
 // Reads <input.fa>, extracts the sequence (strips '>' header lines, drops
 // whitespace, uppercases) and writes it as <output-prefix>.seq — a header-free
-// plain sequence (the .seq convention).  Then, for each K, it applies K
-// distinct random substitutions — each changed to a different symbol drawn from
-// the sequence's own alphabet — and writes <output-prefix>_<K>subs.fna, a FASTA
-// record whose defline records the source file and the mutation parameters
-// (the substitution count and the xorshift32 seed).
+// plain sequence (the .seq convention).  It also writes <output-prefix>_variants.fna,
+// a multi-record FASTA file: an unmutated "0" record, then one record per K.
+// Each mutant applies K distinct random substitutions — each changed to a
+// different symbol drawn from the sequence's own alphabet — and is named by its
+// K (an all-digit name, so -q =K selects it while -q K means the Kth record);
+// its defline records the source file and the mutation parameters (the
+// substitution count and the xorshift32 seed).
 //
 // The generator is reseeded with the same fixed value before every K, so each
 // output is reproducible on its own from the parameters in its defline, and a
@@ -26,6 +28,7 @@
 #include <cstdio>                       // for fprintf, snprintf
 #include <cstdlib>                      // for exit, strtoull
 #include <fstream>                      // for ifstream, ofstream
+#include <ostream>                      // for ostream
 #include <string>                       // for string, to_string
 #include <vector>                       // for vector
 
@@ -70,11 +73,10 @@ static void WriteSequence(const string& path, const string& seq) {
   out << seq << '\n';
 }
 
-// Write one FASTA record: a '>' defline carrying the name and, when present, a
-// space-separated description, followed by the sequence on one line.
-static void WriteFasta(const string& path, const string& name,
-                       const string& description, const string& seq) {
-  ofstream out(path, ios::binary);
+// Write one FASTA record to out: a '>' defline carrying the name and, when
+// present, a space-separated description, followed by the sequence on one line.
+static void WriteFastaRecord(ostream& out, const string& name,
+                             const string& description, const string& seq) {
   out << '>' << name;
   if (!description.empty())
     out << ' ' << description;
@@ -93,6 +95,15 @@ int main(int argc, char** argv) {
 
   // The base sequence, header-free: a plain copy of the source.
   WriteSequence(prefix + ".seq", seq);
+
+  // The variants file: an unmutated "0" record, then one record per K.
+  ofstream variants(prefix + "_variants.fna", ios::binary);
+  if (!variants) {
+    fprintf(stderr, "makedata: cannot create %s\n",
+            (prefix + "_variants.fna").c_str());
+    return 1;
+  }
+  WriteFastaRecord(variants, "0", "source=" + source, seq);
 
   // The sequence's own distinct symbols, used for substitutions.
   vector<char> symbols(seq.begin(), seq.end());
@@ -132,10 +143,9 @@ int main(int argc, char** argv) {
 
     char seedBuf[16];
     snprintf(seedBuf, sizeof seedBuf, "0x%08lx", (unsigned long)kSeed);
-    string name = prefix + "_" + to_string(K) + "subs";
     string description = "source=" + source + " subs=" + to_string(K) +
                          " seed=" + seedBuf;
-    WriteFasta(prefix + "_" + to_string(K) + "subs.fna", name, description, mut);
+    WriteFastaRecord(variants, to_string(K), description, mut);
   }
   return 0;
 }
