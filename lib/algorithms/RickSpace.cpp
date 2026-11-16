@@ -877,8 +877,8 @@ Length RickSpace::Find(
   metrics::Progress* progress, const MATCHES& matches,
   Length size1, Length size2) {
   ResetCounters();
-  auto occ = BuildOccurrences(matches, size1, size2);
-  auto length = Solve(pairs, occ, size1, size2, progress);
+  auto occ = BuildOccurrences(matches, (size_t)size1, (size_t)size2);
+  auto length = Solve(pairs, occ, (size_t)size1, (size_t)size2, progress);
   if (statistics) {
     statistics->algorithm = Algorithm::RickSpace;
     statistics->candidates = Candidates;

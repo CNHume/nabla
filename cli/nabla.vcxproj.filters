@@ -69,6 +69,9 @@
     <ClCompile Include="..\lib\files\Encoding.cpp">
       <Filter>files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lib\files\Fasta.cpp">
+      <Filter>files</Filter>
+    </ClCompile>
     <ClCompile Include="..\lib\files\File.cpp">
       <Filter>files</Filter>
     </ClCompile>
@@ -150,6 +153,9 @@
       <Filter>formatters</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\files\Encoding.h">
+      <Filter>files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\files\Fasta.h">
       <Filter>files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\files\File.h">
