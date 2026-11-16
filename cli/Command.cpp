@@ -38,7 +38,7 @@ using namespace lcs;
 namespace {
   constexpr const char* usageSynopsis =
     "Usage: nabla [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] "
-    "[-j <join>] [-l] [-p <prefix>] [-P] [-q <record>] [-Q] [-r <record>] "
+    "[-j <join>] [-l] [-p <prefix>] [-P] [-q <id>] [-Q] [-r <id>] "
     "[-s <suffix>] [-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] "
     "[-y] file1 file2";
 
@@ -68,26 +68,29 @@ uint32_t Command::parse_uint32(const char* s, const string& name) {
   return result;
 }
 
-void Command::parse_record(const char* s, string& name, uint32_t& index) {
+void Command::parse_record_id(
+  const char* id, string& name, uint32_t& index) {
   //
-  // A leading '=' forces name interpretation: -r =42 selects the record named
-  // "42", while -r 42 selects the 42nd record.
+  // -r =42 specifies the record named "42",
+  // while -r 42 specifies the 42nd record.
   //
-  if (*s == '=') {
-    name = s + 1;
+  // A leading '=' forces the record name interpretation.
+  //
+  if (*id == '=') {
+    name = id + 1;
     return;
   }
   //
-  // An argument that parses as an unsigned integer is a 1-based record index;
-  // anything else is a record name.
+  // Interpret unsigned integer as a 1-based index;
+  // otherwise id is a record name.
   //
-  char* pEnd = nullptr;
   errno = 0;
-  auto value = strtoul(s, &pEnd, 10);
-  if (errno == 0 && pEnd != s && *pEnd == '\0')
-    index = (uint32_t)value;
+  char* pEnd = nullptr;
+  auto result = strtoul(id, &pEnd, 10);
+  if (errno != 0 || pEnd == id || *pEnd != '\0')
+    name = id;
   else
-    name = s;
+    index = (uint32_t)result;
 }
 
 //
@@ -100,6 +103,7 @@ void Command::Parse(int argc, char* argv[]) {
   auto isgapped = false;                // -G given
   auto isprefix = false;                // -p given
   auto issuffix = false;                // -s given
+  auto isfasta_required = false;        // -q given or -r given
   auto n = 1;                           // skip verb
   for (; n < argc && !usage; n++) {     // parse any switches
     char* token = argv[n];
@@ -244,15 +248,17 @@ void Command::Parse(int argc, char* argv[]) {
 
       case 'q':                         // the query (file2) FASTA record switch
         {
-          const char* value = nullptr;
+          const char* id = nullptr;
           if (len > 2)                  // whitespace optional
-            value = &token[2];
+            id = &token[2];
           else if (n + 1 < argc)        // whitespace allowed
-            value = argv[++n];
+            id = argv[++n];
           else
             usage = true;
-          if (value != nullptr)
-            parse_record(value, queryName, queryIndex);
+
+          isfasta_required = true;
+          if (id != nullptr)
+            parse_record_id(id, queryName, queryIndex);
         }
         break;
 
@@ -267,15 +273,17 @@ void Command::Parse(int argc, char* argv[]) {
 
       case 'r':                         // the reference (file1) FASTA record switch
         {
-          const char* value = nullptr;
+          const char* id = nullptr;
           if (len > 2)                  // whitespace optional
-            value = &token[2];
+            id = &token[2];
           else if (n + 1 < argc)        // whitespace allowed
-            value = argv[++n];
+            id = argv[++n];
           else
             usage = true;
-          if (value != nullptr)
-            parse_record(value, referenceName, referenceIndex);
+
+          isfasta_required = true;
+          if (id != nullptr)
+            parse_record_id(id, referenceName, referenceIndex);
         }
         break;
 
@@ -383,10 +391,8 @@ void Command::Parse(int argc, char* argv[]) {
     throw invalid_argument(
       "-C (correspondence) cannot be combined with -G (CIGAR)");
 
-  // -r and -q select FASTA records, so they require -F.
-  if ((!referenceName.empty() || referenceIndex != 0 ||
-       !queryName.empty() || queryIndex != 0) && !isfasta)
-    throw invalid_argument("-r and -q (record selection) require -F (FASTA)");
+  if (isfasta_required && !isfasta)
+    throw invalid_argument("-r <id> and -q <id> require -F (FASTA)");
 
   // The output-format switches are mutually exclusive.
   if ((isparallel && isgapped) ||

@@ -180,11 +180,16 @@ lines of context before each difference.
 Draw a progress bar to standard error while the LCS is computed.  The bar is
 shown only when standard error is a terminal.
 .TP
-.BI -q " record"
+.BI -q " record_id"
 Select which FASTA record of
 .I file2
 (the query) is used; requires
 .BR -F .
+A
+.I record_id
+names a FASTA record, as described below; without
+.BR -q ,
+file2's first record is used.
 .TP
 .B -Q
 Treat
@@ -194,22 +199,34 @@ and
 as literal strings rather than filenames; implies
 .BR -T .
 .TP
-.BI -r " record"
+.BI -r " record_id"
 Select which FASTA record of
 .I file1
 (the reference) is used; requires
 .BR -F .
-.I record
-may be a 1-based index or a record name (an exact, case-sensitive match on the
-identifier, the first token of the '>' defline).  A leading
+A
+.I record_id
+names a FASTA record, as described below; without
+.BR -r ,
+file1's first record is used.
+.PP
+A
+.I record_id
+names a FASTA record in either of two ways.  It is a 1-based index, or it is a
+record name: an exact, case-sensitive match on the identifier, the first
+whitespace-delimited token of the '>' defline.  A leading
 .B =
 forces name interpretation, so a record whose name is all digits is written
-.BR -r " =42" ,
+.BR \-q " =42"
+or
+.BR \-r " =42" ,
 distinct from the 42nd record,
-.BR -r " 42" .
-Without
-.BR -r ,
-a file's first record is used.  A selection that matches no record is an error.
+.BR \-q " 42"
+or
+.BR \-r " 42" .
+A
+.I record_id
+that matches no record is an error.
 .TP
 .BI -s " suffix"
 Print
