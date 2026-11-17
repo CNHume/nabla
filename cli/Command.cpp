@@ -84,7 +84,6 @@ void Command::Parse(int argc, char* argv[]) {
   auto isgapped = false;                // -G given
   auto isprefix = false;                // -p given
   auto issuffix = false;                // -s given
-  auto isfasta_required = false;        // -q given or -r given
   auto n = 1;                           // skip verb
   for (; n < argc && !usage; n++) {     // parse any switches
     char* token = argv[n];
@@ -237,7 +236,7 @@ void Command::Parse(int argc, char* argv[]) {
           else
             usage = true;
 
-          isfasta_required = true;
+          hasQueryId = true;
           if (id != nullptr)
             parse_record_id(id, queryName, queryIndex);
         }
@@ -262,7 +261,7 @@ void Command::Parse(int argc, char* argv[]) {
           else
             usage = true;
 
-          isfasta_required = true;
+          hasReferenceId = true;
           if (id != nullptr)
             parse_record_id(id, referenceName, referenceIndex);
         }
@@ -370,28 +369,31 @@ void Command::Parse(int argc, char* argv[]) {
 
   if (iscorrespondence && isgapped)
     throw invalid_argument(
-      "-C (correspondence) cannot be combined with -G (CIGAR)");
+      "-C (correspondence) cannot be combined with -G (gapped)");
 
-  if (isfasta_required && !isfasta)
-    throw invalid_argument("-r <id> and -q <id> require -F (FASTA)");
+  if ((hasQueryId || hasReferenceId) && !isfasta)
+    throw invalid_argument("-F (FASTA) required for -q <id> or -r <id>");
 
   // The output-format switches are mutually exclusive.
-  if ((isparallel && isgapped) ||
-      (isparallel && isunified) ||
-      (isgapped && isunified))
+  if ((isgapped && isparallel) ||
+      (isgapped && isunified) ||
+      (isparallel && isunified))
     throw invalid_argument(
-      "-G (CIGAR), -y (parallel), and -u (unified) are mutually exclusive");
+      "-G (gapped), -u (unified), and -y (parallel) are mutually exclusive");
 
   if (isunified) {
     if (iscorrespondence)
-      throw invalid_argument("-C (correspondence) cannot be combined with -u");
+      throw invalid_argument(
+      "-u (unified) cannot be combined with -C (correspondence)");
+    if (islength)
+      throw invalid_argument(
+        "-u (unified) cannot be combined with -l (length only)");
     if (istext)
       throw invalid_argument(
-        "-F, -Q, and -T (text mode) cannot be combined with -u");
-    if (islength)
-      throw invalid_argument("-l (length only) cannot be combined with -u");
+        "-u (unified) cannot be combined with -F (FASTA), -Q (quote), or -T (text mode)");
     if (isword)
-      throw invalid_argument("-w (word mode) with -u is not yet implemented");
+      throw invalid_argument(
+        "-u (unified) with -w (word mode) is not yet implemented");
 
     if (!isprefix)
       prefix = edit_context_affix;

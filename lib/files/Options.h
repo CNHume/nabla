@@ -45,20 +45,15 @@ namespace lcs::files {
     bool istext = false;
     bool isverbose = false;
     bool isword = false;
-    std::string referenceName;           // -r record name for file1 (reference)
-    std::uint32_t referenceIndex = 0;    // -r record index for file1; 0 = none
+
+    bool hasQueryId = false;
     std::string queryName;               // -q record name for file2 (query)
     std::uint32_t queryIndex = 0;        // -q record index for file2; 0 = none
-    bool HasQueryRecord() const {
-      return                            // True if a record_id has been provided.
-        queryIndex != 0 ||
-        !queryName.empty();
-    }
-    bool HasReferenceRecord() const {
-      return                            // True if a record_id has been provided.
-        referenceIndex != 0 ||
-        !referenceName.empty();
-    }
+
+    bool hasReferenceId = false;
+    std::string referenceName;           // -r record name for file1 (reference)
+    std::uint32_t referenceIndex = 0;    // -r record index for file1; 0 = none
+
     std::uint32_t join = 0;
     std::uint32_t prefix = 0;
     std::uint32_t suffix = 0;

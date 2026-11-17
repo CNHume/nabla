@@ -52,9 +52,9 @@ Length File::Correspondence(
         fasta1.Show();
         fasta2.Show();
       }
-      if (!options.HasReferenceRecord())
+      if (!options.hasReferenceId)
         fasta1.WarnIgnored();
-      if (!options.HasQueryRecord())
+      if (!options.hasQueryId)
         fasta2.WarnIgnored();
       s1 = fasta1.Sequence();
       s2 = fasta2.Sequence();
@@ -108,9 +108,9 @@ Length File::Difference(
         fasta1.Show();
         fasta2.Show();
       }
-      if (!options.HasReferenceRecord())
+      if (!options.hasReferenceId)
         fasta1.WarnIgnored();
-      if (!options.HasQueryRecord())
+      if (!options.hasQueryId)
         fasta2.WarnIgnored();
       s1 = fasta1.Sequence();
       s2 = fasta2.Sequence();
