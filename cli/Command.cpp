@@ -73,11 +73,11 @@ uint32_t Command::parse_uint32(const char* s, const string& name) {
 //
 void Command::Parse(int argc, char* argv[]) {
   auto usage = false;
-  auto isunified = false;               // -u given
-  auto isparallel = false;              // -y given
   auto isgapped = false;                // -G given
+  auto isparallel = false;              // -y given
   auto isprefix = false;                // -p given
   auto issuffix = false;                // -s given
+  auto isunified = false;               // -u given
   auto n = 1;                           // skip verb
   for (; n < argc && !usage; n++) {     // parse any switches
     char* token = argv[n];
@@ -102,16 +102,16 @@ void Command::Parse(int argc, char* argv[]) {
           // Parse algorithm specifier: a=automatic, d=edit distance, m=matches,
           // s=space, t=time.  Allow leading spaces -A d (as in -j, -p, -s).
           //
-          const char* sub = nullptr;
+          const char* specifier = nullptr;
           if (len > 2)                  // Same token
-            sub = &token[2];
+            specifier = &token[2];
           else if (n + 1 < argc && strlen(argv[n + 1]) == 1)
-            sub = argv[++n];            // Next token
+            specifier = argv[++n];      // Next token
           else {
-            usage = true;               // -A needs exactly one sub-letter
+            usage = true;               // -A requires one specifier-letter
             break;
           }
-          switch (sub[0]) {
+          switch (specifier[0]) {
           case 'a':
             algorithm = Algorithm::Automatic;
             break;
