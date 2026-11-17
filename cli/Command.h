@@ -42,6 +42,4 @@ public:
 protected:
   static std::string arg_msg(const std::string& s, const std::string& name = "argument");
   static std::uint32_t parse_uint32(const char* s, const std::string& name = "argument");
-  // Parse id as a 1-based index or a record name
-  static void parse_record_id(const char* id, std::string& name, std::uint32_t& index);
 };

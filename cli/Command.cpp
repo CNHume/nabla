@@ -69,11 +69,6 @@ uint32_t Command::parse_uint32(const char* s, const string& name) {
   return result;
 }
 
-void Command::parse_record_id(
-  const char* id, string& name, uint32_t& index) {
-  files::ParseRecordId(id, name, index);
-}
-
 //
 // command line parser
 //
@@ -238,7 +233,7 @@ void Command::Parse(int argc, char* argv[]) {
 
           hasQueryId = true;
           if (id != nullptr)
-            parse_record_id(id, queryName, queryIndex);
+            files::ParseRecordId(id, queryName, queryIndex);
         }
         break;
 
@@ -263,7 +258,7 @@ void Command::Parse(int argc, char* argv[]) {
 
           hasReferenceId = true;
           if (id != nullptr)
-            parse_record_id(id, referenceName, referenceIndex);
+            files::ParseRecordId(id, referenceName, referenceIndex);
         }
         break;
 
@@ -372,7 +367,8 @@ void Command::Parse(int argc, char* argv[]) {
       "-C (correspondence) cannot be combined with -G (gapped)");
 
   if ((hasQueryId || hasReferenceId) && !isfasta)
-    throw invalid_argument("-F (FASTA) required for -q <id> or -r <id>");
+    throw invalid_argument(
+      "-F (FASTA) required for -q <id> or -r <id>");
 
   // The output-format switches are mutually exclusive.
   if ((isgapped && isparallel) ||
@@ -384,7 +380,7 @@ void Command::Parse(int argc, char* argv[]) {
   if (isunified) {
     if (iscorrespondence)
       throw invalid_argument(
-      "-u (unified) cannot be combined with -C (correspondence)");
+        "-u (unified) cannot be combined with -C (correspondence)");
     if (islength)
       throw invalid_argument(
         "-u (unified) cannot be combined with -l (length only)");

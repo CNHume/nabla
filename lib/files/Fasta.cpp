@@ -71,9 +71,17 @@ namespace {
 }
 
 //
-// Parse a record_id as a 1-based index or a record name.  A leading '=' forces
-// the name interpretation: "=42" names the record "42", while "42" means the
-// 42nd record.
+// A FASTA record_id identifies a record in one of two ways:
+//
+// If it is a numeric string, it is interpreted as a 1-based record index.
+// Otherwise it will be interpreted as a record name.
+//
+// Record names may be preceded by an equal sign (=) to indicate that the
+// subsequent string is to be interpreted as a record name, even if it may
+// appear to be a numeric string.
+//
+// A record whose name is all digits is written -q =42 or -r =42, distinct
+// from the 42nd record, -q 42 or -r 42.
 //
 void ParseRecordId(
   const std::string& id, std::string& name, std::uint32_t& index) {
