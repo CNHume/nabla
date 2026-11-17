@@ -369,9 +369,9 @@ void Command::Parse(int argc, char* argv[]) {
     throw invalid_argument(
       "-C (correspondence) cannot be combined with -G (gapped)");
 
-  if (isquote && (hasQueryId || hasReferenceId))
+  if (isquote && isfasta)
     throw invalid_argument(
-      "-Q (quote) cannot be combined with -q <record_id> or -r <record_id>");
+      "-Q (quote) cannot be combined with -q <record_id>, -r <record_id>, or -F");
 
   // The output-format switches are mutually exclusive.
   if ((isgapped && isparallel) ||
