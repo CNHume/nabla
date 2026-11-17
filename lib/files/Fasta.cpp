@@ -64,7 +64,7 @@ namespace {
     u32string sequence;
     sequence.reserve(codePoints.size());
     for (auto c : codePoints)
-      if (c != U' ' && c != U'\t' && c != U'\r' && c != U'\n')
+      if (U" \t\r\n"sv.find(c) == std::u32string_view::npos)
         sequence.push_back(c);
     return sequence;
   }
@@ -134,7 +134,8 @@ Fasta::Fasta(
       records_.push_back(ParseDefline(bytes, i + 1, j));
       spans.push_back({ j < n ? j + 1 : n, n });
     }
-    i = j < n ? j + 1 : n;
+    i = j < n ?
+      j + 1 : n;
   }
 
   //
