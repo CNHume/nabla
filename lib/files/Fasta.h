@@ -24,12 +24,14 @@
 namespace lcs::files {
 
   //
-  // Fasta parses one FASTA file's text.  One record's sequence is used — the
+  // Fasta parses one FASTA file's bytes.  One record's sequence is used — the
   // first, or the one named by recordName / numbered by recordIndex — and
-  // every other record is ignored.  Each record's '>' defline is split at its
-  // first whitespace run into a name (the identifier) and a description (the
-  // remainder); the name is not subdivided further, so pipe-delimited
-  // identifiers such as gi|...|ref|... are kept intact.
+  // every other record is ignored.  The '>' deflines are scanned in byte space
+  // and only the selected record's sequence is decoded, so the whole file is
+  // never expanded to UTF-32.  Each defline is split at its first whitespace
+  // run into a name (the identifier) and a description (the remainder); the
+  // name is not subdivided further, so pipe-delimited identifiers such as
+  // gi|...|ref|... are kept intact.
   //
   class Fasta {
   public:
@@ -42,13 +44,21 @@ namespace lcs::files {
     };
 
     //
-    // Parse text, moving it in; filename names the source for reporting.  When
-    // recordIndex is non-zero it selects a 1-based record; otherwise a non-empty
-    // recordName selects the first record with that exact name.  With neither,
-    // the first record is used.
+    // Parse UTF-8 (or ANSI) FASTA bytes, moving them in; filename names the
+    // source for reporting.  When recordIndex is non-zero it selects a 1-based
+    // record; otherwise a non-empty recordName selects the first record with
+    // that exact name.  With neither, the first record is used.
     //
     Fasta(
-      const std::string& filename, std::u32string text,
+      const std::string& filename, std::string bytes,
+      const std::string& recordName = {}, std::uint32_t recordIndex = 0);
+
+    //
+    // Read a FASTA file: wide encodings (UTF-16/32) are decoded and re-encoded
+    // to UTF-8 first; otherwise the file's bytes are scanned directly.
+    //
+    static Fasta Read(
+      const std::string& filename,
       const std::string& recordName = {}, std::uint32_t recordIndex = 0);
 
     const std::string& Filename() const { return filename_; }

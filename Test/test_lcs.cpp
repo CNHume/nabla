@@ -192,7 +192,7 @@ TEST_CASE("Myers aborts when the edit distance exceeds its budget") {
 TEST_CASE("Fasta keeps the first record and reports name/description") {
   // Single record with description: name and description split on whitespace.
   {
-    files::Fasta fasta("chr21.fa", toU32(">chr21 chromosome 21\nACGT\nACGT\n"));
+    files::Fasta fasta("chr21.fa", ">chr21 chromosome 21\nACGT\nACGT\n");
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "chr21");
     CHECK(fasta.Records()[0].description == "chromosome 21");
@@ -201,7 +201,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   // Pipe-delimited identifier: kept whole, since no delimiter is presupposed.
   {
     files::Fasta fasta(
-      "ecoli.fa", toU32(">gi|123|ref|NC_000913.3| Escherichia coli\nAC\n"));
+      "ecoli.fa", ">gi|123|ref|NC_000913.3| Escherichia coli\nAC\n");
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "gi|123|ref|NC_000913.3|");
     CHECK(fasta.Records()[0].description == "Escherichia coli");
@@ -209,7 +209,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // Multi-record FASTA: only the first record is used; the second is ignored.
   {
-    files::Fasta fasta("multi.fa", toU32(">a\nAC\n>b desc\nGT\n"));
+    files::Fasta fasta("multi.fa", ">a\nAC\n>b desc\nGT\n");
     REQUIRE(fasta.Records().size() == 2);
     CHECK(fasta.Records()[0].name == "a");
     CHECK(fasta.Records()[0].description.empty());
@@ -219,7 +219,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // Three records: the vector holds all of them; the last two are ignored.
   {
-    files::Fasta fasta("three.fa", toU32(">a\nAC\n>b\nGT\n>c\nTT\n"));
+    files::Fasta fasta("three.fa", ">a\nAC\n>b\nGT\n>c\nTT\n");
     REQUIRE(fasta.Records().size() == 3);
     CHECK(fasta.Records()[0].name == "a");
     CHECK(fasta.Records()[1].name == "b");
@@ -228,7 +228,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // CRLF header: trailing CR is trimmed from the captured defline.
   {
-    files::Fasta fasta("crlf.fa", toU32(">chr21 desc\r\nACGT\n"));
+    files::Fasta fasta("crlf.fa", ">chr21 desc\r\nACGT\n");
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "chr21");
     CHECK(fasta.Records()[0].description == "desc");
@@ -236,14 +236,14 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // No header: empty records vector, sequence passes through.
   {
-    files::Fasta fasta("plain.fa", toU32("ACGT\n"));
+    files::Fasta fasta("plain.fa", "ACGT\n");
     CHECK(fasta.Records().empty());
     CHECK(fasta.Sequence() == toU32("ACGT"));
   }
 }
 
 TEST_CASE("Fasta selects a record by index or name") {
-  const auto text = toU32(">a\nAC\n>b desc\nGTAC\n>c\nTT\n");
+  const string text = ">a\nAC\n>b desc\nGTAC\n>c\nTT\n";
   // 1-based index selects the third record.
   {
     files::Fasta fasta("multi.fa", text, {}, 3);
@@ -258,7 +258,7 @@ TEST_CASE("Fasta selects a record by index or name") {
   // Pipe-delimited name selects its record whole.
   {
     files::Fasta fasta(
-      "ecoli.fa", toU32(">a\nAC\n>gi|1|ref|NC|\nGT\n"), "gi|1|ref|NC|");
+      "ecoli.fa", ">a\nAC\n>gi|1|ref|NC|\nGT\n", "gi|1|ref|NC|");
     CHECK(fasta.Sequence() == toU32("GT"));
   }
   // Index out of range throws.

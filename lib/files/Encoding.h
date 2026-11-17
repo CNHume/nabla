@@ -22,6 +22,7 @@
 // -b ignorespace can be used to ignore them.
 
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <vector>
 
@@ -41,7 +42,7 @@ namespace lcs::files {
       const std::string& filename, Kind encoding, bool isword);
     static std::string ReadBytes(const std::string& filename);
     static std::u32string DecodeCodePoints(const std::string& bytes, Kind encoding);
-    static std::u32string DecodeUtf8(const std::string& bytes);
+    static std::u32string DecodeUtf8(std::string_view bytes);
     static std::u32string NormalizeCrlf(std::u32string codePoints);
 
     const static std::vector<std::vector<unsigned char>> BOM;

@@ -24,7 +24,7 @@
 #include <iostream>                     // for cerr
 #include <locale>                       // for locale
 #include <stdexcept>                    // for runtime_error
-#include <string_view>                  // for u32string_view
+#include <string_view>                  // for string_view
 #include <utility>                      // for move
 
 using namespace std;
@@ -39,51 +39,33 @@ namespace {
   // not subdivided further, so a pipe-delimited id such as gi|...|ref|... is
   // kept whole.
   //
-  Fasta::Record ParseDefline(const u32string& text, size_t begin, size_t end) {
-    while (end > begin && text[end - 1] == U'\r')
+  Fasta::Record ParseDefline(const string& bytes, size_t begin, size_t end) {
+    while (end > begin && bytes[end - 1] == '\r')
       end--;
-    auto defline = u32string(text.begin() + begin, text.begin() + end);
     Fasta::Record record;
-    auto ws = defline.find_first_of(U" \t");
-    u32string name, description;
-    if (ws == u32string::npos) {
-      name = defline;
-    }
-    else {
-      name = defline.substr(0, ws);
-      auto rest = ws;
-      while (
-        rest < defline.size() &&
-        (defline[rest] == U' ' || defline[rest] == U'\t'))
-        rest++;
-      description = defline.substr(rest);
-    }
-    record.name = Encoding::ToUtf8(name);
-    record.description = Encoding::ToUtf8(description);
+    auto ws = begin;
+    while (ws < end && bytes[ws] != ' ' && bytes[ws] != '\t')
+      ws++;
+    record.name.assign(bytes, begin, ws - begin);
+    auto rest = ws;
+    while (rest < end && (bytes[rest] == ' ' || bytes[rest] == '\t'))
+      rest++;
+    record.description.assign(bytes, rest, end - rest);
     return record;
   }
 
   //
-  // Collect the sequence lines in [begin, end), skipping '>' header lines and
-  // stripping whitespace, into one unbroken sequence.
+  // Decode the selected record's byte span [begin, end) and strip whitespace,
+  // so a sequence may span lines or contain spaces without affecting the
+  // comparison.
   //
-  u32string CollectSequence(const u32string& text, size_t begin, size_t end) {
+  u32string CollectSequence(string_view bytes, size_t begin, size_t end) {
+    auto codePoints = Encoding::DecodeUtf8(bytes.substr(begin, end - begin));
     u32string sequence;
-    sequence.reserve(end - begin);
-    size_t i = begin;
-    while (i < end) {
-      auto j = text.find(U'\n', i);
-      if (j == u32string::npos || j > end)
-        j = end;
-      if (i < j && text[i] != U'>') {   // sequence line
-        for (auto k = i; k < j; k++) {
-          auto c = text[k];
-          if (U" \t\r"sv.find(c) == std::u32string_view::npos)
-            sequence.push_back(c);
-        }
-      }
-      i = j < end ? j + 1 : end;
-    }
+    sequence.reserve(codePoints.size());
+    for (auto c : codePoints)
+      if (c != U' ' && c != U'\t' && c != U'\r' && c != U'\n')
+        sequence.push_back(c);
     return sequence;
   }
 }
@@ -117,32 +99,31 @@ void ParseRecordId(
 }
 
 Fasta::Fasta(
-  const string& filename, u32string text,
+  const string& filename, string bytes,
   const string& recordName, uint32_t recordIndex) {
   filename_ = filename;
-  auto n = text.size();
+  auto n = bytes.size();
 
   //
   // First pass: collect every '>' defline and record its sequence span
-  // [begin, end) in the text.  A record's sequence runs from just after its
-  // header line to the start of the next header line (or the end of text).
+  // [begin, end) in the byte buffer.  A record's sequence runs from just after
+  // its header line to the start of the next header line (or the end of input).
   //
   struct Span { size_t begin = 0; size_t end = 0; };
   vector<Span> spans;
   size_t i = 0;
   while (i < n) {
-    auto j = text.find(U'\n', i);
-    if (j == u32string::npos)
+    auto j = bytes.find('\n', i);
+    if (j == string::npos)
       j = n;
-    if (i < j && text[i] != U'>') {     // sequence line
+    if (i < j && bytes[i] != '>') {     // sequence line
       if (!spans.empty())
         spans.back().end = j < n ? j + 1 : n;
     }
-    else if (i < j) {                   // header line (text[i] == U'>')
-      // Close the previous record's span at the start of this header line.
+    else if (i < j) {                   // header line (bytes[i] == '>')
       if (!spans.empty())
         spans.back().end = i;
-      records_.push_back(ParseDefline(text, i + 1, j));
+      records_.push_back(ParseDefline(bytes, i + 1, j));
       spans.push_back({ j < n ? j + 1 : n, n });
     }
     i = j < n ? j + 1 : n;
@@ -187,9 +168,26 @@ Fasta::Fasta(
   // records and is used whole when no selection was requested.
   //
   if (records_.empty())
-    sequence_ = CollectSequence(text, 0, n);
+    sequence_ = CollectSequence(bytes, 0, n);
   else
-    sequence_ = CollectSequence(text, spans[selected_].begin, spans[selected_].end);
+    sequence_ = CollectSequence(bytes, spans[selected_].begin, spans[selected_].end);
+}
+
+Fasta Fasta::Read(
+  const string& filename, const string& recordName, uint32_t recordIndex) {
+  auto bytes = Encoding::ReadBytes(filename);
+  auto [encoding, bomLength] = Encoding::GetEncoding(bytes);
+  if (Encoding::IsWide(encoding)) {
+    // Wide encodings (UTF-16/32) cannot be scanned as UTF-8 bytes: decode the
+    // whole file and re-encode to UTF-8 first.  Wide FASTA is rare, so the
+    // whole-file expansion is acceptable there.
+    auto codePoints = Encoding::DecodeCodePoints(bytes, encoding);
+    bytes = Encoding::ToUtf8(codePoints);
+  }
+  else if (bomLength > 0) {
+    bytes.erase(0, (size_t)bomLength);
+  }
+  return Fasta(filename, std::move(bytes), recordName, recordIndex);
 }
 
 void Fasta::Show() const {

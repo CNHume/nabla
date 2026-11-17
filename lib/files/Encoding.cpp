@@ -23,6 +23,7 @@
 #include <fstream>                      // for ifstream
 #include <ranges>
 #include <stdexcept>                    // for runtime_error
+#include <string_view>                  // for string_view
 
 using namespace std;
 using namespace lcs::files;
@@ -214,7 +215,7 @@ static bool isContinuation(unsigned char c) {
   return (c & 0xC0) == 0x80;
 }
 
-u32string Encoding::DecodeUtf8(const string& bytes) {
+u32string Encoding::DecodeUtf8(string_view bytes) {
   u32string codePoints;
   for (size_t i = 0; i < bytes.size();) {
     auto b0 = (unsigned char)bytes[i];
