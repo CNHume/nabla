@@ -136,8 +136,10 @@ specified via
 .BR -q
 for the query file, or via
 .BR -r
-for the reference file).  Any other FASTA records will be ignored (with a warning issued
-for each.)
+for the reference file).  Any other FASTA records will be ignored.  When no
+.I record_id
+is given for a file, each ignored record of that file is reported with a
+warning.
 .TP
 .B -G
 Emit the (gapped) CIGAR alignment string; file1 is the reference and
