@@ -38,10 +38,9 @@ using namespace lcs;
 
 namespace {
   constexpr const char* usageSynopsis =
-    "Usage: nabla [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] "
-    "[-j <join>] [-l] [-p <prefix>] [-P] [-q <id>] [-Q] [-r <id>] "
-    "[-s <suffix>] [-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] "
-    "[-y] file1 file2";
+    "Usage: nabla [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] [-j <join>] "
+    "[-l] [-p <prefix>] [-P] [-q <record_id>] [-Q] [-r <record_id>] [-s <suffix>] "
+    "[-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] file1 file2";
 
   constexpr uint32_t edit_context_affix = 3;  // -u default context
 }
@@ -232,6 +231,8 @@ void Command::Parse(int argc, char* argv[]) {
             usage = true;
 
           hasQueryId = true;
+          isfasta = true;               // -q implies -F
+          istext = true;                // -F implies -T
           if (id != nullptr)
             files::ParseRecordId(id, queryName, queryIndex);
         }
@@ -257,6 +258,8 @@ void Command::Parse(int argc, char* argv[]) {
             usage = true;
 
           hasReferenceId = true;
+          isfasta = true;               // -r implies -F
+          istext = true;                // -F implies -T
           if (id != nullptr)
             files::ParseRecordId(id, referenceName, referenceIndex);
         }
@@ -366,9 +369,9 @@ void Command::Parse(int argc, char* argv[]) {
     throw invalid_argument(
       "-C (correspondence) cannot be combined with -G (gapped)");
 
-  if ((hasQueryId || hasReferenceId) && !isfasta)
+  if (isquote && (hasQueryId || hasReferenceId))
     throw invalid_argument(
-      "-F (FASTA) required for -q <id> or -r <id>");
+      "-Q (quote) cannot be combined with -q <record_id> or -r <record_id>");
 
   // The output-format switches are mutually exclusive.
   if ((isgapped && isparallel) ||
