@@ -35,8 +35,8 @@ namespace lcs::files {
   public:
     Algorithm algorithm = Algorithm::Automatic;
     formatters::Format format = formatters::Format::Sequential;
-    std::string file1;
-    std::string file2;
+    std::string filename1;              // a.k.a., reference file
+    std::string filename2;              // a.k.a., query file
     bool ignorecase = false;
     bool ignorespace = false;
     bool isfasta = false;
@@ -47,18 +47,18 @@ namespace lcs::files {
     bool isword = false;
 
     bool hasQueryId = false;
-    std::string queryName;               // -q record name for file2 (query)
-    std::uint32_t queryIndex = 0;        // -q record index for file2; 0 = none
+    std::string queryName;               // -q record name for query file (filename2)
+    std::uint32_t queryIndex = 0;        // -q record index for query file (1-based)
 
     bool hasReferenceId = false;
-    std::string referenceName;           // -r record name for file1 (reference)
-    std::uint32_t referenceIndex = 0;    // -r record index for file1; 0 = none
+    std::string referenceName;           // -r record name for reference file (filename1)
+    std::uint32_t referenceIndex = 0;    // -r record index for reference file (1-based)
 
     std::uint32_t join = 0;
     std::uint32_t prefix = 0;
     std::uint32_t suffix = 0;
     //
-    // The narrowest parallel heading "[1:2]" requires five columns.
+    // The narrowest parallel interval "[1:2]" requires five columns.
     // Widths below this minimum are rejected.
     //
     static constexpr std::uint32_t MIN_WIDTH = 5;

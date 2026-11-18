@@ -400,14 +400,14 @@ void Command::Parse(int argc, char* argv[]) {
       suffix = edit_context_affix;
   }
 
-  if (n < argc)                         // parse f1
-    file1 = argv[n++];
-  else                                  // f1 is required
+  if (n < argc)                         // parse filename1
+    filename1 = argv[n++];
+  else                                  // filename1 is required
     usage = true;
 
-  if (n < argc)                         // parse f2
-    file2 = argv[n++];
-  else                                  // f2 is required
+  if (n < argc)                         // parse filename2
+    filename2 = argv[n++];
+  else                                  // filename2 is required
     usage = true;
 
   if (n < argc)                         // superfluous argument specified

@@ -42,12 +42,12 @@ Length File::Correspondence(
     u32string s1, s2;
     if (options.isquote) {
       // Treat filename arguments as literal strings.
-      s1 = Encoding::DecodeUtf8(options.file1);
-      s2 = Encoding::DecodeUtf8(options.file2);
+      s1 = Encoding::DecodeUtf8(options.filename1);
+      s2 = Encoding::DecodeUtf8(options.filename2);
     }
     else if (options.isfasta) {
-      Fasta fasta1 = Fasta::Read(options.file1, options.referenceName, options.referenceIndex);
-      Fasta fasta2 = Fasta::Read(options.file2, options.queryName, options.queryIndex);
+      Fasta fasta1 = Fasta::Read(options.filename1, options.referenceName, options.referenceIndex);
+      Fasta fasta2 = Fasta::Read(options.filename2, options.queryName, options.queryIndex);
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -60,8 +60,8 @@ Length File::Correspondence(
       s2 = fasta2.Sequence();
     }
     else {
-      s1 = modes::Text::Read(options.file1);
-      s2 = modes::Text::Read(options.file2);
+      s1 = modes::Text::Read(options.filename1);
+      s2 = modes::Text::Read(options.filename2);
     }
     length = modes::Text::Correspondence(
       intervals, statistics, progress, s1, s2,
@@ -70,11 +70,11 @@ Length File::Correspondence(
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
       formatters::TextDriver::Show(
-        *format, *intervals, s1, s2, options.file1, options.file2);
+        *format, *intervals, s1, s2, options.filename1, options.filename2);
   }
   else {
-    auto r1 = modes::Record::Read(options.file1, options.isword);
-    auto r2 = modes::Record::Read(options.file2, options.isword);
+    auto r1 = modes::Record::Read(options.filename1, options.isword);
+    auto r2 = modes::Record::Read(options.filename2, options.isword);
     length = modes::Record::Correspondence(
       intervals, statistics, progress, r1, r2,
       options.algorithm, options.ignorecase, options.ignorespace,
@@ -82,7 +82,7 @@ Length File::Correspondence(
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
       formatters::RecordDriver::Show(
-        *format, *intervals, r1, r2, options.file1, options.file2);
+        *format, *intervals, r1, r2, options.filename1, options.filename2);
   }
   return length;
 }
@@ -98,12 +98,12 @@ Length File::Difference(
     u32string s1, s2;
     if (options.isquote) {
       // Treat filename arguments as literal strings.
-      s1 = Encoding::DecodeUtf8(options.file1);
-      s2 = Encoding::DecodeUtf8(options.file2);
+      s1 = Encoding::DecodeUtf8(options.filename1);
+      s2 = Encoding::DecodeUtf8(options.filename2);
     }
     else if (options.isfasta) {
-      Fasta fasta1 = Fasta::Read(options.file1, options.referenceName, options.referenceIndex);
-      Fasta fasta2 = Fasta::Read(options.file2, options.queryName, options.queryIndex);
+      Fasta fasta1 = Fasta::Read(options.filename1, options.referenceName, options.referenceIndex);
+      Fasta fasta2 = Fasta::Read(options.filename2, options.queryName, options.queryIndex);
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -116,8 +116,8 @@ Length File::Difference(
       s2 = fasta2.Sequence();
     }
     else {
-      s1 = modes::Text::Read(options.file1);
-      s2 = modes::Text::Read(options.file2);
+      s1 = modes::Text::Read(options.filename1);
+      s2 = modes::Text::Read(options.filename2);
     }
     length = modes::Text::Difference(
       intervals, statistics, progress, s1, s2,
@@ -126,11 +126,11 @@ Length File::Difference(
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
       formatters::TextDriver::Show(
-        *format, *intervals, s1, s2, options.file1, options.file2);
+        *format, *intervals, s1, s2, options.filename1, options.filename2);
   }
   else {
-    auto r1 = modes::Record::Read(options.file1, options.isword);
-    auto r2 = modes::Record::Read(options.file2, options.isword);
+    auto r1 = modes::Record::Read(options.filename1, options.isword);
+    auto r2 = modes::Record::Read(options.filename2, options.isword);
     if (options.format == formatters::Format::Edit) {
       auto format = formatters::Formatter::Make(
         options.format, options.width, options.tabsize);
@@ -143,7 +143,7 @@ Length File::Difference(
         options.join, options.prefix, options.suffix);
       if (!editIntervals.empty()) {     // identical files: emit nothing, like diff -u
         formatters::RecordDriver::Show(
-          *format, editIntervals, r1, r2, options.file1, options.file2);
+          *format, editIntervals, r1, r2, options.filename1, options.filename2);
       }
     }
     else {
@@ -156,7 +156,7 @@ Length File::Difference(
         options.join, options.prefix, options.suffix);
       if (intervals != nullptr)
         formatters::RecordDriver::Show(
-          *format, *intervals, r1, r2, options.file1, options.file2);
+          *format, *intervals, r1, r2, options.filename1, options.filename2);
     }
   }
   return length;

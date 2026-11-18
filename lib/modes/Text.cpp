@@ -194,20 +194,22 @@ Length Text::Compare(
       auto shorter = min(s1.size(), s2.size());
       if (matches <= algorithms::Analysis::SparseMatchCount * shorter) {
         algorithm = Algorithm::Matches;
-        reason = format("{} matches is sparse", matches);
+        reason = format("{} matches are sparse", matches);
       }
       else if (deltas == nullptr) {
         // Length-only: RickTime's find phase is fastest; the switch falls back
         // to RickSpace when its recording would overflow memory.
         algorithm = Algorithm::RickTime;
-        reason = format("{} matches are dense; trying RickTime (LCS Length)", matches);
+        reason = format(
+          "{} matches are dense.  Trying RickTime (LCS Length).", matches);
       }
       else {
         // Interval reconstruction: RickTime's O(d log d) dominant-match sort is
         // more expensive than RickSpace's divide-and-conquer, so reconstruct
         // directly in linear space.
         algorithm = Algorithm::RickSpace;
-        reason = format("{} matches are dense; RickSpace (LCS Trace)", matches);
+        reason = format(
+          "{} matches are dense.  Trying RickSpace (LCS Trace).", matches);
       }
     }
     if (isverbose)
@@ -260,7 +262,7 @@ Length Text::Compare(
       }
       catch (const algorithms::RickTimeBudgetExceeded&) {
         if (isverbose)
-          cerr << "RickTime: recording overflowed; fell back to RickSpace\n";
+          cerr << "RickTime: recording overflowed.  Falling back to RickSpace.\n";
         length = algorithms::RickSpace::Find(ppairs, statistics, progress, shorter, longer);
       }
     }
