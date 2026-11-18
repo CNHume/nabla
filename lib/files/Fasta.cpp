@@ -199,22 +199,27 @@ Fasta Fasta::Read(
   return Fasta(filename, std::move(bytes), recordName, recordIndex);
 }
 
+std::string Fasta::Label() const {
+  return records_.empty() ?
+    filename_ : filename_ + " >" + records_[selected_].name;
+}
+
 void Fasta::Show() const {
   if (records_.empty()) {
     cerr << format(
       std::locale(), "{}: {:L} No FASTA Header\n",
-      filename_, sequence_.size());
+      Label(), sequence_.size());
     return;
   }
   const auto& used = records_[selected_];
   if (used.description.empty())
     cerr << format(
-      std::locale(), "{}: {:L} >{}\n",
-      filename_, sequence_.size(), used.name);
+      std::locale(), "{}: {:L}\n",
+      Label(), sequence_.size());
   else
     cerr << format(
-      std::locale(), "{}: {:L} >{} {}\n",
-      filename_, sequence_.size(), used.name, used.description);
+      std::locale(), "{}: {:L} {}\n",
+      Label(), sequence_.size(), used.description);
 }
 
 void Fasta::WarnIgnored() const {

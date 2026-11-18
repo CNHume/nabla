@@ -70,6 +70,13 @@ namespace lcs::files {
     std::u32string Sequence() { return std::move(sequence_); }
 
     //
+    // The label identifying the selected record: the filename, followed by
+    // " >name" when a named record was used.  Shared by Show() and by the
+    // File drivers that render comparison labels.
+    //
+    std::string Label() const;
+
+    //
     // Report the selected record; call only under -v.
     //
     void Show() const;
