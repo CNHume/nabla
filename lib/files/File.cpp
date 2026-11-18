@@ -36,6 +36,11 @@ Length File::Correspondence(
   metrics::Progress* progress,
   const Options& options) {
   Length length(0);
+  //
+  // Labels to be used by the Show() methods:
+  //
+  auto label1 = options.filename1;
+  auto label2 = options.filename2;
   auto format = formatters::Formatter::Make(
     options.format, options.width, options.tabsize);
   if (options.istext) {
@@ -46,8 +51,10 @@ Length File::Correspondence(
       s2 = Encoding::DecodeUtf8(options.filename2);
     }
     else if (options.isfasta) {
-      Fasta fasta1 = Fasta::Read(options.filename1, options.referenceName, options.referenceIndex);
-      Fasta fasta2 = Fasta::Read(options.filename2, options.queryName, options.queryIndex);
+      Fasta fasta1 = Fasta::Read(
+        options.filename1, options.referenceName, options.referenceIndex);
+      Fasta fasta2 = Fasta::Read(
+        options.filename2, options.queryName, options.queryIndex);
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -68,9 +75,11 @@ Length File::Correspondence(
       options.algorithm, options.ignorecase, options.ignorespace,
       options.isjoin, options.isverbose,
       options.join, options.prefix, options.suffix);
-    if (intervals != nullptr)
+    if (intervals != nullptr) {
+      //[ToDo]Include FASTA Record Names in labels here
       formatters::TextDriver::Show(
-        *format, *intervals, s1, s2, options.filename1, options.filename2);
+        *format, *intervals, s1, s2, label1, label2);
+    }
   }
   else {
     auto r1 = modes::Record::Read(options.filename1, options.isword);
@@ -82,7 +91,7 @@ Length File::Correspondence(
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
       formatters::RecordDriver::Show(
-        *format, *intervals, r1, r2, options.filename1, options.filename2);
+        *format, *intervals, r1, r2, label1, label2);
   }
   return length;
 }
@@ -92,6 +101,11 @@ Length File::Difference(
   metrics::Progress* progress,
   const Options& options) {
   Length length(0);
+  //
+  // Labels to be used by the Show() methods:
+  //
+  auto label1 = options.filename1;
+  auto label2 = options.filename2;
   if (options.istext) {
     auto format = formatters::Formatter::Make(
       options.format, options.width, options.tabsize);
@@ -102,8 +116,10 @@ Length File::Difference(
       s2 = Encoding::DecodeUtf8(options.filename2);
     }
     else if (options.isfasta) {
-      Fasta fasta1 = Fasta::Read(options.filename1, options.referenceName, options.referenceIndex);
-      Fasta fasta2 = Fasta::Read(options.filename2, options.queryName, options.queryIndex);
+      Fasta fasta1 = Fasta::Read(
+        options.filename1, options.referenceName, options.referenceIndex);
+      Fasta fasta2 = Fasta::Read(
+        options.filename2, options.queryName, options.queryIndex);
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -124,9 +140,11 @@ Length File::Difference(
       options.algorithm, options.ignorecase, options.ignorespace,
       options.isjoin, options.isverbose,
       options.join, options.prefix, options.suffix);
-    if (intervals != nullptr)
+    if (intervals != nullptr) {
+      //[ToDo]Include FASTA Record Names in labels here
       formatters::TextDriver::Show(
-        *format, *intervals, s1, s2, options.filename1, options.filename2);
+        *format, *intervals, s1, s2, label1, label2);
+    }
   }
   else {
     auto r1 = modes::Record::Read(options.filename1, options.isword);
@@ -141,10 +159,10 @@ Length File::Difference(
         options.algorithm, options.ignorecase, options.ignorespace,
         options.isjoin, options.isverbose,
         options.join, options.prefix, options.suffix);
-      if (!editIntervals.empty()) {     // identical files: emit nothing, like diff -u
+      // Identical files do not show any intervals
+      if (!editIntervals.empty())
         formatters::RecordDriver::Show(
-          *format, editIntervals, r1, r2, options.filename1, options.filename2);
-      }
+          *format, editIntervals, r1, r2, label1, label2);
     }
     else {
       auto format = formatters::Formatter::Make(
@@ -156,7 +174,7 @@ Length File::Difference(
         options.join, options.prefix, options.suffix);
       if (intervals != nullptr)
         formatters::RecordDriver::Show(
-          *format, *intervals, r1, r2, options.filename1, options.filename2);
+          *format, *intervals, r1, r2, label1, label2);
     }
   }
   return length;
