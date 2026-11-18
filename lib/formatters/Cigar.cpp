@@ -41,7 +41,7 @@ void Cigar::Layout(
   // The match preceding this delta.
   auto match = side1.begin - prevEnd1_;
   if (match > 0) {
-    cigar_ += format("{}M", match);
+    cigar_ += format("{}=", match);
     reference_ += match;
     query_ += match;
   }
@@ -63,7 +63,7 @@ void Cigar::EndResult() {
   // The match following the last delta.
   auto match = size1_ - prevEnd1_;
   if (match > 0) {
-    cigar_ += format("{}M", match);
+    cigar_ += format("{}=", match);
     reference_ += match;
     query_ += match;
   }

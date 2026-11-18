@@ -26,7 +26,7 @@ namespace lcs::formatters {
 
   //
   // Cigar emits the SAM CIGAR alignment trace of the query against the
-  // reference: M for matched records, D for reference-only records, and I
+  // reference: = for matched records, D for reference-only records, and I
   // for query-only records.
   //
   class Cigar : public Formatter {

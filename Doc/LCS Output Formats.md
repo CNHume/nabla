@@ -101,8 +101,8 @@ delete, insert, and substitution are all derivable from which side of a
 ## Cigar (`-G`) — SAM alignment
 
 `Cigar` emits the SAM CIGAR alignment trace of one sequence against the other —
-the run-length encoding (`M`/`I`/`D` operations) that SAM/BAM alignment records
-use.  Selecting `-G` turns the LCS match runs into `M` blocks and the edit runs
+the run-length encoding (`=`/`I`/`D` operations) that SAM/BAM alignment records
+use.  Selecting `-G` turns the LCS match runs into `=` blocks and the edit runs
 into `I`/`D` blocks, producing a standard CIGAR string for direct consumption
 by downstream alignment tooling (`samtools`, etc.).
 
