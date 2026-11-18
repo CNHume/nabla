@@ -201,7 +201,8 @@ Fasta Fasta::Read(
 
 std::string Fasta::Label() const {
   return records_.empty() ?
-    filename_ : filename_ + " >" + records_[selected_].name;
+    filename_ :
+    filename_ + " >" + records_[selected_].name;
 }
 
 void Fasta::Show() const {

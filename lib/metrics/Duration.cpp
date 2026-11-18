@@ -175,25 +175,23 @@ int64_t Duration::ElapsedMicroseconds() const {
 }
 
 std::string Duration::ToString(const char* name, long count, int64_t microseconds) {
-  auto us = microseconds;
+  auto hasrate = microseconds > 0 && count > 0;
+  auto timeUnit = getTimeUnits(microseconds);
+  auto us = (double)microseconds;
+  auto timeValue = us / (double)timeInterval(timeUnit);
 
-  auto timeUnit = getTimeUnits(us);
-  auto timeValue = (double)us / (double)timeInterval(timeUnit);
-
-  auto hasrate = us > 0 && count > 0;
-  auto rateValue = std::numeric_limits<double>::quiet_NaN();
-  auto rateUnit = RateUnits::MHz;
   if (hasrate) {
-    auto usPerOp = (double)us / (double)count;
-    rateUnit = getRateUnits(usPerOp);
-    rateValue = (double)count * (double)rateInterval(rateUnit) / (double)us;
+    auto rateUnit = getRateUnits(us / (double)count);
+    auto rateValue = (double)count * (double)rateInterval(rateUnit) / us;
+    return std::format(
+      std::locale(), "{}: {:L} operations in {} {} @{} {}\n",
+      name, count, formatScaled(timeValue), timeUnitsName(timeUnit),
+      formatScaled(rateValue), rateUnitsName(rateUnit));
   }
 
   return std::format(
-    std::locale(),
-    "{}: {:L} operations in {} {} @{} {}\n",
-    name, count, formatScaled(timeValue), timeUnitsName(timeUnit),
-    formatScaled(rateValue), rateUnitsName(rateUnit));
+    std::locale(), "{}: {:L} operations in {} {}\n",
+    name, count, formatScaled(timeValue), timeUnitsName(timeUnit));
 }
 
 std::string Duration::WallClock() {
@@ -207,7 +205,7 @@ std::string Duration::WallClock() {
   localtime_r(&tt, &local);
 #endif
   auto centis = duration_cast<milliseconds>(
-    now.time_since_epoch() % seconds{ 1 }).count() / 10;
+    now.time_since_epoch() % seconds { 1 }).count() / 10;
   return std::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02}.{:02}",
     local.tm_year + 1900, local.tm_mon + 1, local.tm_mday,
     local.tm_hour, local.tm_min, local.tm_sec, centis);

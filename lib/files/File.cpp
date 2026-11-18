@@ -55,6 +55,8 @@ Length File::Correspondence(
         options.filename1, options.referenceName, options.referenceIndex);
       Fasta fasta2 = Fasta::Read(
         options.filename2, options.queryName, options.queryIndex);
+      label1 = fasta1.Label();
+      label2 = fasta2.Label();
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -65,8 +67,6 @@ Length File::Correspondence(
         fasta2.WarnIgnored();
       s1 = fasta1.Sequence();
       s2 = fasta2.Sequence();
-      label1 = fasta1.Label();
-      label2 = fasta2.Label();
     }
     else {
       s1 = modes::Text::Read(options.filename1);
@@ -77,10 +77,9 @@ Length File::Correspondence(
       options.algorithm, options.ignorecase, options.ignorespace,
       options.isjoin, options.isverbose,
       options.join, options.prefix, options.suffix);
-    if (intervals != nullptr) {
+    if (intervals != nullptr)
       formatters::TextDriver::Show(
         *format, *intervals, s1, s2, label1, label2);
-    }
   }
   else {
     auto r1 = modes::Record::Read(options.filename1, options.isword);
@@ -121,6 +120,8 @@ Length File::Difference(
         options.filename1, options.referenceName, options.referenceIndex);
       Fasta fasta2 = Fasta::Read(
         options.filename2, options.queryName, options.queryIndex);
+      label1 = fasta1.Label();
+      label2 = fasta2.Label();
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -131,8 +132,6 @@ Length File::Difference(
         fasta2.WarnIgnored();
       s1 = fasta1.Sequence();
       s2 = fasta2.Sequence();
-      label1 = fasta1.Label();
-      label2 = fasta2.Label();
     }
     else {
       s1 = modes::Text::Read(options.filename1);
@@ -143,10 +142,9 @@ Length File::Difference(
       options.algorithm, options.ignorecase, options.ignorespace,
       options.isjoin, options.isverbose,
       options.join, options.prefix, options.suffix);
-    if (intervals != nullptr) {
+    if (intervals != nullptr)
       formatters::TextDriver::Show(
         *format, *intervals, s1, s2, label1, label2);
-    }
   }
   else {
     auto r1 = modes::Record::Read(options.filename1, options.isword);
