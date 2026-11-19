@@ -75,8 +75,8 @@ namespace {
   }
 
   //
-  // Center text within width using fill, without truncating over-long text
-  // (matching the behavior of format's '^' alignment).
+  // Center text within width using fill, without truncating over-long text,
+  // matching the behavior of format's '^' alignment.
   //
   string Centered(const string& text, uint32_t width, char fill) {
     if (text.size() >= width)
@@ -128,7 +128,8 @@ void Parallel::EndResult() {
 void Parallel::Layout(
   uint32_t, const SideSpan& side1, const SideSpan& side2, EditKind) {
   cout <<
-    Head(side1, side2) << Body(side1, side2);
+    Head(side1, side2) <<
+    Body(side1, side2);
 }
 
 std::string Parallel::Head(

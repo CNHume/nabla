@@ -59,10 +59,10 @@ namespace lcs::files {
     std::uint32_t suffix = 0;
     //
     // The narrowest parallel interval "[1:2]" requires five columns.
-    // To accommodate a 4-digit line number, the minimum width is 11.
+    // To accommodate 2-digit line numbers the minimum width is 7.
     // Widths below this minimum are not allowed.
     //
-    static constexpr std::uint32_t MIN_PARALLEL_WIDTH = 11;
+    static constexpr std::uint32_t MIN_PARALLEL_WIDTH = 7;
     std::uint32_t width = 80;
     std::uint32_t tabsize = 8;
   };

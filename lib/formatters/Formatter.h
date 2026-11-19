@@ -75,7 +75,7 @@ namespace lcs::formatters {
 
   protected:
     // Default glyphs shared by the output layouts.  The names are abstract
-    // (roles, not characters) so a subclass may override the glyph later.
+    // roles (not characters) so a subclass may override the glyph later.
     static constexpr char horizontalEmpty = '=';  // empty-side rule fill
     static constexpr char horizontal = '-';       // ranged-side rule fill
     static constexpr char horizontalCenter = '+'; // rule-row separator
