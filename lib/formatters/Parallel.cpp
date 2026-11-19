@@ -131,13 +131,16 @@ void Parallel::Layout(
     Head(side1, side2) << Body(side1, side2);
 }
 
-std::string Parallel::Head(const SideSpan& side1, const SideSpan& side2) const {
+std::string Parallel::Head(
+  const SideSpan& side1, const SideSpan& side2) const {
   return format(
     "{}{}{}\n",
-    Heading(side1, leftWidth()), horizontalCenter, Heading(side2, rightWidth()));
+    Heading(
+      side1, leftWidth()), horizontalCenter, Heading(side2, rightWidth()));
 }
 
-std::string Parallel::Body(const SideSpan& side1, const SideSpan& side2) const {
+std::string Parallel::Body(
+  const SideSpan& side1, const SideSpan& side2) const {
   string text;
   auto rows = max(side1.lines.size(), side2.lines.size());
   for (size_t i = 0; i < rows; i++) {
@@ -161,11 +164,18 @@ std::string Parallel::Body(const SideSpan& side1, const SideSpan& side2) const {
   return text;
 }
 
-std::string Parallel::Heading(const SideSpan& side, uint32_t width) const {
+std::string Parallel::Heading(
+  const SideSpan& side, uint32_t width) const {
   auto fill = side.begin < side.end ? horizontal : horizontalEmpty;
   auto range = side.begin < side.end ?
     format("[{}:{}]", side.begin, side.end) :
     format("[{}]", side.begin);
+  //
+  // Truncate an over-long range so the heading fits the column and the
+  // horizontalCenter stays aligned with the rule-rows.
+  //
+  if (range.size() > width)
+    range.resize(width);
   return Centered(range, width, fill);
 }
 
