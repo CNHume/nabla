@@ -328,9 +328,9 @@ void Command::Parse(int argc, char* argv[]) {
           width = parse_uint32(argv[++n], "width");
         else
           usage = true;
-        if (width < MIN_WIDTH)          // reject below the minimum
+        if (width < MIN_PARALLEL_WIDTH) // reject below the minimum
           throw invalid_argument(
-            std::format("Invalid width: {} (minimum is {})", width, MIN_WIDTH));
+            std::format("Invalid width: {} (minimum is {})", width, MIN_PARALLEL_WIDTH));
         break;
 
       case 'y':                         // the parallel switch (side-by-side)

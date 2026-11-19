@@ -174,7 +174,8 @@ int64_t Duration::ElapsedMicroseconds() const {
   return sw_.elapsed_microseconds();
 }
 
-std::string Duration::ToString(const char* name, long count, int64_t microseconds) {
+std::string Duration::ToString(
+  const char* name, long count, int64_t microseconds) {
   auto hasrate = microseconds > 0 && count > 0;
   auto timeUnit = getTimeUnits(microseconds);
   auto us = (double)microseconds;
