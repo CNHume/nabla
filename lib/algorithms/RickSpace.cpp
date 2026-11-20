@@ -501,6 +501,15 @@ namespace {
         // bound whenever the sweep nearly fills it.  This keeps the fraction
         // monotonic and below 100% until the recursion is actually done.
         //
+        // The threshold (31/32) and the growth factor (32/31) are reciprocals,
+        // so each growth resets the fraction to just under 31/32: the bar
+        // rests at ~97% during the recursion and reaches 100% only at the end.
+        // A higher threshold such as 99/100 would pin the bar at 99% (looking
+        // nearly done) while cutting the per-growth headroom to ~1%, so the
+        // bound would be re-grown about three times as often.  The + 1 keeps
+        // the reset fraction strictly below 31/32, so the next sweep cannot
+        // immediately re-trigger a growth.
+        //
         if (RickSpace::Contours > occ.contourBound * 31 / 32)
           occ.contourBound = RickSpace::Contours * 32 / 31 + 1;
         progress->Update((double)RickSpace::Contours / (double)occ.contourBound);
