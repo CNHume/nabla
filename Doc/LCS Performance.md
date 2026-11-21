@@ -6,7 +6,7 @@ four engines plus `-Aa`, so the reader can see that `-Aa` tracks the winner
 without any user intervention.
 
 Notation: `D` = edit distance, `r` = match count (matched position pairs),
-`ρ = r/(mn)` = match density (in `[0,1]`), `s` = alphabet size (distinct
+`η = r/(mn)` = match density (in `[0,1]`), `s` = alphabet size (distinct
 symbols), `p` = LCS length.  Cells are `wall-time · peak-RSS`;
 the `-Aa` cell also names the algorithm it selected in brackets.
 `TIMEOUT` = exceeded the timeout; `abort` = the algorithm bailed out on its own
@@ -83,8 +83,8 @@ thin out:
 | 10,000 | 284K | abort | **0.03s** · 12MB | TIMEOUT | TIMEOUT | **0.07s** · 12MB [Hunt-Szymanski] |
 
 The hand-off is at the `r = 100·min(m,n)` boundary (5M at this length) — a
-match density of `ρ = 100/max(m,n) = 0.002` here, swept from `ρ ≈ 1/4` (DNA)
-down to `ρ ≈ 10⁻⁴` (`s = 10,000`):
+match density of `η = 100/max(m,n) = 0.002` here, swept from `η ≈ 1/4` (DNA)
+down to `η ≈ 10⁻⁴` (`s = 10,000`):
 
 - **Dense** (`s ≤ 100`): `r` is huge, Hunt–Szymanski times out, and `-Aa` stays
   on RickTime.

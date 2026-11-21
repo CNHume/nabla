@@ -17,8 +17,8 @@ Three independent quantities decide which algorithm wins:
 `r` is a function of `s`, the lengths, and the symbol *distribution*: uniform
 symbols give `r ≈ n²/s`, but a skewed distribution keeps `r` high even at large
 `s`.  The three metrics are therefore genuinely independent.  The normalized
-form is the match density `ρ = r/(mn)`, in the closed interval `[0,1]`: `ρ → 0`
-is sparse, `ρ → Θ(1)` is dense.
+form is the match density `η = r/(mn)`, in the closed interval `[0,1]`: `η → 0`
+is sparse, `η → Θ(1)` is dense.
 
 ## The dispatch
 
