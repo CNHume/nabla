@@ -6,7 +6,7 @@ four engines plus `-Aa`, so the reader can see that `-Aa` tracks the winner
 without any user intervention.
 
 Notation: `D` = edit distance, `r` = match count (matched position pairs),
-`η = r/(mn)` = match density (in `[0,1]`), `s` = alphabet size (distinct
+`η = r/(mn)` = match density (matching efficiency, in `[0,1]`), `s` = alphabet size (distinct
 symbols), `p` = LCS length.  Cells are `wall-time · peak-RSS`;
 the `-Aa` cell also names the algorithm it selected in brackets.
 `TIMEOUT` = exceeded the timeout; `abort` = the algorithm bailed out on its own
