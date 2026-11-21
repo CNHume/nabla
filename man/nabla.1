@@ -322,15 +322,6 @@ whose name begins with a hyphen can follow it.
 The
 .B -A
 option chooses among four algorithms, each fastest in its own regime.
-Each is preceded by an Affix Trimming first pass: the maximal common prefix
-and suffix (the affixes) are forced members of every LCS, so they are
-stripped before the core algorithm runs on the remaining middle, then
-restored to the result.  This is the first pass
-.BR diff (1)
-applies; it matters most for Myers, whose O(ND) work is proportional to the
-sum of the input lengths.  The
-.B -a
-(affix) option skips it and passes the affixes through instead.
 Three independent properties of the input decide which regime applies:
 .TP
 Edit distance
@@ -394,6 +385,12 @@ RickSpace otherwise.
 .PP
 .B -v
 reports which algorithm automatic dispatch selected and why.
+.PP
+Note: each algorithm is preceded by an Affix Trimming first pass that
+strips the maximal common prefix and suffix.  It matters most for Myers,
+whose O(ND) work is proportional to the sum of the input lengths.  The
+.B -a
+option bypasses affix trimming.
 .SH EXIT STATUS
 .TP
 .B 0
