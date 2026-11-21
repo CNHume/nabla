@@ -25,8 +25,7 @@ is sparse, `η → Θ(1)` is dense.
 Before the dispatch — and before any of the four algorithms — nabla strips the
 maximal common prefix and suffix (the *affixes*) of the two inputs.  Affix
 symbols are forced members of every LCS, so the algorithm runs on the remaining
-middle only, and the affixes are restored to the result afterward.  This is the
-same first pass `diff(1)` applies.
+middle only, and the affixes are restored to the result afterward.
 
 The trim leaves the edit distance `D` unchanged (`D = m + n − 2p`, and the
 prefix and suffix reduce `m`, `n`, and `p` equally), so the Myers probe reaches
