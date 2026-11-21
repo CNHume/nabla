@@ -311,7 +311,7 @@ The
 .BR -H ,
 and
 .B -V
-switches are early-exit switches: They each prints their report and terminate
+switches are early-exit switches: They each print their report, then terminate
 without processing input files.
 .PP
 A
@@ -384,11 +384,12 @@ RickSpace otherwise.
 .RE
 .PP
 .B -v
-reports which algorithm automatic dispatch selected and why.
+reports which algorithm is selected by automatic dispatch, and explains
+the reason for this selection.
 .PP
-Note: Each algorithm is preceded by an Affix Trimming pass which strips common
-prefixes and suffixes.  This matters most for Myers, whose O(ND) work is
-proportional to the sum of the input lengths.  The
+Note: Each algorithm is preceded by an Affix Trimming pass which strips
+common prefixes and suffixes.  This matters most for Myers, whose O(ND)
+work is proportional to the sum of the input lengths.  The
 .B -a
 option bypasses Affix Trimming.
 .SH EXIT STATUS
