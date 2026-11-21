@@ -147,6 +147,7 @@
     <ClInclude Include="..\lib\formatters\Sequential.h" />
     <ClInclude Include="..\lib\modes\Text.h" />
     <ClInclude Include="..\lib\lcs\Pair.h" />
+    <ClInclude Include="..\lib\lcs\Trim.h" />
     <ClInclude Include="SuspectDash.h" />
     <ClInclude Include="..\lib\metrics\Progress.h" />
     <ClInclude Include="..\lib\metrics\Stopwatch.h" />

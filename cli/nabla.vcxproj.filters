@@ -206,6 +206,9 @@
     <ClInclude Include="..\lib\lcs\Pair.h">
       <Filter>lcs</Filter>
     </ClInclude>
+    <ClInclude Include="..\lib\lcs\Trim.h">
+      <Filter>lcs</Filter>
+    </ClInclude>
     <ClInclude Include="SuspectDash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
