@@ -101,7 +101,13 @@ namespace {
   Occurrences BuildOccurrences(const MATCHES& matches,
     size_t size1, size_t size2);
   Occurrences BuildOccurrences(const u32string& s1, const u32string& s2);
+  void Trim(const Occurrences& occ,
+    size_t row0, size_t row1, size_t column0, size_t column1,
+    size_t& prefix, size_t& suffix);
   void Hirschberg(const Occurrences& occ,
+    size_t row0, size_t row1, size_t column0, size_t column1, vector<Match>& out,
+    metrics::Progress* progress);
+  void HirschbergCore(const Occurrences& occ,
     size_t row0, size_t row1, size_t column0, size_t column1, vector<Match>& out,
     metrics::Progress* progress);
   Result FindMidpoint(const Occurrences& occ,
@@ -388,7 +394,54 @@ namespace {
     return occ;
   }
 
+  //
+  // Affix Trimming: computes the lengths of the sub-problem's common prefix and
+  // suffix (the "affixes").  Affix symbols are forced members of the sub-problem's
+  // LCS, so Hirschberg() emits them directly and recurses on the remaining middle
+  // only.  Symbols compare by compressed id (occ.rowId == occ.colId), so the scan
+  // is O(1) per position and the no-affix case costs a single comparison.
+  //
+  void Trim(const Occurrences& occ,
+    size_t row0, size_t row1, size_t column0, size_t column1,
+    size_t& prefix, size_t& suffix) {
+    auto rowCount = row1 - row0;
+    auto columnCount = column1 - column0;
+    auto bound = rowCount < columnCount ? rowCount : columnCount;
+    prefix = 0;
+    while (prefix < bound && occ.rowId[row0 + prefix] == occ.colId[column0 + prefix])
+      prefix++;
+    suffix = 0;
+    while (suffix < bound - prefix &&
+           occ.rowId[row1 - 1 - suffix] == occ.colId[column1 - 1 - suffix])
+      suffix++;
+  }
+
+  //
+  // Affix Trimming wrapper: strip the sub-problem's common prefix and suffix,
+  // run HirschbergCore() on the remaining middle, then restore the affixes.
+  // This mirrors modes::TrimAndCompare(), which trims and reattaches in delta
+  // space; here the affix matches are emitted directly as (row, column) pairs.
+  //
   void Hirschberg(
+    const Occurrences& occ, size_t row0, size_t row1, size_t column0, size_t column1,
+    vector<Match>& out, metrics::Progress* progress) {
+    if (row0 >= row1 || column0 >= column1)
+      return;
+
+    size_t prefix, suffix;
+    Trim(occ, row0, row1, column0, column1, prefix, suffix);
+    for (size_t i = 0; i < prefix; i++)
+      out.push_back({ .row = (Index)(row0 + i), .column = (Index)(column0 + i) });
+
+    HirschbergCore(
+      occ, row0 + prefix, row1 - suffix, column0 + prefix, column1 - suffix,
+      out, progress);
+
+    for (size_t i = 0; i < suffix; i++)
+      out.push_back({ .row = (Index)(row1 - suffix + i), .column = (Index)(column1 - suffix + i) });
+  }
+
+  void HirschbergCore(
     const Occurrences& occ, size_t row0, size_t row1, size_t column0, size_t column1,
     vector<Match>& out, metrics::Progress* progress) {
     if (row0 >= row1 || column0 >= column1)
