@@ -102,6 +102,15 @@ produces
 .BR nabla64 .
 .SH OPTIONS
 .TP
+.B -a
+Pass the affixes through: skip Affix Trimming.  By default nabla first strips
+the maximal common prefix and suffix (affixes) of the two inputs, runs the
+LCS algorithm on what remains in between, then restores the affixes to the
+result.  The
+.B -a
+switch skips trimming, and passes common affixes to the comparison algorithm.
+This can be used to measure the performance benefit of Affix Trimming.
+.TP
 .BI -A " a|d|m|s|t"
 Specify the LCS algorithm:
 .B a
@@ -117,15 +126,6 @@ RickTime (1995).  Accepts
 .B -Ad
 or
 .BR "-A d" .
-.TP
-.B -a
-Pass the affixes through: skip Affix Trimming.  By default nabla first strips
-the maximal common prefix and suffix (the affixes) of the two inputs, runs the
-LCS algorithm on the remaining middle, then restores the affixes to the
-result.  The
-.B -a
-switch passes the common affixes to the comparison instead, which is useful
-when measuring the benefit of the Affix Trimming first pass.
 .TP
 .B -b
 Ignore whitespace: collapse each run of whitespace to a single space before
