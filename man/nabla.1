@@ -127,7 +127,7 @@ or
 .TP
 .B -b
 Ignore whitespace: Collapse each run of whitespace to a single space before
-comparing, and expand the reported spans back to the original positions.
+comparing, and expand the reported spans back to their original positions.
 .TP
 .B -C
 Print the correspondence (the common, matching records) instead of the
@@ -303,7 +303,7 @@ format (default 80, minimum 7).  Content is truncated to this width, so the
 total output line is 1 + 2 x width characters.
 .TP
 .B -y
-Emit side-by-side (parallel) output, in the manner of
+Emit side-by-side (parallel) output, in a manner similar to
 .BR diff (1).
 .PP
 The
@@ -314,10 +314,10 @@ and
 switches are early-exit switches: They each print their report, then terminate
 without processing input files.
 .PP
-A
+A double hyphen
 .B --
-argument ends the options; the remaining arguments are operands, so a file
-whose name begins with a hyphen can follow it.
+ends command line options.  Remaining arguments are assumed to be operands, so a file
+whose name begins with a hyphen can follow double hyphen.
 .SH ALGORITHM
 The
 .B -A
@@ -344,10 +344,10 @@ Myers (edit distance): fastest on near-identical input (small
 .IR D ).
 The O(ND) minimal edit-script algorithm
 .RB ( N
-the sum of the two input lengths); its reconstruction history grows
+the sum of the two input lengths).  Its reconstruction history grows
 with the square of
 .IR D ,
-so it is bounded by a memory-derived budget.
+so it is bounded by a memory-based budget.
 .TP
 .B m
 Hunt-Szymanski (matches): fastest when the matches are sparse (low
