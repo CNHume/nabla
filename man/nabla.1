@@ -126,7 +126,7 @@ or
 .BR "-A d" .
 .TP
 .B -b
-Ignore whitespace: collapse each run of whitespace to a single space before
+Ignore whitespace: Collapse each run of whitespace to a single space before
 comparing, and expand the reported spans back to the original positions.
 .TP
 .B -C
@@ -284,7 +284,7 @@ with
 is not yet implemented.
 .TP
 .B -v
-Enable verbose output: print the LCS length, the start and finish wall-clock
+Enable verbose output: Print the LCS length, the start and finish wall-clock
 times, and a timing summary; by default, only the differences are shown.  With
 .BR -F ,
 the name and description of processed FASTA records are reported.
@@ -311,8 +311,8 @@ The
 .BR -H ,
 and
 .B -V
-switches are early-exit switches: each prints its report and terminates
-without comparing files.
+switches are early-exit switches: They each prints their report and terminate
+without processing input files.
 .PP
 A
 .B --
@@ -386,11 +386,11 @@ RickSpace otherwise.
 .B -v
 reports which algorithm automatic dispatch selected and why.
 .PP
-Note: each algorithm is preceded by an Affix Trimming first pass that
-strips the maximal common prefix and suffix.  It matters most for Myers,
-whose O(ND) work is proportional to the sum of the input lengths.  The
+Note: Each algorithm is preceded by an Affix Trimming pass which strips common
+prefixes and suffixes.  This matters most for Myers, whose O(ND) work is
+proportional to the sum of the input lengths.  The
 .B -a
-option bypasses affix trimming.
+option bypasses Affix Trimming.
 .SH EXIT STATUS
 .TP
 .B 0
