@@ -288,7 +288,9 @@ Length Text::Compare(
       // with the bar on stderr.
       //
       algorithms::Analysis::SuggestRickTime(
-        length, shorter.size(), longer.size(),
+        length + statistics->trimmed,
+        shorter.size() + statistics->trimmed,
+        longer.size() + statistics->trimmed,
         statistics->candidates, statistics->symbols);
     if (isswapped)
       for (auto pair = pairs; pair != nullptr; pair = pair->next)
@@ -332,6 +334,8 @@ Length Text::TrimAndCompare(
     },
     prefix, suffix);
 
+  if (statistics)
+    statistics->trimmed = prefix + suffix;
   if (isverbose && (prefix > 0 || suffix > 0))
     cerr << format(
       "Affix Trimming removed {} prefix and {} suffix symbols\n", prefix, suffix);

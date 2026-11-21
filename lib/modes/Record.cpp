@@ -299,6 +299,8 @@ Length Record::TrimAndCompare(
     },
     prefix, suffix);
 
+  if (statistics)
+    statistics->trimmed = prefix + suffix;
   if (isverbose && (prefix > 0 || suffix > 0))
     cerr << format(
       "Affix Trimming removed {} prefix and {} suffix symbols\n", prefix, suffix);
