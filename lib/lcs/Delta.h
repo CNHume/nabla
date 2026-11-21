@@ -71,6 +71,13 @@ namespace lcs {
       std::size_t size1, std::size_t size2);
     static void Context(std::shared_ptr<Delta> deltas,
       std::size_t size1, std::size_t size2, std::uint32_t prefix, std::uint32_t suffix);
+    //
+    // Restore() reattaches the affixes stripped by the Affix Trimming first
+    // pass: it shifts the middle match runs right by prefix and brackets them
+    // with the prefix and suffix match runs, against [0, size) on each side.
+    //
+    static void Restore(std::shared_ptr<Delta>& deltas,
+      Index prefix, Index suffix, std::size_t size1, std::size_t size2);
   };
 
 } // namespace lcs

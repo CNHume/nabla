@@ -39,6 +39,7 @@ namespace lcs::files {
     std::string filename2;              // a.k.a., query file
     bool ignorecase = false;
     bool ignorespace = false;
+    bool isaffix = false;               // -a: pass the common affixes through
     bool isfasta = false;
     bool isjoin = false;
     bool isquote = false;

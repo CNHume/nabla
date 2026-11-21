@@ -20,6 +20,20 @@ symbols give `r ≈ n²/s`, but a skewed distribution keeps `r` high even at lar
 form is the match density `η = r/(mn)`, in the closed interval `[0,1]`: `η → 0`
 is sparse, `η → Θ(1)` is dense.
 
+## Affix Trimming
+
+Before the dispatch — and before any of the four algorithms — nabla strips the
+maximal common prefix and suffix (the *affixes*) of the two inputs.  Affix
+symbols are forced members of every LCS, so the algorithm runs on the remaining
+middle only, and the affixes are restored to the result afterward.  This is the
+same first pass `diff(1)` applies.
+
+The trim leaves the edit distance `D` unchanged (`D = m + n − 2p`, and the
+prefix and suffix reduce `m`, `n`, and `p` equally), so the Myers probe reaches
+the same verdict.  What shrinks is `N = m + n`, down to `m + n − 2(prefix +
+suffix)` — which matters most for Myers, whose `O(ND)` work is proportional to
+`N`.  Disable the first pass with `-a` (the affix option).
+
 ## The dispatch
 
 `-Aa` runs a cheap pre-analysis and routes the workload, in order:

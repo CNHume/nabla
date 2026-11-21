@@ -68,8 +68,8 @@ namespace lcs::formatters {
       metrics::Progress* progress,
       const modes::Record::RECORDS& r1, const modes::Record::RECORDS& r2,
       Algorithm algorithm, bool ignorecase, bool ignorespace,
-      bool isjoin, bool isverbose,
-      std::uint32_t join, std::uint32_t prefix, std::uint32_t suffix);
+      bool isjoin, bool isverbose, bool isaffix = false,
+      std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
   private:
     static std::string Range(Index begin, Index end);

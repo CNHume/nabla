@@ -75,7 +75,7 @@ Length File::Correspondence(
     length = modes::Text::Correspondence(
       intervals, statistics, progress, s1, s2,
       options.algorithm, options.ignorecase, options.ignorespace,
-      options.isjoin, options.isverbose,
+      options.isjoin, options.isverbose, options.isaffix,
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
       formatters::TextDriver::Show(
@@ -87,7 +87,7 @@ Length File::Correspondence(
     length = modes::Record::Correspondence(
       intervals, statistics, progress, r1, r2,
       options.algorithm, options.ignorecase, options.ignorespace,
-      options.isjoin, options.isverbose,
+      options.isjoin, options.isverbose, options.isaffix,
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
       formatters::RecordDriver::Show(
@@ -140,7 +140,7 @@ Length File::Difference(
     length = modes::Text::Difference(
       intervals, statistics, progress, s1, s2,
       options.algorithm, options.ignorecase, options.ignorespace,
-      options.isjoin, options.isverbose,
+      options.isjoin, options.isverbose, options.isaffix,
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
       formatters::TextDriver::Show(
@@ -157,7 +157,7 @@ Length File::Difference(
         intervals != nullptr ? &editIntervals : nullptr,
         statistics, progress, r1, r2,
         options.algorithm, options.ignorecase, options.ignorespace,
-        options.isjoin, options.isverbose,
+        options.isjoin, options.isverbose, options.isaffix,
         options.join, options.prefix, options.suffix);
       // Identical files do not show any intervals
       if (!editIntervals.empty())
@@ -170,7 +170,7 @@ Length File::Difference(
       length = modes::Record::Difference(
         intervals, statistics, progress, r1, r2,
         options.algorithm, options.ignorecase, options.ignorespace,
-        options.isjoin, options.isverbose,
+        options.isjoin, options.isverbose, options.isaffix,
         options.join, options.prefix, options.suffix);
       if (intervals != nullptr)
         formatters::RecordDriver::Show(

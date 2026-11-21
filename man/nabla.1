@@ -118,6 +118,15 @@ RickTime (1995).  Accepts
 or
 .BR "-A d" .
 .TP
+.B -a
+Pass the affixes through: skip Affix Trimming.  By default nabla first strips
+the maximal common prefix and suffix (the affixes) of the two inputs, runs the
+LCS algorithm on the remaining middle, then restores the affixes to the
+result.  The
+.B -a
+switch passes the common affixes to the comparison instead, which is useful
+when measuring the benefit of the Affix Trimming first pass.
+.TP
 .B -b
 Ignore whitespace: collapse each run of whitespace to a single space before
 comparing, and expand the reported spans back to the original positions.
@@ -315,6 +324,15 @@ whose name begins with a hyphen can follow it.
 The
 .B -A
 option chooses among four algorithms, each fastest in its own regime.
+Each is preceded by an Affix Trimming first pass: the maximal common prefix
+and suffix (the affixes) are forced members of every LCS, so they are
+stripped before the core algorithm runs on the remaining middle, then
+restored to the result.  This is the first pass
+.BR diff (1)
+applies; it matters most for Myers, whose O(ND) work is proportional to the
+sum of the input lengths.  The
+.B -a
+(affix) option skips it and passes the affixes through instead.
 Three independent properties of the input decide which regime applies:
 .TP
 Edit distance

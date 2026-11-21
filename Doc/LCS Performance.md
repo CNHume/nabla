@@ -114,6 +114,17 @@ Measured at 40% edit: RickTime's recording is 3.9 GB at 100 Kbp and overflows at
 
 ---
 
+## Affix Trimming
+
+Every table above uses random input, whose common prefix and suffix are
+negligible, so the Affix Trimming first pass costs only its `O(m + n)` scan
+there.  Its payoff is on inputs that do share affixes — versioned files,
+assembled genomes, repeated headers — where stripping the affixes shrinks
+`N = m + n` before Myers runs, without changing `D`.  Disable it with `-a`
+(the affix option).
+
+---
+
 ## Summary
 
 `-Aa` never runs a pathological algorithm.  Each boundary condition — divergence

@@ -258,3 +258,36 @@ void Delta::Context(shared_ptr<Delta> deltas,
   //prior1 = size1;
   //prior2 = size2;
 }
+
+void Delta::Restore(shared_ptr<Delta>& deltas,
+  Index prefix, Index suffix, size_t size1, size_t size2) {
+  if (prefix == 0 && suffix == 0)
+    return;
+  if (prefix > 0)
+    for (auto next = deltas; next != nullptr;
+      next = dynamic_pointer_cast<Delta>(next->next)) {
+      next->begin1 += prefix;
+      next->begin2 += prefix;
+      next->end1 += prefix;
+      next->end2 += prefix;
+    }
+  if (prefix > 0) {
+    auto head = make_shared<Delta>(0, 0, prefix, prefix, deltas);
+    head->kind = EditKind::Match;
+    deltas = head;
+  }
+  if (suffix > 0) {
+    auto tail = make_shared<Delta>(
+      (Index)(size1 - suffix), (Index)(size2 - suffix),
+      (Index)size1, (Index)size2);
+    tail->kind = EditKind::Match;
+    if (deltas == nullptr)
+      deltas = tail;
+    else {
+      auto last = deltas;
+      while (last->next != nullptr)
+        last = static_pointer_cast<Delta>(last->next);
+      last->next = tail;
+    }
+  }
+}

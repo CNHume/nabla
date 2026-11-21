@@ -19,6 +19,7 @@ namespace lcs {
   enum class Algorithm { Automatic, EditDistance, Matches, RickSpace, RickTime };
   class Pair; class Delta;                     // data structures
   template <typename T> std::string join(...)  // helper
+  template <typename Seq, typename Eq> void Trim(...);   // Affix Trimming
   // typedefs: PAIRS, INDEXES, STRING_TO_INDEXES_MAP, MATCHES
 
   namespace files {        // lib/files/

@@ -17,6 +17,7 @@
 // 2015-01-19 CNHume  Created file
 //
 #include "modes/Text.h"
+#include "lcs/Trim.h"
 #include "algorithms/Analysis.h"
 #include "metrics/Duration.h"
 #include "files/Encoding.h"
@@ -69,14 +70,19 @@ uint64_t Text::Match(
 Length Text::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
   const u32string& s1, const u32string& s2, Algorithm algorithm,
-  bool ignorecase, bool ignorespace, bool isjoin, bool isverbose,
+  bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
+  //
+  // -a (affix) passes the common affixes through to the core algorithm;
+  // otherwise the Affix Trimming first pass strips them first.
+  //
+  auto compare = isaffix ? &Text::Compare : &Text::TrimAndCompare;
   //
   // A null interval pointer requests length only: skip the span/context
   // construction and return the length directly.
   //
   if (intervals == nullptr)
-    return Compare(
+    return compare(
       nullptr, statistics, progress, s1, s2, algorithm, ignorecase, ignorespace, isverbose);
 
   if (ignorespace) {
@@ -89,7 +95,7 @@ Length Text::Correspondence(
     vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
-    auto length = Compare(
+    auto length = compare(
       intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
     auto size1 = t1.size();
     auto size2 = t2.size();
@@ -101,7 +107,7 @@ Length Text::Correspondence(
     return length;
   }
 
-  auto length = Compare(
+  auto length = compare(
     intervals, statistics, progress, s1, s2, algorithm, ignorecase, ignorespace, isverbose);
   auto size1 = s1.size();               // empty final delta
   auto size2 = s2.size();
@@ -114,11 +120,16 @@ Length Text::Correspondence(
 Length Text::Difference(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
   const u32string& s1, const u32string& s2, Algorithm algorithm,
-  bool ignorecase, bool ignorespace, bool isjoin, bool isverbose,
+  bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
+  //
+  // -a (affix) passes the common affixes through to the core algorithm;
+  // otherwise the Affix Trimming first pass strips them first.
+  //
+  auto compare = isaffix ? &Text::Compare : &Text::TrimAndCompare;
   // A null interval pointer requests length only.
   if (intervals == nullptr)
-    return Compare(
+    return compare(
       nullptr, statistics, progress, s1, s2, algorithm, ignorecase, ignorespace, isverbose);
 
   if (ignorespace) {
@@ -126,7 +137,7 @@ Length Text::Difference(
     vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
-    auto length = Compare(
+    auto length = compare(
       intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
     auto size1 = t1.size();
     auto size2 = t2.size();
@@ -139,7 +150,7 @@ Length Text::Difference(
     return length;
   }
 
-  auto length = Compare(
+  auto length = compare(
     intervals, statistics, progress, s1, s2,
     algorithm, ignorecase, ignorespace, isverbose);
   auto size1 = s1.size();               // empty final delta
@@ -297,6 +308,57 @@ Length Text::Compare(
     statistics->elapsedMicroseconds = (uint64_t)duration.ElapsedMicroseconds();
   if (isverbose)
     cerr << format("Finished at {}\n", metrics::Duration::WallClock());
+  return length;
+}
+
+Length Text::TrimAndCompare(
+  shared_ptr<Delta>* deltas, metrics::Statistics* statistics, metrics::Progress* progress,
+  const u32string& s1, const u32string& s2, Algorithm algorithm,
+  bool ignorecase, bool ignorespace, bool isverbose) {
+  //
+  // Affix Trimming: strip the maximal common prefix and suffix, run Compare()
+  // on the remaining middle, then restore the affixes to the result.  The
+  // affixes are forced LCS members, so the length grows by prefix + suffix and
+  // the middle match runs shift right by prefix.  The caller collapses
+  // whitespace before this method, so the trim compares code points with case
+  // folding only.
+  //
+  if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
+    throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
+  Index prefix = 0, suffix = 0;
+  lcs::Trim(s1, s2,
+    [ignorecase](char32_t x, char32_t y) {
+      return ignorecase ? files::Normal::ToLower(x) == files::Normal::ToLower(y) : x == y;
+    },
+    prefix, suffix);
+
+  if (isverbose && (prefix > 0 || suffix > 0))
+    cerr << format(
+      "Affix Trimming removed {} prefix and {} suffix symbols\n", prefix, suffix);
+
+  //
+  // The core algorithm compares the middle only.  Copy the middle when the
+  // trim shortened the input; otherwise compare the strings in place.
+  //
+  u32string m1, m2;
+  if (prefix > 0 || suffix > 0) {
+    m1 = s1.substr(prefix, s1.size() - prefix - suffix);
+    m2 = s2.substr(prefix, s2.size() - prefix - suffix);
+  }
+  const u32string& a1 = prefix > 0 || suffix > 0 ? m1 : s1;
+  const u32string& a2 = prefix > 0 || suffix > 0 ? m2 : s2;
+
+  auto length = Compare(
+    deltas, statistics, progress, a1, a2, algorithm, ignorecase, ignorespace, isverbose);
+
+  //
+  // Restore the affixes: shift the middle match runs right by prefix and
+  // bracket them with the prefix and suffix match runs.  Length-only calls
+  // (null deltas) skip this reconstruction and just grow the length.
+  //
+  length += prefix + suffix;
+  if (deltas != nullptr)
+    Delta::Restore(*deltas, prefix, suffix, s1.size(), s2.size());
   return length;
 }
 

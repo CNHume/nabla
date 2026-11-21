@@ -36,15 +36,24 @@ namespace lcs::modes {
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
       bool ignorecase = false, bool ignorespace = false, bool isjoin = false, bool isverbose = false,
-      std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
+      bool isaffix = false, std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
     static Length Difference(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
       bool ignorecase = false, bool ignorespace = false, bool isjoin = false, bool isverbose = false,
-      std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
+      bool isaffix = false, std::uint32_t join = 0, std::uint32_t prefix = 0, std::uint32_t suffix = 0);
 
     static Length Compare(
+      std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+      const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
+      bool ignorecase = false, bool ignorespace = false, bool isverbose = false);
+
+    //
+    // Affix Trimming first pass: strip the common prefix and suffix, run
+    // Compare() on the middle, then restore the affixes to the result.
+    //
+    static Length TrimAndCompare(
       std::shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
       const std::u32string& s1, const std::u32string& s2, Algorithm algorithm = Algorithm::Automatic,
       bool ignorecase = false, bool ignorespace = false, bool isverbose = false);
