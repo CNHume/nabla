@@ -22,3 +22,6 @@ build-*/
 Thumbs.db
 *~
 *.bak
+
+# Running groff from the repo root writes an empty nabla.pdf (the source is man/nabla.1)
+/nabla.pdf
