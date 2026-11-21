@@ -39,7 +39,7 @@ namespace lcs::files {
     std::string filename2;              // a.k.a., query file
     bool ignorecase = false;
     bool ignorespace = false;
-    bool isaffix = false;               // -a: pass the common affixes through
+    bool isaffix = false;               // pass common affixes into Compare()
     bool isfasta = false;
     bool isjoin = false;
     bool isquote = false;
@@ -48,12 +48,12 @@ namespace lcs::files {
     bool isword = false;
 
     bool hasQueryId = false;
-    std::string queryName;               // -q record name for query file (filename2)
-    std::uint32_t queryIndex = 0;        // -q record index for query file (1-based)
+    std::string queryName;              // -q record name for query file (filename2)
+    std::uint32_t queryIndex = 0;       // -q record index for query file (1-based)
 
     bool hasReferenceId = false;
-    std::string referenceName;           // -r record name for reference file (filename1)
-    std::uint32_t referenceIndex = 0;    // -r record index for reference file (1-based)
+    std::string referenceName;          // -r record name for reference file (filename1)
+    std::uint32_t referenceIndex = 0;   // -r record index for reference file (1-based)
 
     std::uint32_t join = 0;
     std::uint32_t prefix = 0;

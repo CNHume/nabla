@@ -12,7 +12,7 @@ computes the Longest Common Subsequence (LCS) of
 .I file1
 and
 .IR file2 .
-By default it prints their differences as an edit script; with
+By default, it prints their differences as an edit script; with
 .B -C
 it prints the common (matching) records instead, and with
 .B -l
@@ -103,13 +103,11 @@ produces
 .SH OPTIONS
 .TP
 .B -a
-Pass the affixes through: skip Affix Trimming.  By default nabla first strips
-the maximal common prefix and suffix (affixes) of the two inputs, runs the
-LCS algorithm on what remains in between, then restores the affixes to the
-result.  The
+Skip Affix Trimming.  By default, nabla first strips affixes (the prefixes and suffixes)
+common to the inputs, runs the LCS algorithm on what remains in between, then restores
+the affixes to reconstruct the result.  The
 .B -a
-switch skips trimming, and passes common affixes to the comparison algorithm.
-This can be used to measure the performance benefit of Affix Trimming.
+switch can be used to infer the performance benefit of Affix Trimming.
 .TP
 .BI -A " a|d|m|s|t"
 Specify the LCS algorithm:
@@ -287,9 +285,9 @@ is not yet implemented.
 .TP
 .B -v
 Enable verbose output: print the LCS length, the start and finish wall-clock
-times, and a timing summary; by default only the differences are shown.  With
+times, and a timing summary; by default, only the differences are shown.  With
 .BR -F ,
-also report the name and description of those FASTA records actually processed.
+the name and description of processed FASTA records are reported.
 .TP
 .B -V
 Print the version and exit.

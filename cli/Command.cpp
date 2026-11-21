@@ -38,7 +38,7 @@ using namespace lcs;
 
 namespace {
   constexpr const char* usageSynopsis =
-    "Usage: nabla [-A <a|d|m|s|t>] [-a] [-b] [-C] [-F] [-G] [-h] [-H] [-i] [-j <join>] "
+    "Usage: nabla [-a] [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] [-j <join>] "
     "[-l] [-p <prefix>] [-P] [-q <record_id>] [-Q] [-r <record_id>] [-s <suffix>] "
     "[-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] file1 file2";
 
@@ -96,6 +96,13 @@ void Command::Parse(int argc, char* argv[]) {
     }
     else {                              // parse single character switch
       switch (token[1]) {
+      case 'a':                         // the affix switch (skip trimming)
+        if (len > 2)                    // superfluous value specified
+          usage = true;
+        else
+          isaffix = true;               // pass common affixes into Compare()
+        break;
+
       case 'A':                         // the algorithm switch
         {
           //
@@ -131,13 +138,6 @@ void Command::Parse(int argc, char* argv[]) {
             usage = true;               // unknown algorithm
           }
         }
-        break;
-
-      case 'a':                         // the affix switch (skip trimming)
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          isaffix = true;               // pass the common affixes through
         break;
 
       case 'b':                         // the ignorespace switch
