@@ -83,7 +83,9 @@ Length Text::Correspondence(
   //
   if (intervals == nullptr)
     return compare(
-      nullptr, statistics, progress, s1, s2, algorithm, ignorecase, ignorespace, isverbose);
+      nullptr, statistics, progress,
+      s1, s2, algorithm,
+      ignorecase, ignorespace, isverbose);
 
   if (ignorespace) {
     //
@@ -96,7 +98,9 @@ Length Text::Correspondence(
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
     auto length = compare(
-      intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
+      intervals, statistics, progress,
+      t1, t2, algorithm,
+      ignorecase, false, isverbose);
     auto size1 = t1.size();
     auto size2 = t2.size();
     Delta::Context(*intervals, size1, size2, prefix, suffix);
@@ -108,7 +112,9 @@ Length Text::Correspondence(
   }
 
   auto length = compare(
-    intervals, statistics, progress, s1, s2, algorithm, ignorecase, ignorespace, isverbose);
+    intervals, statistics, progress,
+    s1, s2, algorithm,
+    ignorecase, ignorespace, isverbose);
   auto size1 = s1.size();               // empty final delta
   auto size2 = s2.size();
   Delta::Context(*intervals, size1, size2, prefix, suffix);
@@ -130,7 +136,9 @@ Length Text::Difference(
   // A null interval pointer requests length only.
   if (intervals == nullptr)
     return compare(
-      nullptr, statistics, progress, s1, s2, algorithm, ignorecase, ignorespace, isverbose);
+      nullptr, statistics, progress,
+      s1, s2, algorithm,
+      ignorecase, ignorespace, isverbose);
 
   if (ignorespace) {
     u32string t1, t2;
@@ -138,7 +146,9 @@ Length Text::Difference(
     files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
     files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
     auto length = compare(
-      intervals, statistics, progress, t1, t2, algorithm, ignorecase, false, isverbose);
+      intervals, statistics, progress,
+      t1, t2, algorithm,
+      ignorecase, false, isverbose);
     auto size1 = t1.size();
     auto size2 = t2.size();
     auto deltas = Delta::Complement(*intervals, size1, size2);

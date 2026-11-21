@@ -91,10 +91,14 @@ Length Record::Correspondence(
   auto compare = isaffix ? &Record::Compare : &Record::TrimAndCompare;
   if (intervals == nullptr)
     return compare(
-      nullptr, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
+      nullptr, statistics, progress,
+      r1, r2, algorithm,
+      ignorecase, ignorespace, isverbose);
 
   auto length = compare(
-    intervals, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
+    intervals, statistics, progress,
+    r1, r2, algorithm,
+    ignorecase, ignorespace, isverbose);
   auto size1 = r1.size();               // empty final delta
   auto size2 = r2.size();
   Delta::Context(*intervals, size1, size2, prefix, suffix);
@@ -115,10 +119,14 @@ Length Record::Difference(
   auto compare = isaffix ? &Record::Compare : &Record::TrimAndCompare;
   if (intervals == nullptr)
     return compare(
-      nullptr, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
+      nullptr, statistics, progress,
+      r1, r2, algorithm,
+      ignorecase, ignorespace, isverbose);
 
   auto length = compare(
-    intervals, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
+    intervals, statistics, progress,
+    r1, r2, algorithm,
+    ignorecase, ignorespace, isverbose);
   auto size1 = r1.size();               // empty final delta
   auto size2 = r2.size();
   auto deltas = Delta::Complement(*intervals, size1, size2);
@@ -318,7 +326,9 @@ Length Record::TrimAndCompare(
   const RECORDS& a2 = prefix > 0 || suffix > 0 ? m2 : r2;
 
   auto length = Compare(
-    deltas, statistics, progress, a1, a2, algorithm, ignorecase, ignorespace, isverbose);
+    deltas, statistics, progress,
+    a1, a2, algorithm,
+    ignorecase, ignorespace, isverbose);
 
   //
   // Restore the affixes: shift the middle match runs right by prefix and
