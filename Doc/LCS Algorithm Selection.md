@@ -29,9 +29,10 @@ middle only, and the affixes are restored to the result afterward.
 
 The trim leaves the edit distance `D` unchanged (`D = m + n − 2p`, and the
 prefix and suffix reduce `m`, `n`, and `p` equally), so the Myers probe reaches
-the same verdict.  What shrinks is `N = m + n`, down to `m + n − 2(prefix +
-suffix)` — which matters most for Myers, whose `O(ND)` work is proportional to
-`N`.  Disable the first pass with `-a` (the affix option).
+the same verdict.  What shrinks is the work, in proportion to the affix
+fraction: `m + n` for Myers' `O(ND)` sweep, `r` for Hunt-Szymanski's
+`O((r + n) log n)`, and `n` for the Rick `O(ns)` tables.  Disable the first
+pass with `-a` (the affix option).
 
 ## The dispatch
 

@@ -388,8 +388,10 @@ reports which algorithm is selected by automatic dispatch, and explains
 the reason for this selection.
 .PP
 Note: Each algorithm is preceded by an Affix Trimming pass which strips
-common prefixes and suffixes.  This matters most for Myers, whose O(ND)
-work is proportional to the sum of the input lengths.  The
+common prefixes and suffixes.  The benefit scales with the affix fraction
+for every algorithm: the trim shrinks the input length for Myers, the match
+count for Hunt-Szymanski, and the occurrence tables for the Rick engines.
+The
 .B -a
 option bypasses Affix Trimming.
 .SH EXIT STATUS

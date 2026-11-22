@@ -27,8 +27,9 @@ namespace lcs {
   // Affix Trimming strips the maximal common prefix and common suffix (the
   // "affixes") of two sequences before the core LCS algorithm.  Affix symbols
   // are forced LCS members, so the algorithm runs on the remaining middle
-  // only, and the affixes are restored to the result afterward.  This matters
-  // most for Myers, whose O(ND) work is proportional to m + n.
+  // only, and the affixes are restored to the result afterward.  The benefit
+  // scales with the affix fraction for every algorithm: the trim shrinks
+  // m + n (Myers), r (Hunt-Szymanski), and n (the Rick tables).
   //
   // Trim() computes the lengths of the two affixes.  equal reports whether a
   // pair of symbols matches under the same case/space normalization the LCS
