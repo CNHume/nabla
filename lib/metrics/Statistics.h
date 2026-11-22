@@ -17,8 +17,8 @@
 //
 #pragma once
 
-#include "metrics/Duration.h"                   // for Duration::ToString
-#include "lcs/LCS.h"                        // for Algorithm
+#include "metrics/Duration.h"           // for Duration::ToString
+#include "lcs/LCS.h"                    // for Algorithm
 
 #include <cstdint>                      // for uint64_t
 #include <string>                       // for string

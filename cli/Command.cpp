@@ -41,9 +41,10 @@ using formatters::Format;
 
 namespace {
   constexpr const char* usageSynopsis =
-    "Usage: nabla [-a] [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] [-j <join>] "
-    "[-l] [-p <prefix>] [-P] [-q <record_id>] [-Q] [-r <record_id>] [-s <suffix>] "
-    "[-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] file1 file2";
+    "Usage: nabla [-a] [-A <a|d|m|s|t>] [-b] [-C] [-F] [-G] [-h] [-H] [-i] "
+    "[-j <join>] [-l] [-p <prefix>] [-P] [-q <record_id>] [-Q] [-r <record_id>] "
+    "[-s <suffix>] [-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] "
+    "file1 file2";
 
   constexpr uint32_t edit_context_affix = 3;  // -u default context
 }
