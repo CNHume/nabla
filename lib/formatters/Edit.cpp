@@ -23,6 +23,7 @@
 
 using namespace std;
 using namespace lcs;
+using modes::Record;
 
 namespace lcs::formatters {
 
@@ -145,7 +146,7 @@ EDIT_INTERVALS Edit::BuildIntervals(
 Length Edit::Difference(
   EDIT_INTERVALS* intervals, metrics::Statistics* statistics,
   metrics::Progress* progress,
-  const modes::Record::RECORDS& r1, const modes::Record::RECORDS& r2,
+  const Record::RECORDS& r1, const Record::RECORDS& r2,
   Algorithm algorithm, bool ignorecase, bool ignorespace,
   bool isjoin, bool isverbose, bool isaffix, uint32_t join, uint32_t prefix, uint32_t suffix) {
   shared_ptr<Delta> matches;
@@ -153,7 +154,7 @@ Length Edit::Difference(
   // -a (affix) passes the common affixes through to the core algorithm;
   // otherwise the Affix Trimming first pass strips them first.
   //
-  auto compare = isaffix ? &modes::Record::Compare : &modes::Record::TrimAndCompare;
+  auto compare = isaffix ? &Record::Compare : &Record::TrimAndCompare;
   auto length = compare(
     &matches, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
   if (intervals == nullptr)

@@ -30,6 +30,8 @@
 using namespace std;
 using namespace lcs;
 using namespace lcs::files;
+using modes::Record;
+using modes::Text;
 
 Length File::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
@@ -41,6 +43,10 @@ Length File::Correspondence(
   //
   auto label1 = options.filename1;
   auto label2 = options.filename2;
+  if (statistics) {
+    statistics->label1 = label1;
+    statistics->label2 = label2;
+  }
   auto format = formatters::Formatter::Make(
     options.format, options.width, options.tabsize);
   if (options.istext) {
@@ -57,6 +63,10 @@ Length File::Correspondence(
         options.filename2, options.queryName, options.queryIndex);
       label1 = fasta1.Label();
       label2 = fasta2.Label();
+      if (statistics) {
+        statistics->label1 = label1;
+        statistics->label2 = label2;
+      }
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -69,10 +79,10 @@ Length File::Correspondence(
       s2 = fasta2.Sequence();
     }
     else {
-      s1 = modes::Text::Read(options.filename1);
-      s2 = modes::Text::Read(options.filename2);
+      s1 = Text::Read(options.filename1);
+      s2 = Text::Read(options.filename2);
     }
-    length = modes::Text::Correspondence(
+    length = Text::Correspondence(
       intervals, statistics, progress, s1, s2,
       options.algorithm, options.ignorecase, options.ignorespace,
       options.isjoin, options.isverbose, options.isaffix,
@@ -82,9 +92,9 @@ Length File::Correspondence(
         *format, *intervals, s1, s2, label1, label2);
   }
   else {
-    auto r1 = modes::Record::Read(options.filename1, options.isword);
-    auto r2 = modes::Record::Read(options.filename2, options.isword);
-    length = modes::Record::Correspondence(
+    auto r1 = Record::Read(options.filename1, options.isword);
+    auto r2 = Record::Read(options.filename2, options.isword);
+    length = Record::Correspondence(
       intervals, statistics, progress, r1, r2,
       options.algorithm, options.ignorecase, options.ignorespace,
       options.isjoin, options.isverbose, options.isaffix,
@@ -106,6 +116,10 @@ Length File::Difference(
   //
   auto label1 = options.filename1;
   auto label2 = options.filename2;
+  if (statistics) {
+    statistics->label1 = label1;
+    statistics->label2 = label2;
+  }
   if (options.istext) {
     auto format = formatters::Formatter::Make(
       options.format, options.width, options.tabsize);
@@ -122,6 +136,10 @@ Length File::Difference(
         options.filename2, options.queryName, options.queryIndex);
       label1 = fasta1.Label();
       label2 = fasta2.Label();
+      if (statistics) {
+        statistics->label1 = label1;
+        statistics->label2 = label2;
+      }
       if (options.isverbose) {
         fasta1.Show();
         fasta2.Show();
@@ -134,10 +152,10 @@ Length File::Difference(
       s2 = fasta2.Sequence();
     }
     else {
-      s1 = modes::Text::Read(options.filename1);
-      s2 = modes::Text::Read(options.filename2);
+      s1 = Text::Read(options.filename1);
+      s2 = Text::Read(options.filename2);
     }
-    length = modes::Text::Difference(
+    length = Text::Difference(
       intervals, statistics, progress, s1, s2,
       options.algorithm, options.ignorecase, options.ignorespace,
       options.isjoin, options.isverbose, options.isaffix,
@@ -147,8 +165,8 @@ Length File::Difference(
         *format, *intervals, s1, s2, label1, label2);
   }
   else {
-    auto r1 = modes::Record::Read(options.filename1, options.isword);
-    auto r2 = modes::Record::Read(options.filename2, options.isword);
+    auto r1 = Record::Read(options.filename1, options.isword);
+    auto r2 = Record::Read(options.filename2, options.isword);
     if (options.format == formatters::Format::Edit) {
       auto format = formatters::Formatter::Make(
         options.format, options.width, options.tabsize);
@@ -167,7 +185,7 @@ Length File::Difference(
     else {
       auto format = formatters::Formatter::Make(
         options.format, options.width, options.tabsize);
-      length = modes::Record::Difference(
+      length = Record::Difference(
         intervals, statistics, progress, r1, r2,
         options.algorithm, options.ignorecase, options.ignorespace,
         options.isjoin, options.isverbose, options.isaffix,

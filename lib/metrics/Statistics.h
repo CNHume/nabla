@@ -43,6 +43,8 @@ namespace lcs::metrics {
     std::uint64_t contours = 0;           // RickSpace contour sweeps
     std::uint64_t symbols = 0;            // s: distinct symbols
     std::uint64_t trimmed = 0;            // prefix + suffix symbols stripped by Affix Trimming
+    std::string label1;                   // first input label, for -v reporting
+    std::string label2;                   // second input label, for -v reporting
     std::uint64_t edits = 0;              // D: Myers edit distance (insertions + deletions)
     std::uint64_t elapsedMicroseconds = 0;// Compare() elapsed time
 
