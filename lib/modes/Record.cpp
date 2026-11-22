@@ -98,7 +98,8 @@ Length Record::Correspondence(
   // -a (affix) passes the common affixes through to the core algorithm;
   // otherwise the Affix Trimming first pass strips them first.
   //
-  auto compare = isaffix ? &Record::Compare : &Record::TrimAndCompare;
+  auto compare = isaffix ?
+    &Record::Compare : &Record::TrimAndCompare;
   if (intervals == nullptr)
     return compare(
       nullptr, statistics, progress,
@@ -126,7 +127,8 @@ Length Record::Difference(
   // -a (affix) passes the common affixes through to the core algorithm;
   // otherwise the Affix Trimming first pass strips them first.
   //
-  auto compare = isaffix ? &Record::Compare : &Record::TrimAndCompare;
+  auto compare = isaffix ?
+    &Record::Compare : &Record::TrimAndCompare;
   if (intervals == nullptr)
     return compare(
       nullptr, statistics, progress,

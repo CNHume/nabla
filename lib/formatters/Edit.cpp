@@ -156,7 +156,8 @@ Length Edit::Difference(
   // -a (affix) passes the common affixes through to the core algorithm;
   // otherwise the Affix Trimming first pass strips them first.
   //
-  auto compare = isaffix ? &Record::Compare : &Record::TrimAndCompare;
+  auto compare = isaffix ?
+    &Record::Compare : &Record::TrimAndCompare;
   auto length = compare(
     &matches, statistics, progress, r1, r2, algorithm, ignorecase, ignorespace, isverbose);
   if (intervals == nullptr)

@@ -87,7 +87,8 @@ Length Text::Correspondence(
   // -a (affix) passes the common affixes through to the core algorithm;
   // otherwise the Affix Trimming first pass strips them first.
   //
-  auto compare = isaffix ? &Text::Compare : &Text::TrimAndCompare;
+  auto compare = isaffix ?
+    &Text::Compare : &Text::TrimAndCompare;
   //
   // A null interval pointer requests length only: skip the span/context
   // construction and return the length directly.
@@ -143,7 +144,8 @@ Length Text::Difference(
   // -a (affix) passes the common affixes through to the core algorithm;
   // otherwise the Affix Trimming first pass strips them first.
   //
-  auto compare = isaffix ? &Text::Compare : &Text::TrimAndCompare;
+  auto compare = isaffix ?
+    &Text::Compare : &Text::TrimAndCompare;
   // A null interval pointer requests length only.
   if (intervals == nullptr)
     return compare(
