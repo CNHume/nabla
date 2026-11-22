@@ -23,6 +23,8 @@
 
 using namespace std;
 using namespace lcs;
+using metrics::Progress;
+using metrics::Statistics;
 using modes::Record;
 
 namespace lcs::formatters {
@@ -144,8 +146,8 @@ EDIT_INTERVALS Edit::BuildIntervals(
 // and split into EDIT_INTERVALS.
 //
 Length Edit::Difference(
-  EDIT_INTERVALS* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
+  EDIT_INTERVALS* intervals, Statistics* statistics,
+  Progress* progress,
   const Record::RECORDS& r1, const Record::RECORDS& r2,
   Algorithm algorithm, bool ignorecase, bool ignorespace,
   bool isjoin, bool isverbose, bool isaffix, uint32_t join, uint32_t prefix, uint32_t suffix) {

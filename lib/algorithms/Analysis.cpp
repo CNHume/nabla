@@ -27,6 +27,7 @@
 using namespace std;
 using namespace lcs;
 using namespace lcs::algorithms;
+using files::Host;
 
 namespace {
   //
@@ -88,7 +89,7 @@ uint64_t Analysis::RecordingBudget(uint64_t m, uint64_t n, uint64_t symbols) {
   //
   auto tableBytes = sizeof(Index) * symbols * (m + n + 4);
   auto headerBytes = vectorHeaderBytes * (m + 2);
-  auto budgetBytes = (uint64_t)((double)files::Host::AvailableBytes() * recordingMargin);
+  auto budgetBytes = (uint64_t)((double)Host::AvailableBytes() * recordingMargin);
   auto room = budgetBytes > tableBytes + headerBytes ?
     budgetBytes - tableBytes - headerBytes : 0;
   return room / recordBytes;
@@ -126,7 +127,7 @@ uint64_t Analysis::MyersBudget(uint64_t m, uint64_t n) {
   // of (D+1)^2 Index entries.  Bound D so that history fits a safety margin of
   // available RAM; D also cannot exceed the combined length.
   //
-  auto budgetBytes = (uint64_t)((double)files::Host::AvailableBytes() * recordingMargin);
+  auto budgetBytes = (uint64_t)((double)Host::AvailableBytes() * recordingMargin);
   auto maxD = (uint64_t)sqrt((double)(budgetBytes / sizeof(Index)));
   auto bound = m + n;
   return min(maxD, bound);

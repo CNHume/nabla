@@ -46,6 +46,7 @@
 
 using namespace std;
 using namespace lcs;
+using metrics::Progress;
 
 namespace lcs::algorithms {
 
@@ -105,7 +106,7 @@ namespace {
 }
 
 Length HuntSzymanski::Find(
-  shared_ptr<Pair>* pairs, metrics::Progress* progress,
+  shared_ptr<Pair>* pairs, Progress* progress,
   MATCHES& columnsMatchedByRow) {
   auto traceLCS = pairs != nullptr;
   vector<MatchNode> nodes;              // arena: one node per THRESH change

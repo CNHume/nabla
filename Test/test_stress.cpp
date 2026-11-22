@@ -27,6 +27,8 @@
 using namespace lcs;
 
 using namespace std;
+using modes::Record;
+using modes::Text;
 
 namespace {
   // Rolling two-row O(m*n) DP LCS length: independent ground truth.
@@ -97,7 +99,7 @@ namespace {
     };
     for (auto algorithm : algos) {
       shared_ptr<Delta> deltas;
-      auto length = modes::Text::Correspondence(
+      auto length = Text::Correspondence(
         &deltas, nullptr, nullptr, s1, s2, algorithm, false, false, false, false, 0, 0, 0);
       if (length != expected) {
         fprintf(stderr, "[trial %llu] %s length %llu != DP %llu\n",
@@ -187,7 +189,7 @@ namespace {
     };
     for (auto algorithm : recordAlgos) {
       shared_ptr<Delta> deltas;
-      auto length = modes::Record::Correspondence(
+      auto length = Record::Correspondence(
         &deltas, nullptr, nullptr, r1, r2, algorithm, false, false, false, false, 0, 0, 0);
       if (length != expected) {
         fprintf(stderr, "[trial %llu] %s length %llu != DP %llu\n",

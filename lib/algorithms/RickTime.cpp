@@ -28,6 +28,8 @@
 #include <vector>
 
 using namespace lcs;
+using metrics::Progress;
+using metrics::Statistics;
 
 namespace lcs::algorithms {
 
@@ -179,8 +181,8 @@ namespace {
 }
 
 static Length Sweep(
-  shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
-  metrics::Progress* progress, const FlexTables& t) {
+  shared_ptr<Pair>* pairs, Statistics* statistics,
+  Progress* progress, const FlexTables& t) {
   auto m = t.m;
   auto n = t.n;
 
@@ -364,16 +366,16 @@ static Length Sweep(
 }
 
 Length RickTime::Find(
-  shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
-  metrics::Progress* progress,
+  shared_ptr<Pair>* pairs, Statistics* statistics,
+  Progress* progress,
   const u32string& s1, const u32string& s2) {
   auto t = BuildTables(s1, s2);
   return Sweep(pairs, statistics, progress, t);
 }
 
 Length RickTime::Find(
-  shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
-  metrics::Progress* progress,
+  shared_ptr<Pair>* pairs, Statistics* statistics,
+  Progress* progress,
   const MATCHES& matches, Length size1, Length size2) {
   auto t = BuildTables(matches, (size_t)size1, (size_t)size2);
   return Sweep(pairs, statistics, progress, t);

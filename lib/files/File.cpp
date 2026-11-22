@@ -32,11 +32,18 @@ using namespace lcs;
 using namespace lcs::files;
 using modes::Record;
 using modes::Text;
+using formatters::Edit;
+using formatters::EDIT_INTERVALS;
+using formatters::Format;
 using formatters::Formatter;
+using formatters::RecordDriver;
+using formatters::TextDriver;
+using metrics::Progress;
+using metrics::Statistics;
 
 Length File::Correspondence(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
+  shared_ptr<Delta>* intervals, Statistics* statistics,
+  Progress* progress,
   const Options& options) {
   Length length(0);
   //
@@ -89,7 +96,7 @@ Length File::Correspondence(
       options.isjoin, options.isverbose, options.isaffix,
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
-      formatters::TextDriver::Show(
+      TextDriver::Show(
         *format, *intervals, s1, s2, label1, label2);
   }
   else {
@@ -101,15 +108,15 @@ Length File::Correspondence(
       options.isjoin, options.isverbose, options.isaffix,
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
-      formatters::RecordDriver::Show(
+      RecordDriver::Show(
         *format, *intervals, r1, r2, label1, label2);
   }
   return length;
 }
 
 Length File::Difference(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
-  metrics::Progress* progress,
+  shared_ptr<Delta>* intervals, Statistics* statistics,
+  Progress* progress,
   const Options& options) {
   Length length(0);
   //
@@ -162,17 +169,17 @@ Length File::Difference(
       options.isjoin, options.isverbose, options.isaffix,
       options.join, options.prefix, options.suffix);
     if (intervals != nullptr)
-      formatters::TextDriver::Show(
+      TextDriver::Show(
         *format, *intervals, s1, s2, label1, label2);
   }
   else {
     auto r1 = Record::Read(options.filename1, options.isword);
     auto r2 = Record::Read(options.filename2, options.isword);
-    if (options.format == formatters::Format::Edit) {
+    if (options.format == Format::Edit) {
       auto format = Formatter::Make(
         options.format, options.width, options.tabsize);
-      formatters::EDIT_INTERVALS editIntervals;
-      length = formatters::Edit::Difference(
+      EDIT_INTERVALS editIntervals;
+      length = Edit::Difference(
         intervals != nullptr ? &editIntervals : nullptr,
         statistics, progress, r1, r2,
         options.algorithm, options.ignorecase, options.ignorespace,
@@ -180,7 +187,7 @@ Length File::Difference(
         options.join, options.prefix, options.suffix);
       // Identical files do not show any intervals
       if (!editIntervals.empty())
-        formatters::RecordDriver::Show(
+        RecordDriver::Show(
           *format, editIntervals, r1, r2, label1, label2);
     }
     else {
@@ -192,7 +199,7 @@ Length File::Difference(
         options.isjoin, options.isverbose, options.isaffix,
         options.join, options.prefix, options.suffix);
       if (intervals != nullptr)
-        formatters::RecordDriver::Show(
+        RecordDriver::Show(
           *format, *intervals, r1, r2, label1, label2);
     }
   }

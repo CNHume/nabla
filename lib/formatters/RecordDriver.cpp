@@ -20,6 +20,7 @@
 
 using namespace std;
 using namespace lcs;
+using modes::Record;
 
 namespace lcs::formatters {
 
@@ -28,7 +29,7 @@ namespace lcs::formatters {
 //
 // Concatenate elements from the selected side
 //
-modes::Record::RECORDS RecordDriver::Select(
+Record::RECORDS RecordDriver::Select(
   shared_ptr<Delta> deltas, const RECORDS& r1, const RECORDS& r2,
   bool isright) {
   Length length1, length2;

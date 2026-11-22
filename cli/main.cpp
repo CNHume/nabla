@@ -39,6 +39,9 @@
 
 using namespace std;
 using namespace lcs;
+using files::File;
+using metrics::ProgressBar;
+using metrics::Statistics;
 
 namespace {
 // Select a UTF-8 locale when the platform provides one, degrading to the
@@ -82,12 +85,12 @@ int main(int argc, char* argv[]) {
     auto pintervals = command.islength ?
       nullptr : &intervals;
 
-    metrics::Statistics statistics;
-    metrics::ProgressBar progressBar;
+    Statistics statistics;
+    ProgressBar progressBar;
     auto progress = command.isprogress ? &progressBar : nullptr;
     auto length = command.iscorrespondence ?
-      files::File::Correspondence(pintervals, &statistics, progress, command) :
-      files::File::Difference(pintervals, &statistics, progress, command);
+      File::Correspondence(pintervals, &statistics, progress, command) :
+      File::Difference(pintervals, &statistics, progress, command);
 
     if (command.isverbose || command.islength)
       cerr << format(

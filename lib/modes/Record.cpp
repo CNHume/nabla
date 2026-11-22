@@ -39,6 +39,17 @@
 
 using namespace std;
 using namespace lcs;
+using algorithms::Analysis;
+using algorithms::HuntSzymanski;
+using algorithms::Myers;
+using algorithms::RickSpace;
+using algorithms::RickTime;
+using algorithms::RickTimeBudgetExceeded;
+using files::Encoding;
+using files::Normal;
+using metrics::Duration;
+using metrics::Progress;
+using metrics::Statistics;
 
 namespace lcs::modes {
 
@@ -61,12 +72,12 @@ uint64_t Record::Match(
   Index index = 0;
   string buffer;
   for (const auto& it : r2) {
-    files::Normal::Normalize(it, buffer, ignorecase, ignorespace);
+    Normal::Normalize(it, buffer, ignorecase, ignorespace);
     columnsMatchedByString[buffer].push_back(index++);
   }
 
   for (const auto& it : r1) {
-    files::Normal::Normalize(it, buffer, ignorecase, ignorespace);
+    Normal::Normalize(it, buffer, ignorecase, ignorespace);
     auto& dq2 = columnsMatchedByString[buffer];
     columnsMatchedByRow.push_back(&dq2);
     count += dq2.size();
@@ -79,7 +90,7 @@ uint64_t Record::Match(
 }
 
 Length Record::Correspondence(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
   const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
@@ -107,7 +118,7 @@ Length Record::Correspondence(
 }
 
 Length Record::Difference(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
   const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
@@ -135,12 +146,12 @@ Length Record::Difference(
 }
 
 Length Record::Compare(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
   const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isverbose) {
   if (isverbose)
-    cerr << format("Started at {}\n", metrics::Duration::WallClock());
-  metrics::Duration duration;                    // time the algorithm
+    cerr << format("Started at {}\n", Duration::WallClock());
+  Duration duration;                    // time the algorithm
   shared_ptr<Pair> pairs;
   auto ppairs = intervals != nullptr ? &pairs : nullptr;
   Length length;
@@ -164,16 +175,16 @@ Length Record::Compare(
         matches += count * found->second;
     }
     string reason;
-    auto d = algorithms::Myers::ProbeDistance(
-      r1, r2, (int64_t)algorithms::Analysis::EditThreshold);
+    auto d = Myers::ProbeDistance(
+      r1, r2, (int64_t)Analysis::EditThreshold);
     if (d >= 0) {
       algorithm = Algorithm::EditDistance;
       reason = format("Myers edit distance {} is within the {} threshold",
-        d, algorithms::Analysis::EditThreshold);
+        d, Analysis::EditThreshold);
     }
     else {
       auto shorter = min(r1.size(), r2.size());
-      if (matches <= algorithms::Analysis::SparseMatchCount * shorter) {
+      if (matches <= Analysis::SparseMatchCount * shorter) {
         algorithm = Algorithm::Matches;
         reason = format("{} matches are sparse", matches);
       }
@@ -195,7 +206,7 @@ Length Record::Compare(
     }
     if (isverbose)
       cerr << format("Selected {} because {}\n",
-        metrics::Statistics::NameOf(algorithm), reason);
+        Statistics::NameOf(algorithm), reason);
   }
 
   switch (algorithm) {
@@ -210,14 +221,14 @@ Length Record::Compare(
     nr2.reserve(r2.size());
     string buffer;
     for (const auto& it : r1) {
-      files::Normal::Normalize(it, buffer, ignorecase, ignorespace);
+      Normal::Normalize(it, buffer, ignorecase, ignorespace);
       nr1.push_back(buffer);
     }
     for (const auto& it : r2) {
-      files::Normal::Normalize(it, buffer, ignorecase, ignorespace);
+      Normal::Normalize(it, buffer, ignorecase, ignorespace);
       nr2.push_back(buffer);
     }
-    length = algorithms::Myers::Find(ppairs, statistics, nr1, nr2);
+    length = Myers::Find(ppairs, statistics, nr1, nr2);
     break;
   }
   case Algorithm::Matches:
@@ -237,28 +248,28 @@ Length Record::Compare(
       columnsMatchedByRow, columnsMatchedByString,
       shorter, longer, ignorecase, ignorespace);
     if (algorithm == Algorithm::Matches) {
-      algorithms::Analysis::WarnMatchCount(count, shorter.size(), longer.size());
-      length = algorithms::HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
+      Analysis::WarnMatchCount(count, shorter.size(), longer.size());
+      length = HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
       if (statistics) {
         statistics->algorithm = Algorithm::Matches;
         statistics->matches = count;
       }
     }
     else if (algorithm == Algorithm::RickSpace) {
-      length = algorithms::RickSpace::Find(
+      length = RickSpace::Find(
         ppairs, statistics, progress, columnsMatchedByRow,
         (Length)shorter.size(), (Length)longer.size());
     }
     else {
       try {
-        length = algorithms::RickTime::Find(
+        length = RickTime::Find(
           ppairs, statistics, progress, columnsMatchedByRow,
           (Length)shorter.size(), (Length)longer.size());
       }
-      catch (const algorithms::RickTimeBudgetExceeded&) {
+      catch (const RickTimeBudgetExceeded&) {
         if (isverbose)
           cerr << "RickTime: recording overflowed.  Falling back to RickSpace.\n";
-        length = algorithms::RickSpace::Find(
+        length = RickSpace::Find(
           ppairs, statistics, progress, columnsMatchedByRow,
           (Length)shorter.size(), (Length)longer.size());
       }
@@ -281,12 +292,12 @@ Length Record::Compare(
   if (statistics)
     statistics->elapsedMicroseconds = (uint64_t)duration.ElapsedMicroseconds();
   if (isverbose)
-    cerr << format("Finished at {}\n", metrics::Duration::WallClock());
+    cerr << format("Finished at {}\n", Duration::WallClock());
   return length;
 }
 
 Length Record::TrimAndCompare(
-  shared_ptr<Delta>* deltas, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* deltas, Statistics* statistics, Progress* progress,
   const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isverbose) {
   //
@@ -298,10 +309,10 @@ Length Record::TrimAndCompare(
     throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
   Index prefix = 0, suffix = 0;
   string nx, ny;
-  lcs::Trim(r1, r2,
+  Trim(r1, r2,
     [&](const string& x, const string& y) {
-      files::Normal::Normalize(x, nx, ignorecase, ignorespace);
-      files::Normal::Normalize(y, ny, ignorecase, ignorespace);
+      Normal::Normalize(x, nx, ignorecase, ignorespace);
+      Normal::Normalize(y, ny, ignorecase, ignorespace);
       return nx == ny;
     },
     prefix, suffix);
@@ -347,10 +358,10 @@ Length Record::TrimAndCompare(
 // RECORDS Reader
 //
 Record::RECORDS Record::Read(const string& filename, bool isword) {
-  auto [encoding, bomLength] = files::Encoding::PeekEncoding(filename);
+  auto [encoding, bomLength] = Encoding::PeekEncoding(filename);
 
-  if (files::Encoding::IsWide(encoding))
-    return files::Encoding::ReadWide(filename, encoding, isword);
+  if (Encoding::IsWide(encoding))
+    return Encoding::ReadWide(filename, encoding, isword);
 
   ifstream input(filename, ios::binary);
 

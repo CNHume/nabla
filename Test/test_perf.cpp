@@ -41,6 +41,9 @@
 using namespace lcs;
 
 using namespace std;
+using algorithms::RickSpace;
+using algorithms::RickTime;
+using modes::Text;
 using Clock = chrono::steady_clock;
 
 namespace {
@@ -73,9 +76,9 @@ namespace {
     shared_ptr<Pair> pairs = nullptr;
     auto t0 = Clock::now();
     if (strcmp(argv[0], "time") == 0)
-      p = algorithms::RickTime::Find(&pairs, nullptr, nullptr, a, b);
+      p = RickTime::Find(&pairs, nullptr, nullptr, a, b);
     else
-      p = algorithms::RickSpace::Find(&pairs, nullptr, nullptr, a, b);
+      p = RickSpace::Find(&pairs, nullptr, nullptr, a, b);
     auto t1 = Clock::now();
     printf("p=%u time_ms=%lld\n", p,
       (long long)chrono::duration_cast<chrono::milliseconds>(t1 - t0).count());
@@ -117,17 +120,17 @@ namespace {
       s1[p] = c;
     }
 
-    algorithms::RickSpace::ResetCounters();
+    RickSpace::ResetCounters();
     shared_ptr<Pair> pairs = nullptr;
-    auto p = algorithms::RickSpace::Find(&pairs, nullptr, nullptr, s1, s2);
+    auto p = RickSpace::Find(&pairs, nullptr, nullptr, s1, s2);
 
     auto m = s1.size(), n = s2.size();
     printf("m=%zu n=%zu p=%llu m-p=%zd n-p=%zd Rows=%llu Candidates=%llu "
       "Rows/(p*(n-p))=%g\n",
       m, n, (unsigned long long)p, (ptrdiff_t)(m - p), (ptrdiff_t)(n - p),
-      (unsigned long long)algorithms::RickSpace::Rows,
-      (unsigned long long)algorithms::RickSpace::Candidates,
-      (double)algorithms::RickSpace::Rows / (double)((uint64_t)p * (uint64_t)(n - p)));
+      (unsigned long long)RickSpace::Rows,
+      (unsigned long long)RickSpace::Candidates,
+      (double)RickSpace::Rows / (double)((uint64_t)p * (uint64_t)(n - p)));
     return 0;
   }
 
@@ -296,7 +299,7 @@ namespace {
     shared_ptr<Delta> deltas;
     auto t0 = Clock::now();
     try {
-      modes::Text::Correspondence(
+      Text::Correspondence(
         &deltas, nullptr, nullptr, a, b, algo, false, false, false, false, 0, 0, 0);
     }
     catch (const exception&) {
@@ -329,7 +332,7 @@ namespace {
         if (dissimilar) {
           // Independent random second string: a large, uncontrolled D.
           b = regionReference(n, s, skew);
-          auto p = algorithms::RickTime::Find(nullptr, nullptr, nullptr, a, b);
+          auto p = RickTime::Find(nullptr, nullptr, nullptr, a, b);
           D = 2 * n - 2 * p;
         }
         else {

@@ -21,6 +21,7 @@
 
 using namespace std;
 using namespace lcs;
+using files::Encoding;
 
 namespace lcs::formatters {
 
@@ -73,7 +74,7 @@ SideSpan TextDriver::MakeSpan(
   span.begin = begin;
   span.end = end;
   span.lines.push_back(
-    files::Encoding::ToUtf8(s.substr(begin, end - begin)));
+    Encoding::ToUtf8(s.substr(begin, end - begin)));
   return span;
 }
 

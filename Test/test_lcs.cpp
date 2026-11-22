@@ -35,6 +35,11 @@
 using namespace lcs;
 
 using namespace std;
+using algorithms::Myers;
+using files::Fasta;
+using files::ParseRecordId;
+using modes::Record;
+using modes::Text;
 
 namespace {
   const Algorithm algos[4] = {
@@ -89,7 +94,7 @@ namespace {
                  const u32string& s1, const u32string& s2,
                  uint32_t expected) {
     shared_ptr<Delta> deltas;
-    auto length = modes::Text::Correspondence(
+    auto length = Text::Correspondence(
       &deltas, nullptr, nullptr, s1, s2, algo, false, false, false, false, 0, 0, 0);
     CAPTURE((int)algo);
     CHECK(length == expected);
@@ -155,7 +160,7 @@ TEST_CASE("algorithms agree on larger dense inputs") {
     uint32_t reference = 0;
     for (int k = 0; k < 4; ++k) {
       shared_ptr<Delta> deltas;
-      auto length = modes::Text::Correspondence(
+      auto length = Text::Correspondence(
         &deltas, nullptr, nullptr, u1, u2, algos[k], false, false, false, false, 0, 0, 0);
       if (k == 0)
         reference = length;
@@ -167,9 +172,9 @@ TEST_CASE("algorithms agree on larger dense inputs") {
 }
 
 TEST_CASE("string fixtures load and reconstruct validly") {
-  auto u1 = modes::Text::Read(
+  auto u1 = Text::Read(
     string(TEST_DATA_DIR) + "/Test/String/demanoeuvre.txt");
-  auto u2 = modes::Text::Read(
+  auto u2 = Text::Read(
     string(TEST_DATA_DIR) + "/Test/String/reendeavour.txt");
   CHECK(u1.size() == 11);
   CHECK(u2.size() == 11);
@@ -185,14 +190,14 @@ TEST_CASE("Myers aborts when the edit distance exceeds its budget") {
   u32string s1(1000000, U'A');
   u32string s2(1000000, U'B');
   CHECK_THROWS_AS(
-    algorithms::Myers::Find(nullptr, nullptr, s1, s2),
+    Myers::Find(nullptr, nullptr, s1, s2),
     std::runtime_error);
 }
 
 TEST_CASE("Fasta keeps the first record and reports name/description") {
   // Single record with description: name and description split on whitespace.
   {
-    files::Fasta fasta("chr21.fa", ">chr21 chromosome 21\nACGT\nACGT\n");
+    Fasta fasta("chr21.fa", ">chr21 chromosome 21\nACGT\nACGT\n");
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "chr21");
     CHECK(fasta.Records()[0].description == "chromosome 21");
@@ -200,7 +205,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // Pipe-delimited identifier: kept whole, since no delimiter is presupposed.
   {
-    files::Fasta fasta(
+    Fasta fasta(
       "ecoli.fa", ">gi|123|ref|NC_000913.3| Escherichia coli\nAC\n");
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "gi|123|ref|NC_000913.3|");
@@ -209,7 +214,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // Multi-record FASTA: only the first record is used; the second is ignored.
   {
-    files::Fasta fasta("multi.fa", ">a\nAC\n>b desc\nGT\n");
+    Fasta fasta("multi.fa", ">a\nAC\n>b desc\nGT\n");
     REQUIRE(fasta.Records().size() == 2);
     CHECK(fasta.Records()[0].name == "a");
     CHECK(fasta.Records()[0].description.empty());
@@ -219,7 +224,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // Three records: the vector holds all of them; the last two are ignored.
   {
-    files::Fasta fasta("three.fa", ">a\nAC\n>b\nGT\n>c\nTT\n");
+    Fasta fasta("three.fa", ">a\nAC\n>b\nGT\n>c\nTT\n");
     REQUIRE(fasta.Records().size() == 3);
     CHECK(fasta.Records()[0].name == "a");
     CHECK(fasta.Records()[1].name == "b");
@@ -228,7 +233,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // CRLF header: trailing CR is trimmed from the captured defline.
   {
-    files::Fasta fasta("crlf.fa", ">chr21 desc\r\nACGT\n");
+    Fasta fasta("crlf.fa", ">chr21 desc\r\nACGT\n");
     REQUIRE(fasta.Records().size() == 1);
     CHECK(fasta.Records()[0].name == "chr21");
     CHECK(fasta.Records()[0].description == "desc");
@@ -236,7 +241,7 @@ TEST_CASE("Fasta keeps the first record and reports name/description") {
   }
   // No header: empty records vector, sequence passes through.
   {
-    files::Fasta fasta("plain.fa", "ACGT\n");
+    Fasta fasta("plain.fa", "ACGT\n");
     CHECK(fasta.Records().empty());
     CHECK(fasta.Sequence() == toU32("ACGT"));
   }
@@ -246,34 +251,34 @@ TEST_CASE("Fasta selects a record by index or name") {
   const string text = ">a\nAC\n>b desc\nGTAC\n>c\nTT\n";
   // 1-based index selects the third record.
   {
-    files::Fasta fasta("multi.fa", text, {}, 3);
+    Fasta fasta("multi.fa", text, {}, 3);
     REQUIRE(fasta.Records().size() == 3);
     CHECK(fasta.Sequence() == toU32("TT"));
   }
   // Name selects the matching record (exact identifier match).
   {
-    files::Fasta fasta("multi.fa", text, "b");
+    Fasta fasta("multi.fa", text, "b");
     CHECK(fasta.Sequence() == toU32("GTAC"));
   }
   // Pipe-delimited name selects its record whole.
   {
-    files::Fasta fasta(
+    Fasta fasta(
       "ecoli.fa", ">a\nAC\n>gi|1|ref|NC|\nGT\n", "gi|1|ref|NC|");
     CHECK(fasta.Sequence() == toU32("GT"));
   }
   // Index out of range throws.
   {
     CHECK_THROWS_AS(
-      (files::Fasta("multi.fa", text, {}, 4)), std::runtime_error);
+      (Fasta("multi.fa", text, {}, 4)), std::runtime_error);
   }
   // Name not found throws.
   {
     CHECK_THROWS_AS(
-      (files::Fasta("multi.fa", text, "zzz")), std::runtime_error);
+      (Fasta("multi.fa", text, "zzz")), std::runtime_error);
   }
   // Index zero is treated as "no index": the first record is used.
   {
-    files::Fasta fasta("multi.fa", text, {}, 0);
+    Fasta fasta("multi.fa", text, {}, 0);
     CHECK(fasta.Sequence() == toU32("AC"));
   }
 }
@@ -287,7 +292,7 @@ TEST_CASE("record_id parses as a 1-based index or a record name") {
   auto parse = [](const char* id) {
     string name = "<unset>";
     uint32_t index = 0xDEADBEEFu;
-    files::ParseRecordId(id, name, index);
+    ParseRecordId(id, name, index);
     return pair<string, uint32_t>(name, index);
   };
 
@@ -327,7 +332,7 @@ TEST_CASE("automatic dispatch returns a correct LCS") {
     auto u2 = toU32(s2);
     auto expected = dpLcsLength(u1, u2);
     shared_ptr<Delta> deltas;
-    auto length = modes::Text::Correspondence(
+    auto length = Text::Correspondence(
       &deltas, nullptr, nullptr, u1, u2, Algorithm::Automatic,
       false, false, false, false, 0, 0, 0);
     CHECK(length == expected);
@@ -351,12 +356,12 @@ TEST_CASE("Myers agrees with Hunt-Szymanski on the record path") {
     const auto& r2 = records2[i];
     // Reference length from Hunt-Szymanski (Matches), independent of loop order.
     shared_ptr<Delta> refDeltas;
-    auto reference = modes::Record::Correspondence(
+    auto reference = Record::Correspondence(
       &refDeltas, nullptr, nullptr, r1, r2, Algorithm::Matches,
       false, false, false, false, 0, 0, 0);
     for (auto algo : { Algorithm::EditDistance, Algorithm::Matches }) {
       shared_ptr<Delta> deltas;
-      auto length = modes::Record::Correspondence(
+      auto length = Record::Correspondence(
         &deltas, nullptr, nullptr, r1, r2, algo, false, false, false, false, 0, 0, 0);
       CAPTURE((int)algo);
       CHECK(length == reference);

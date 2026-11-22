@@ -21,6 +21,7 @@
 using namespace lcs;
 
 using namespace std;
+using modes::Text;
 
 namespace {
   string fixture(const string& name) {
@@ -31,7 +32,7 @@ namespace {
     u32string reference;
     bool first = true;
     for (auto& name : names) {
-      auto codePoints = modes::Text::Read(fixture(name));
+      auto codePoints = Text::Read(fixture(name));
       CAPTURE(name);
       if (first) {
         reference = codePoints;

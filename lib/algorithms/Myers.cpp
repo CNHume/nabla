@@ -32,6 +32,7 @@
 
 using namespace std;
 using namespace lcs;
+using metrics::Statistics;
 
 namespace lcs::algorithms {
 
@@ -109,7 +110,7 @@ namespace {
   //
   template <typename Sequence>
   Length MyersFind(
-    shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
+    shared_ptr<Pair>* pairs, Statistics* statistics,
     const Sequence& s1, const Sequence& s2) {
     if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
       throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
@@ -248,13 +249,13 @@ namespace {
 }
 
 Length Myers::Find(
-  shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
+  shared_ptr<Pair>* pairs, Statistics* statistics,
   const u32string& s1, const u32string& s2) {
   return MyersFind(pairs, statistics, s1, s2);
 }
 
 Length Myers::Find(
-  shared_ptr<Pair>* pairs, metrics::Statistics* statistics,
+  shared_ptr<Pair>* pairs, Statistics* statistics,
   const vector<string>& r1, const vector<string>& r2) {
   return MyersFind(pairs, statistics, r1, r2);
 }

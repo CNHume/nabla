@@ -36,6 +36,17 @@
 
 using namespace std;
 using namespace lcs;
+using algorithms::Analysis;
+using algorithms::HuntSzymanski;
+using algorithms::Myers;
+using algorithms::RickSpace;
+using algorithms::RickTime;
+using algorithms::RickTimeBudgetExceeded;
+using files::Encoding;
+using files::Normal;
+using metrics::Duration;
+using metrics::Progress;
+using metrics::Statistics;
 
 namespace lcs::modes {
 
@@ -51,11 +62,11 @@ uint64_t Text::Match(
   uint64_t count = 0;
   Index index = 0;
   u32string buffer;
-  files::Normal::Normalize(s2, buffer, ignorecase, ignorespace);
+  Normal::Normalize(s2, buffer, ignorecase, ignorespace);
   for (const auto& it : buffer)
     columnsMatchedByChar[it].push_back(index++);
 
-  files::Normal::Normalize(s1, buffer, ignorecase, ignorespace);
+  Normal::Normalize(s1, buffer, ignorecase, ignorespace);
   for (const auto& it : buffer) {
     auto& dq2 = columnsMatchedByChar[it];
     columnsMatchedByRow.push_back(&dq2);
@@ -68,7 +79,7 @@ uint64_t Text::Match(
 }
 
 Length Text::Correspondence(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
   const u32string& s1, const u32string& s2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
@@ -95,8 +106,8 @@ Length Text::Correspondence(
     //
     u32string t1, t2;
     vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
-    files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
-    files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
+    Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
+    Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
     auto length = compare(
       intervals, statistics, progress,
       t1, t2, algorithm,
@@ -124,7 +135,7 @@ Length Text::Correspondence(
 }
 
 Length Text::Difference(
-  shared_ptr<Delta>* intervals, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
   const u32string& s1, const u32string& s2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
   uint32_t join, uint32_t prefix, uint32_t suffix) {
@@ -143,8 +154,8 @@ Length Text::Difference(
   if (ignorespace) {
     u32string t1, t2;
     vector<Index> mapBegin1, mapEnd1, mapBegin2, mapEnd2;
-    files::Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
-    files::Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
+    Normal::NormalSpace(s1, t1, mapBegin1, mapEnd1);
+    Normal::NormalSpace(s2, t2, mapBegin2, mapEnd2);
     auto length = compare(
       intervals, statistics, progress,
       t1, t2, algorithm,
@@ -172,12 +183,12 @@ Length Text::Difference(
 }
 
 Length Text::Compare(
-  shared_ptr<Delta>* deltas, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* deltas, Statistics* statistics, Progress* progress,
   const u32string& s1, const u32string& s2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isverbose) {
   if (isverbose)
-    cerr << format("Started at {}\n", metrics::Duration::WallClock());
-  metrics::Duration duration;                    // time the algorithm
+    cerr << format("Started at {}\n", Duration::WallClock());
+  Duration duration;                    // time the algorithm
   //
   // A null delta pointer is the length-only flag: forward it to the
   // algorithm as a null pairs pointer so it skips reconstruction.
@@ -204,16 +215,16 @@ Length Text::Compare(
         matches += count * found->second;
     }
     string reason;
-    auto d = algorithms::Myers::ProbeDistance(
-      s1, s2, (int64_t)algorithms::Analysis::EditThreshold);
+    auto d = Myers::ProbeDistance(
+      s1, s2, (int64_t)Analysis::EditThreshold);
     if (d >= 0) {
       algorithm = Algorithm::EditDistance;
       reason = format("Myers edit distance {} is within the {} threshold",
-        d, algorithms::Analysis::EditThreshold);
+        d, Analysis::EditThreshold);
     }
     else {
       auto shorter = min(s1.size(), s2.size());
-      if (matches <= algorithms::Analysis::SparseMatchCount * shorter) {
+      if (matches <= Analysis::SparseMatchCount * shorter) {
         algorithm = Algorithm::Matches;
         reason = format("{} matches are sparse", matches);
       }
@@ -235,7 +246,7 @@ Length Text::Compare(
     }
     if (isverbose)
       cerr << format("Selected {} because {}\n",
-        metrics::Statistics::NameOf(algorithm), reason);
+        Statistics::NameOf(algorithm), reason);
   }
 
   switch (algorithm) {
@@ -246,9 +257,9 @@ Length Text::Compare(
     // sweep.  Find() guards the D budget and aborts on a dissimilar input.
     //
     u32string ns1, ns2;
-    files::Normal::Normalize(s1, ns1, ignorecase, ignorespace);
-    files::Normal::Normalize(s2, ns2, ignorecase, ignorespace);
-    length = algorithms::Myers::Find(ppairs, statistics, ns1, ns2);
+    Normal::Normalize(s1, ns1, ignorecase, ignorespace);
+    Normal::Normalize(s2, ns2, ignorecase, ignorespace);
+    length = Myers::Find(ppairs, statistics, ns1, ns2);
     break;
   }
   case Algorithm::Matches: {
@@ -256,8 +267,8 @@ Length Text::Compare(
     MATCHES columnsMatchedByRow;        // holds references into columnsMatchedByChar
     auto count = Match(
       columnsMatchedByRow, columnsMatchedByChar, s1, s2, ignorecase, ignorespace);
-    algorithms::Analysis::WarnMatchCount(count, s1.size(), s2.size());
-    length = algorithms::HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
+    Analysis::WarnMatchCount(count, s1.size(), s2.size());
+    length = HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
     if (statistics) {
       statistics->algorithm = Algorithm::Matches;
       statistics->matches = count;
@@ -272,23 +283,23 @@ Length Text::Compare(
     // whitespace collapse can change which is shorter.
     //
     u32string ns1, ns2;
-    files::Normal::Normalize(s1, ns1, ignorecase, ignorespace);
-    files::Normal::Normalize(s2, ns2, ignorecase, ignorespace);
+    Normal::Normalize(s1, ns1, ignorecase, ignorespace);
+    Normal::Normalize(s2, ns2, ignorecase, ignorespace);
     auto isswapped = ns2.size() < ns1.size();
     const auto& shorter = isswapped ? ns2 : ns1;
     const auto& longer = isswapped ? ns1 : ns2;
     if (algorithm == Algorithm::RickTime) {
       try {
-        length = algorithms::RickTime::Find(ppairs, statistics, progress, shorter, longer);
+        length = RickTime::Find(ppairs, statistics, progress, shorter, longer);
       }
-      catch (const algorithms::RickTimeBudgetExceeded&) {
+      catch (const RickTimeBudgetExceeded&) {
         if (isverbose)
           cerr << "RickTime: recording overflowed.  Falling back to RickSpace.\n";
-        length = algorithms::RickSpace::Find(ppairs, statistics, progress, shorter, longer);
+        length = RickSpace::Find(ppairs, statistics, progress, shorter, longer);
       }
     }
     else {
-      length = algorithms::RickSpace::Find(ppairs, statistics, progress, shorter, longer);
+      length = RickSpace::Find(ppairs, statistics, progress, shorter, longer);
     }
     if (algorithm == Algorithm::RickSpace && statistics && progress == nullptr)
       //
@@ -297,7 +308,7 @@ Length Text::Compare(
       // suggestion while a progress bar is active so it cannot interleave
       // with the bar on stderr.
       //
-      algorithms::Analysis::SuggestRickTime(
+      Analysis::SuggestRickTime(
         length + statistics->trimmed,
         shorter.size() + statistics->trimmed,
         longer.size() + statistics->trimmed,
@@ -319,12 +330,12 @@ Length Text::Compare(
   if (statistics)
     statistics->elapsedMicroseconds = (uint64_t)duration.ElapsedMicroseconds();
   if (isverbose)
-    cerr << format("Finished at {}\n", metrics::Duration::WallClock());
+    cerr << format("Finished at {}\n", Duration::WallClock());
   return length;
 }
 
 Length Text::TrimAndCompare(
-  shared_ptr<Delta>* deltas, metrics::Statistics* statistics, metrics::Progress* progress,
+  shared_ptr<Delta>* deltas, Statistics* statistics, Progress* progress,
   const u32string& s1, const u32string& s2, Algorithm algorithm,
   bool ignorecase, bool ignorespace, bool isverbose) {
   //
@@ -338,9 +349,9 @@ Length Text::TrimAndCompare(
   if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
     throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
   Index prefix = 0, suffix = 0;
-  lcs::Trim(s1, s2,
+  Trim(s1, s2,
     [ignorecase](char32_t x, char32_t y) {
-      return ignorecase ? files::Normal::ToLower(x) == files::Normal::ToLower(y) : x == y;
+      return ignorecase ? Normal::ToLower(x) == Normal::ToLower(y) : x == y;
     },
     prefix, suffix);
 
@@ -380,16 +391,16 @@ Length Text::TrimAndCompare(
 }
 
 u32string Text::Read(const string& filename) {
-  auto bytes = files::Encoding::ReadBytes(filename);
-  auto [encoding, bomLength] = files::Encoding::GetEncoding(bytes);
+  auto bytes = Encoding::ReadBytes(filename);
+  auto [encoding, bomLength] = Encoding::GetEncoding(bytes);
 
   u32string codePoints;
-  if (files::Encoding::IsWide(encoding))
-    codePoints = files::Encoding::DecodeCodePoints(bytes, encoding);
+  if (Encoding::IsWide(encoding))
+    codePoints = Encoding::DecodeCodePoints(bytes, encoding);
   else {
     if (bomLength > 0)
       bytes.erase(0, (size_t)bomLength);
-    codePoints = files::Encoding::DecodeUtf8(bytes);
+    codePoints = Encoding::DecodeUtf8(bytes);
   }
 #ifdef KEEP_CRLF
   //
@@ -402,7 +413,7 @@ u32string Text::Read(const string& filename) {
   // Normalize CRLF to LF so -t text will ignore end-of-line differences
   // as is done for Record::Read()
   //
-  return files::Encoding::NormalizeCrlf(std::move(codePoints));
+  return Encoding::NormalizeCrlf(std::move(codePoints));
 #endif
 }
 

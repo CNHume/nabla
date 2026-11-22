@@ -35,6 +35,8 @@
 
 using namespace std;
 using namespace lcs;
+using files::Host;
+using files::ParseRecordId;
 using formatters::Format;
 
 namespace {
@@ -242,7 +244,7 @@ void Command::Parse(int argc, char* argv[]) {
           isfasta = true;               // -q implies -F
           istext = true;                // -F implies -T
           if (id != nullptr)
-            files::ParseRecordId(id, queryName, queryIndex);
+            ParseRecordId(id, queryName, queryIndex);
         }
         break;
 
@@ -269,7 +271,7 @@ void Command::Parse(int argc, char* argv[]) {
           isfasta = true;               // -r implies -F
           istext = true;                // -F implies -T
           if (id != nullptr)
-            files::ParseRecordId(id, referenceName, referenceIndex);
+            ParseRecordId(id, referenceName, referenceIndex);
         }
         break;
 
@@ -369,7 +371,7 @@ void Command::Parse(int argc, char* argv[]) {
   }
 
   if (ishost) {
-    cout << files::Host::ToString();
+    cout << Host::ToString();
     exit(EXIT_SUCCESS);
   }
 
