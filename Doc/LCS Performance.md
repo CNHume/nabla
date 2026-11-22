@@ -146,7 +146,8 @@ which slows ~4× (0.01s → 0.04s) while doubling memory (13 MB → 28 MB).
 RickSpace's `O(ns)` tables grow ~3× (14 MB → 42 MB) because `-a` tables the
 full 250 Kbp instead of the 50 Kbp middle.  Trimming strips the 200 Kbp of
 affixes first, so the algorithm sees `N = m + n` = 100 K instead of 500 K at
-the same `D`.
+the same `D`.  Net: roughly a 4× win — 2–7× in time and 2–5× in memory —
+scaling with the affix fraction.
 
 ---
 
