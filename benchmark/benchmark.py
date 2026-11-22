@@ -21,7 +21,7 @@ import re
 import subprocess
 import tempfile
 
-NABLA = os.path.join(os.path.dirname(__file__), "..", "nabla", "build", "nabla")
+NABLA = os.path.join(os.path.dirname(__file__), "..", "cli", "build", "nabla")
 
 FLAGS = [
   ("Myers (-Ad)", "-Ad"),
@@ -74,8 +74,10 @@ def match_count(seq1, seq2):
   return sum(c1[sym] * c2.get(sym, 0) for sym in c1)
 
 
-def measure(flag, fa, fb, timeout, length_only):
+def measure(flag, fa, fb, timeout, length_only, no_trim):
   cmd = ["/usr/bin/time", "-v", NABLA, "-T", flag]
+  if no_trim:
+    cmd.append("-a")            # Compare All: skip Affix Trimming
   if flag == "-Aa":
     cmd.append("-v")             # report which algorithm Automatic chose
   if length_only:
@@ -94,7 +96,7 @@ def measure(flag, fa, fb, timeout, length_only):
     wall = wall.group(1) if wall else "-"
     choice = ""
     if flag == "-Aa":
-      m = re.search(r"Automatic: selected (\S+) because", err)
+      m = re.search(r"Selected (\S+) because", err)
       choice = m.group(1) if m else "?"
     return ("ok" if p.returncode == 0 else "abort", wall, rss, choice)
   except subprocess.TimeoutExpired:
@@ -114,6 +116,12 @@ def main():
                   help="generate a synthetic base over this many distinct symbols "
                        "(0 = use --base)")
   ap.add_argument("--seed", type=int, default=1)
+  ap.add_argument("--no-trim", action="store_true",
+                  help="add -a to compare the inputs in full (skip Affix Trimming)")
+  ap.add_argument("--affix-prefix", type=int, default=0,
+                  help="common prefix length (affix) left unmutated")
+  ap.add_argument("--affix-suffix", type=int, default=0,
+                  help="common suffix length (affix) left unmutated")
   args = ap.parse_args()
 
   length_only = not args.trace
@@ -140,7 +148,13 @@ def main():
     print("-" * (21 * (3 + len(FLAGS))))
 
     for rate in rates:
-      mutated = mutate(base, rate, rng)
+      if args.affix_prefix or args.affix_suffix:
+        middle = base[args.affix_prefix : len(base) - args.affix_suffix]
+        mutated = (base[:args.affix_prefix]
+                   + mutate(middle, rate, rng)
+                   + base[len(base) - args.affix_suffix:])
+      else:
+        mutated = mutate(base, rate, rng)
       fb = os.path.join(d, "mutated.seq")
       with open(fb, "w") as f:
         f.write(mutated)
@@ -159,7 +173,7 @@ def main():
 
       cells = []
       for name, flag in FLAGS:
-        status, wall, rss, choice = measure(flag, fa, fb, args.timeout, length_only)
+        status, wall, rss, choice = measure(flag, fa, fb, args.timeout, length_only, args.no_trim)
         if status == "ok":
           cell = f"{wall} {rss // 1024}MB"
           if choice:
