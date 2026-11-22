@@ -35,29 +35,29 @@ ineligible throughout, at 125× its sparse threshold).  As the edit rate climbs,
 
 | rate | D | Myers `-Ad` | H-S `-Am` | RickSpace `-As` | RickTime `-At` | Auto `-Aa` |
 |---|---|---|---|---|---|---|
-| 1% | 851 | **0.00s** · 5MB | TIMEOUT | 0.06s · 8MB | 0.01s · 7MB | **0.00s** · 5MB [Myers] |
-| 5% | 3,695 | 0.04s · 5MB | TIMEOUT | 0.25s · 8MB | 0.06s · 7MB | **0.06s** · 7MB [RickTime] |
-| 10% | 7,557 | 0.17s · 5MB | TIMEOUT | 0.51s · 8MB | 0.13s · 7MB | **0.14s** · 7MB [RickTime] |
-| 20% | 14,712 | 0.64s · 6MB | TIMEOUT | 1.07s · 9MB | 0.32s · 7MB | **0.34s** · 7MB [RickTime] |
-| 40% | 25,373 | 2.19s · 6MB | TIMEOUT | 1.98s · 9MB | 0.92s · 7MB | **0.89s** · 7MB [RickTime] |
+| 1% | 851 | **0.00s** · 5MB | TIMEOUT | 0.06s · 9MB | 0.01s · 8MB | **0.00s** · 5MB [Myers] |
+| 5% | 3,695 | 0.04s · 5MB | TIMEOUT | 0.25s · 9MB | **0.05s** · 8MB | **0.07s** · 8MB [RickTime] |
+| 10% | 7,557 | 0.15s · 5MB | TIMEOUT | 0.52s · 9MB | **0.12s** · 8MB | **0.14s** · 8MB [RickTime] |
+| 20% | 14,712 | 0.60s · 5MB | TIMEOUT | 1.02s · 9MB | **0.34s** · 7MB | **0.34s** · 8MB [RickTime] |
+| 40% | 25,373 | 2.06s · 6MB | TIMEOUT | 1.97s · 9MB | **0.85s** · 7MB | **0.87s** · 7MB [RickTime] |
 
 The hand-off is at the `D = 2000` probe: at 1% (`D = 851`) `-Aa` picks Myers
 instantly; from 5% up it stays on RickTime, whose single diagonal sweep is the
-fastest find.  Myers, left to itself, degrades `O(ND)` — 2.19s by 40%.
+fastest find.  Myers, left to itself, degrades `O(ND)` — 2.06s by 40%.
 
 ### Interval reconstruction (the full LCS)
 
 | rate | D | Myers `-Ad` | H-S `-Am` | RickSpace `-As` | RickTime `-At` | Auto `-Aa` |
 |---|---|---|---|---|---|---|
-| 1% | 851 | **0.01s** · 14MB | TIMEOUT | 0.15s · 12MB | 0.09s · 69MB | **0.01s** · 14MB [Myers] |
-| 5% | 3,695 | 0.09s · 112MB | TIMEOUT | 0.55s · 12MB | 0.60s · 241MB | **0.58s** · 12MB [RickSpace] |
-| 10% | 7,557 | 0.48s · 444MB | TIMEOUT | 1.12s · 12MB | 1.39s · 450MB | **1.14s** · 12MB [RickSpace] |
-| 20% | 14,712 | 1.91s · 1.6GB | TIMEOUT | 2.23s · 11MB | 3.36s · 761MB | **2.31s** · 11MB [RickSpace] |
-| 40% | 25,373 | 6.44s · 4.9GB | TIMEOUT | 4.15s · 11MB | 6.02s · 1.1GB | **4.16s** · 11MB [RickSpace] |
+| 1% | 851 | **0.01s** · 12MB | TIMEOUT | 0.15s · 12MB | 0.11s · 69MB | **0.01s** · 12MB [Myers] |
+| 5% | 3,695 | 0.08s · 61MB | TIMEOUT | **0.55s** · 12MB | 0.74s · 241MB | **0.57s** · 12MB [RickSpace] |
+| 10% | 7,557 | 0.29s · 227MB | TIMEOUT | **1.11s** · 12MB | 1.39s · 450MB | **1.14s** · 12MB [RickSpace] |
+| 20% | 14,712 | 1.40s · 835MB | TIMEOUT | **2.33s** · 12MB | 3.40s · 762MB | **2.49s** · 12MB [RickSpace] |
+| 40% | 25,373 | 4.62s · 2.4GB | TIMEOUT | **4.09s** · 11MB | 5.93s · 1.1GB | **4.16s** · 11MB [RickSpace] |
 
 Reconstruction changes the picture in two ways the dispatcher exploits:
 
-- **Myers** is fast at low `D` but its `O(D²)` history balloons to **4.9 GB** by
+- **Myers** is fast at low `D` but its `O(D²)` history balloons to **2.4 GB** by
   40% — so `-Aa` leaves it as soon as `D` passes 2000.
 - **RickTime's** `O(d log d)` dominant-match sort makes it *slower than RickSpace*
   once the sequences diverge — so `-Aa` routes reconstruction straight to
@@ -76,11 +76,11 @@ thin out:
 
 | `s` | r | Myers `-Ad` | H-S `-Am` | RickSpace `-As` | RickTime `-At` | Auto `-Aa` |
 |---|---|---|---|---|---|---|
-| 4 | 624M | 2.58s · 6MB | TIMEOUT | 2.29s · 9MB | 1.02s · 7MB | **0.98s** · 7MB [RickTime] |
-| 20 | 125M | 2.85s · 6MB | 6.91s · 5MB | 1.61s · 21MB | 0.34s · 13MB | **0.33s** · 13MB [RickTime] |
-| 100 | 25M | abort | 1.54s · 5MB | 0.51s · 82MB | 0.21s · 44MB | **0.18s** · 44MB [RickTime] |
-| 1,000 | 2.5M | abort | **0.16s** · 6MB | 1.21s · 768MB | 0.28s · 387MB | **0.17s** · 6MB [Hunt-Szymanski] |
-| 10,000 | 284K | abort | **0.03s** · 12MB | TIMEOUT | TIMEOUT | **0.07s** · 12MB [Hunt-Szymanski] |
+| 4 | 624M | 2.07s · 6MB | TIMEOUT | 2.09s · 9MB | **0.91s** · 8MB | **0.91s** · 8MB [RickTime] |
+| 20 | 125M | 2.06s · 6MB | 5.96s · 6MB | 1.16s · 21MB | **0.26s** · 14MB | **0.26s** · 14MB [RickTime] |
+| 100 | 25M | 1.82s · 6MB | 1.25s · 6MB | 0.43s · 82MB | **0.13s** · 44MB | **0.13s** · 44MB [RickTime] |
+| 1,000 | 2.5M | 1.84s · 6MB | **0.15s** · 6MB | 0.85s · 768MB | 0.28s · 388MB | **0.15s** · 6MB [Hunt-Szymanski] |
+| 10,000 | 284K | 1.46s · 6MB | **0.04s** · 12MB | TIMEOUT | TIMEOUT | **0.06s** · 12MB [Hunt-Szymanski] |
 
 The hand-off is at the `r = 100·min(m,n)` boundary (5M at this length) — a
 match density of `η = 100/max(m,n) = 0.002` here, swept from `η ≈ 1/4` (DNA)
@@ -89,7 +89,7 @@ down to `η ≈ 10⁻⁴` (`s = 10,000`):
 - **Dense** (`s ≤ 100`): `r` is huge, Hunt–Szymanski times out, and `-Aa` stays
   on RickTime.
 - **Sparse** (`s ≥ 1000`): `r` falls below the threshold, Hunt–Szymanski becomes
-  the winner (0.03s at `s=10,000`), and `-Aa` moves onto it — *just as* the Rick
+  the winner (0.04s at `s=10,000`), and `-Aa` moves onto it — *just as* the Rick
   engines' `O(ns)` tables blow up (RickSpace/RickTime TIMEOUT at `s=10,000`,
   where the tables are ~4 GB).  `-Aa` dodges that blow-up by switching to the
   match-list algorithm.
@@ -110,7 +110,8 @@ The only overflow left is an *explicit* `-At` on a large, divergent input: its
 `O(d)` dominant-match recording grows past `Analysis::RecordingBudget` (0.75×
 available RAM), and it aborts with "use `-As` (RickSpace)" rather than OOMing.
 Measured at 40% edit: RickTime's recording is 3.9 GB at 100 Kbp and overflows at
-~150 Kbp on a 9.7 GB host — the point at which `-As` is mandatory.
+~150 Kbp (on a host with 9.7 GB available; the point scales with available RAM)
+— the point at which `-As` is mandatory.
 
 ---
 
@@ -118,10 +119,34 @@ Measured at 40% edit: RickTime's recording is 3.9 GB at 100 Kbp and overflows at
 
 Every table above uses random input, whose common prefix and suffix are
 negligible, so the Affix Trimming first pass costs only its `O(m + n)` scan
-there.  Its payoff is on inputs that do share affixes — versioned files,
-assembled genomes, repeated headers — where stripping the affixes shrinks
-`N = m + n` before Myers runs, without changing `D`.  Disable it with `-a`
-(the affix option).
+there and `-a` (Compare All) reproduces the same numbers.  Its payoff is on
+inputs that do share affixes — versioned files, assembled genomes, repeated
+headers.
+
+The table below keeps a 100 Kbp prefix and a 100 Kbp suffix (200 Kbp of
+affixes) fixed and mutates only the middle 50 Kbp at 1% (`D = 855`), then runs
+each engine with Affix Trimming (default) and without it (`-a`):
+
+| phase | engine | trimmed | `-a` (Compare All) |
+|---|---|---|---|
+| length-only | Myers | 0.01s · 7MB | 0.02s · 8MB |
+| length-only | RickSpace | 0.07s · 10MB | 0.12s · 26MB |
+| length-only | RickTime | 0.02s · 9MB | 0.14s · 19MB |
+| length-only | Auto | 0.01s · 7MB [Myers] | 0.02s · 8MB [Myers] |
+| reconstruction | Myers | 0.01s · 13MB | 0.04s · 28MB |
+| reconstruction | RickSpace | 0.31s · 14MB | 0.18s · 42MB |
+| reconstruction | RickTime | 0.43s · 71MB | 0.73s · 348MB |
+| reconstruction | Auto | 0.01s · 13MB [Myers] | 0.03s · 28MB [Myers] |
+
+Hunt–Szymanski times out in both columns (its `r` is ≈ 15.7B on DNA at
+250 Kbp).  The `-a` cost is the whole affix length fed to the algorithm.  It is
+largest for RickTime — the length-only find slows ~7× (0.02s → 0.14s) and the
+reconstruction recording grows 71 MB → 348 MB — and for Myers reconstruction,
+which slows ~4× (0.01s → 0.04s) while doubling memory (13 MB → 28 MB).
+RickSpace's `O(ns)` tables grow ~3× (14 MB → 42 MB) because `-a` tables the
+full 250 Kbp instead of the 50 Kbp middle.  Trimming strips the 200 Kbp of
+affixes first, so the algorithm sees `N = m + n` = 100 K instead of 500 K at
+the same `D`.
 
 ---
 
