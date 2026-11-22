@@ -309,10 +309,10 @@ Length Record::TrimAndCompare(
   if (statistics)
     statistics->trimmed = prefix + suffix;
   if (isverbose && statistics && (prefix > 0 || suffix > 0)) {
-    cerr << format("{}: trimmed {} common prefixes.\n", statistics->label1, prefix);
-    cerr << format("{}: trimmed {} common suffixes.\n", statistics->label1, suffix);
-    cerr << format("{}: trimmed {} common prefixes.\n", statistics->label2, prefix);
-    cerr << format("{}: trimmed {} common suffixes.\n", statistics->label2, suffix);
+    cerr << format("{}: trimmed {} prefix records.\n", statistics->label1, prefix);
+    cerr << format("{}: trimmed {} suffix records.\n", statistics->label1, suffix);
+    cerr << format("{}: trimmed {} prefix records.\n", statistics->label2, prefix);
+    cerr << format("{}: trimmed {} suffix records.\n", statistics->label2, suffix);
   }
 
   //
