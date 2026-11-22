@@ -32,6 +32,7 @@ using namespace lcs;
 using namespace lcs::files;
 using modes::Record;
 using modes::Text;
+using formatters::Formatter;
 
 Length File::Correspondence(
   shared_ptr<Delta>* intervals, metrics::Statistics* statistics,
@@ -47,7 +48,7 @@ Length File::Correspondence(
     statistics->label1 = label1;
     statistics->label2 = label2;
   }
-  auto format = formatters::Formatter::Make(
+  auto format = Formatter::Make(
     options.format, options.width, options.tabsize);
   if (options.istext) {
     u32string s1, s2;
@@ -121,7 +122,7 @@ Length File::Difference(
     statistics->label2 = label2;
   }
   if (options.istext) {
-    auto format = formatters::Formatter::Make(
+    auto format = Formatter::Make(
       options.format, options.width, options.tabsize);
     u32string s1, s2;
     if (options.isquote) {
@@ -168,7 +169,7 @@ Length File::Difference(
     auto r1 = Record::Read(options.filename1, options.isword);
     auto r2 = Record::Read(options.filename2, options.isword);
     if (options.format == formatters::Format::Edit) {
-      auto format = formatters::Formatter::Make(
+      auto format = Formatter::Make(
         options.format, options.width, options.tabsize);
       formatters::EDIT_INTERVALS editIntervals;
       length = formatters::Edit::Difference(
@@ -183,7 +184,7 @@ Length File::Difference(
           *format, editIntervals, r1, r2, label1, label2);
     }
     else {
-      auto format = formatters::Formatter::Make(
+      auto format = Formatter::Make(
         options.format, options.width, options.tabsize);
       length = Record::Difference(
         intervals, statistics, progress, r1, r2,

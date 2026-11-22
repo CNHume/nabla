@@ -35,6 +35,7 @@
 
 using namespace std;
 using namespace lcs;
+using formatters::Format;
 
 namespace {
   constexpr const char* usageSynopsis =
@@ -167,7 +168,7 @@ void Command::Parse(int argc, char* argv[]) {
         if (len > 2)                    // superfluous value specified
           usage = true;
         else {
-          format = formatters::Format::CIGAR;
+          format = Format::CIGAR;
           isgapped = true;
         }
         break;
@@ -302,7 +303,7 @@ void Command::Parse(int argc, char* argv[]) {
         if (len > 2)                    // superfluous value specified
           usage = true;
         else {
-          format = formatters::Format::Edit;
+          format = Format::Edit;
           isunified = true;
         }
         break;
@@ -344,7 +345,7 @@ void Command::Parse(int argc, char* argv[]) {
         if (len > 2)                    // superfluous value specified
           usage = true;
         else {
-          format = formatters::Format::Parallel;
+          format = Format::Parallel;
           isparallel = true;
         }
         break;
