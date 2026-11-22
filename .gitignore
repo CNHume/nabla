@@ -25,3 +25,7 @@ Thumbs.db
 
 # Running groff from the repo root writes an empty nabla.pdf (the source is man/nabla.1)
 /nabla.pdf
+
+# Python bytecode cache
+__pycache__/
+*.pyc
