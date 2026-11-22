@@ -146,8 +146,26 @@ which slows ~4× (0.01s → 0.04s) while doubling memory (13 MB → 28 MB).
 RickSpace's `O(ns)` tables grow ~3× (14 MB → 42 MB) because `-a` tables the
 full 250 Kbp instead of the 50 Kbp middle.  Trimming strips the 200 Kbp of
 affixes first, so the algorithm sees `N = m + n` = 100 K instead of 500 K at
-the same `D`.  Net: roughly a 4× win — 2–7× in time and 2–5× in memory —
-scaling with the affix fraction.
+the same `D`.
+
+The same applies to the sparse-match regime, where Hunt–Szymanski is at home.
+With a 40 Kbp prefix and 40 Kbp suffix around a 10 Kbp middle over `s = 1000`,
+`-a` feeds the full 50 Kbp, so Hunt–Szymanski's `O((r + n) log n)` sees ~25×
+the matches (~2.55M instead of ~100K) and slows from ~instant to 0.15s:
+
+| engine (10% edit) | trimmed | `-a` (Compare All) |
+|---|---|---|
+| Hunt-Szymanski | 0.00s · 5MB | 0.15s · 6MB |
+| RickSpace | 0.15s · 157MB | 0.79s · 768MB |
+| RickTime | 0.09s · 81MB | 0.26s · 387MB |
+| Myers | 0.00s · 5MB | 0.00s · 5MB |
+
+Myers is the exception: its initial snake skips the common prefix and `D` is
+unchanged, so it is barely affected.  At 40% edit `-Aa` still picks
+Hunt–Szymanski, but the run slows from 0.01s to 0.16s.  Net: Affix Trimming
+buys roughly the affix fraction for every engine — Myers' `O(ND)` sweep,
+Hunt–Szymanski's `O((r + n) log n)` match list, and the Rick `O(ns)` tables —
+so the win scales with the affix fraction, not with the algorithm.
 
 ---
 
