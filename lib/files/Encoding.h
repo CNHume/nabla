@@ -17,7 +17,7 @@
 //
 #pragma once
 //#define KEEP_CRLF                     // Suppress CRLF normalization in modes::Text::Read()
-// If KEEP_CRLF is defined -t istext treats files as one long string,
+// If KEEP_CRLF is defined, text mode (-T) treats files as one long string,
 // leaving Windows (CRLF) vs. Linux (LF) end-of-line distinct.
 // -b ignorespace can be used to ignore them.
 

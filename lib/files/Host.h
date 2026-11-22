@@ -24,8 +24,8 @@ namespace lcs::files {
 
   //
   // Host renders a report of the host machine: the host name, locale,
-  // processor type and speed, and total physical memory, for both Windows
-  // and Linux.
+  // processor type and speed, and total and available memory, for both
+  // Windows and Linux.
   //
   class Host {
   public:

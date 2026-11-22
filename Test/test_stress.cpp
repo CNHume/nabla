@@ -7,7 +7,7 @@
 //
 // 2026-10-21 CNHume  Created the stress subcommand (absorbed from scratch/fuzz.cpp).
 //
-// Randomized stress: verify all three LCS algorithms against an O(m*n)
+// Randomized stress: verify all four LCS algorithms against an O(m*n)
 // dynamic-programming reference over many small, mostly low-alphabet inputs.
 // Each trial checks both the reported length and the validity of the
 // reconstructed match trace, so a sub-optimal or corrupted trace is caught,

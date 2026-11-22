@@ -88,7 +88,7 @@ namespace {
     vector<vector<Index>> next;      // [symbol][column] over s2, [0, columns]
     vector<vector<Index>> prev;      // [symbol][column] over s2, [0, columns)
     vector<vector<Index>> next1;     // [symbol][row] over s1, [0, rows]
-    vector<vector<Index>> prev1;     // [symbol][row] over s1, [0, rows]
+    vector<vector<Index>> prev1;     // [symbol][row] over s1, [0, rows)
     int64_t rows = 0;                   // size1
     int64_t columns = 0;                // size2
     int64_t symbols = 0;                // distinct symbols

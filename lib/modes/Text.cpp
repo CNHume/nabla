@@ -40,7 +40,7 @@ using namespace lcs;
 namespace lcs::modes {
 
 //
-// Compare with STRING_TO_INDEXES_MAP used for RECORDS
+// Compare with CHAR_TO_INDEXES_MAP over Unicode code points
 //
 uint64_t Text::Match(
   MATCHES& columnsMatchedByRow, CHAR_TO_INDEXES_MAP& columnsMatchedByChar,
@@ -115,7 +115,7 @@ Length Text::Correspondence(
     intervals, statistics, progress,
     s1, s2, algorithm,
     ignorecase, ignorespace, isverbose);
-  auto size1 = s1.size();               // empty final delta
+  auto size1 = s1.size();               // input size
   auto size2 = s2.size();
   Delta::Context(*intervals, size1, size2, prefix, suffix);
   if (isjoin)
@@ -163,7 +163,7 @@ Length Text::Difference(
   auto length = compare(
     intervals, statistics, progress, s1, s2,
     algorithm, ignorecase, ignorespace, isverbose);
-  auto size1 = s1.size();               // empty final delta
+  auto size1 = s1.size();               // input size
   auto size2 = s2.size();
   auto deltas = Delta::Complement(*intervals, size1, size2);
   Delta::Context(deltas, size1, size2, prefix, suffix);
@@ -331,9 +331,9 @@ Length Text::TrimAndCompare(
   // Affix Trimming: strip the maximal common prefix and suffix, run Compare()
   // on the remaining middle, then restore the affixes to the result.  The
   // affixes are forced LCS members, so the length grows by prefix + suffix and
-  // the middle match runs shift right by prefix.  The caller collapses
-  // whitespace before this method, so the trim compares code points with case
-  // folding only.
+  // the middle match runs shift right by prefix.  The trim compares code
+  // points with case folding only; whitespace is collapsed by the caller
+  // before this method runs.
   //
   if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
     throw runtime_error("input exceeds the 32-bit position limit; use nabla64");

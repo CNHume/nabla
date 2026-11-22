@@ -30,7 +30,7 @@
 #include "metrics/Progress.h"           // for metrics::Progress
 #include "metrics/Statistics.h"         // for metrics::Statistics
 
-#include <cstdint>                      // for uint32_t, uint64_t
+#include <cstdint>                      // for uint64_t
 #include <memory>                       // for shared_ptr
 #include <string>                       // for u32string
 

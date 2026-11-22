@@ -23,7 +23,6 @@
 #include "lcs/LCS.h"
 #include "metrics/Progress.h"           // for metrics::Progress
 
-#include <cstdint>                      // for uint32_t
 #include <memory>                       // for shared_ptr
 
 namespace lcs::algorithms {

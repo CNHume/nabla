@@ -7,7 +7,8 @@ rates and, for each algorithm flag, measures wall-clock time and peak RSS
 
 Usage:
   python3 benchmark.py [--length N] [--timeout S] [--base PATH]
-                       [--trace] [--rates RATE ...]
+                       [--alphabet S] [--seed N] [--trace] [--rates RATE ...]
+                       [--no-trim] [--affix-prefix N] [--affix-suffix N]
 
 --trace measures interval reconstruction (the full LCS); without it the
 benchmark measures length-only (-l).  "trace" follows the code's traceLCS

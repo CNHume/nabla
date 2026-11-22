@@ -30,7 +30,7 @@
 #include "lcs/LCS.h"                    // for LCS base, Pair
 #include "metrics/Statistics.h"         // for metrics::Statistics
 
-#include <cstdint>                      // for uint32_t
+#include <cstdint>                      // for int64_t
 #include <memory>                       // for shared_ptr
 #include <string>                       // for u32string
 #include <vector>                       // for vector

@@ -288,7 +288,7 @@ const vector<vector<unsigned char>> Encoding::BOM = {
   { 0x2B, 0x2F, 0x76 },                 // UTF7 [Obsolete]
   { 0xFF, 0xFE, 0x00, 0x00 },           // UTF32_LE
   { 0x00, 0x00, 0xFE, 0xFF },           // UTF32_BE
-  { 0xFF, 0xFE },                       // UTF16_LE (b[2] > 0 || b[3] > 0)
+  { 0xFF, 0xFE },                       // UTF16_LE
   { 0xFE, 0xFF },                       // UTF16_BE
   { 0xEF, 0xBB, 0xBF }                  // UTF8_BOM
 };

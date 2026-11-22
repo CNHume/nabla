@@ -28,7 +28,7 @@ namespace lcs::files {
   // first, or the one named by recordName / numbered by recordIndex — and
   // every other record is ignored.  The '>' deflines are scanned in byte space
   // and only the selected record's sequence is decoded, so the whole file is
-  // never expanded to UTF-32.  Each defline is split at its first whitespace
+  // never decoded at once.  Each defline is split at its first whitespace
   // run into a name (the identifier) and a description (the remainder); the
   // name is not subdivided further, so pipe-delimited identifiers such as
   // gi|...|ref|... are kept intact.
@@ -71,7 +71,7 @@ namespace lcs::files {
 
     //
     // The label identifying the selected record: the filename, followed by
-    // " >name" when a named record was used.  Shared by Show() and by the
+    // " >name" when a record was selected.  Shared by Show() and by the
     // File drivers that render comparison labels.
     //
     std::string Label() const;
@@ -82,7 +82,8 @@ namespace lcs::files {
     void Show() const;
 
     //
-    // Warn for every record that is not selected; call unconditionally.
+    // Warn for every record that is not selected; the caller invokes this
+    // only when no record id was given.
     //
     void WarnIgnored() const;
 

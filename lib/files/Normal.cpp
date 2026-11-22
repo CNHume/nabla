@@ -23,7 +23,7 @@ using namespace std;
 using namespace lcs::files;
 
 //
-// Normal() applies the ignorecase and ignorespace options,
+// Normalize() applies the ignorecase and ignorespace options,
 // normalizing records prior to their comparison in Match()
 //
 void Normal::Normalize(const string& input, string& output,

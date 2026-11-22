@@ -7,9 +7,10 @@
 //
 // 2026-10-21 CNHume  Created encoding regression tests.
 //
-// The TankNew/TankOld fixtures hold the same source text re-encoded as
-// UTF-8 (with and without BOM), UTF-16 LE/BE, and UTF-32 LE/BE.  Every
-// variant must decode to the identical sequence of code points.
+// The TankNew fixtures hold the source text re-encoded as UTF-8 (with and
+// without BOM), UTF-16 LE/BE, and UTF-32 LE/BE; TankOld holds only the UTF-8
+// variants.  Every variant must decode to the identical sequence of code
+// points.
 //
 #include "doctest/doctest.h"
 #include "modes/Text.h"

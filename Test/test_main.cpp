@@ -12,7 +12,7 @@
 //   test                 run the doctest regression suite (default)
 //   test stress [N] [S]  randomized text stress: N trials, seed S
 //   test recordstress    randomized record stress: N trials, seed S
-//   test perf <which>    performance benchmarks (rick | measure | filterpairs)
+//   test perf <which>    performance benchmarks (rick | measure | filterpairs | region)
 //
 // Regression tests use doctest; stress and perf are standalone entry points
 // (test_stress.cpp and test_perf.cpp) that share the same library sources.

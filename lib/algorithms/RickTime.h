@@ -31,7 +31,6 @@
 #include "metrics/Progress.h"           // for metrics::Progress
 #include "metrics/Statistics.h"         // for metrics::Statistics
 
-#include <cstdint>                      // for uint32_t
 #include <memory>                       // for shared_ptr
 #include <stdexcept>                    // for runtime_error
 #include <string>                       // for u32string

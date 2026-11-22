@@ -26,7 +26,7 @@
 #pragma once
 #define FILTER_PAIRS
 //#define SHOW_MATCHES
-//#define SHOW_MATCH_COUNT              // See Match() in File, modes::Record, and modes::Text
+//#define SHOW_MATCH_COUNT              // See Match() in modes::Record and modes::Text
 //#define SHOW_PAIRS
 //#define SHOW_PREFIXENDS
 

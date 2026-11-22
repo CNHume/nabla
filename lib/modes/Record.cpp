@@ -48,9 +48,8 @@ namespace lcs::modes {
 // Match() avoids m*n comparisons by using STRING_TO_INDEXES_MAP to
 // achieve O(m+n) performance, where m and n are the input lengths.
 //
-// The lookup time can be assumed constant in the case of characters.
-// The symbol space is larger in the case of records; but the lookup
-// time will be O(log(m+n)), at most.
+// The symbol space is larger for records, so the lookup time is
+// O(log(m+n)), at most.
 //
 uint64_t Record::Match(
   MATCHES& columnsMatchedByRow, STRING_TO_INDEXES_MAP& columnsMatchedByString,
@@ -99,7 +98,7 @@ Length Record::Correspondence(
     intervals, statistics, progress,
     r1, r2, algorithm,
     ignorecase, ignorespace, isverbose);
-  auto size1 = r1.size();               // empty final delta
+  auto size1 = r1.size();               // input size
   auto size2 = r2.size();
   Delta::Context(*intervals, size1, size2, prefix, suffix);
   if (isjoin)
@@ -127,7 +126,7 @@ Length Record::Difference(
     intervals, statistics, progress,
     r1, r2, algorithm,
     ignorecase, ignorespace, isverbose);
-  auto size1 = r1.size();               // empty final delta
+  auto size1 = r1.size();               // input size
   auto size2 = r2.size();
   auto deltas = Delta::Complement(*intervals, size1, size2);
   Delta::Context(deltas, size1, size2, prefix, suffix);

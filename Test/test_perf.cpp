@@ -14,6 +14,7 @@
 //   test perf rick <space|time> file1 file2
 //   test perf measure [N] [K]
 //   test perf filterpairs [n] [s]
+//   test perf region [subs] [skew] [dissimilar]
 //
 #include "algorithms/RickSpace.h"
 #include "algorithms/RickTime.h"
@@ -288,7 +289,7 @@ namespace {
     uint64_t r = 0;
     for (size_t i = 0; i < s; ++i)
       r += c1[i] * c2[i];
-    return (double)r / ((double)a.size() * (double)b.size());  // ρ = r/(mn), in [0,1]
+    return (double)r / ((double)a.size() * (double)b.size());  // η = r/(mn), in [0,1]
   }
 
   double regionTime(Algorithm algo, const u32string& a, const u32string& b) {
@@ -318,7 +319,7 @@ namespace {
       Algorithm::RickTime,
     };
 
-    printf("InputLength\tAlphabetSize\tDensity\tEditDistance\tH-S\tMyers\tRickSpace\tRickTime\n");
+    printf("InputLength\tAlphabetSize\tDensity\tEditDistance\tMyers\tH-S\tRickSpace\tRickTime\n");
     for (auto n : lengths) {
       for (auto s : alphabets) {
         regionRng = 0x12345678u;
