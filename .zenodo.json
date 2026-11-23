@@ -1,0 +1,22 @@
+{
+  "title": "nabla: Longest Common Subsequence (LCS) of two sequences or files",
+  "description": "nabla finds the longest common subsequence (LCS) of two record or text sequences, selecting automatically among four algorithms — Myers, Hunt-Szymanski, RickSpace, or RickTime — based on the input's edit distance, match count, and alphabet size. It reads FASTA (-F) and emits SAM CIGAR alignments (-G), so nucleotide and protein sequences can be compared. The nabla64 build lifts the 32-bit length limit for whole-genome inputs.",
+  "creators": [
+    {
+      "name": "Hume, Christopher N."
+    }
+  ],
+  "license": "LGPL-3.0-or-later",
+  "upload_type": "software",
+  "access_right": "open",
+  "language": "eng",
+  "keywords": [
+    "longest common subsequence",
+    "LCS",
+    "bioinformatics",
+    "sequence alignment",
+    "CIGAR",
+    "FASTA",
+    "C++"
+  ]
+}
