@@ -64,7 +64,7 @@ the RickTime/RickSpace branch is the only part that depends on the output phase.
 
 ## Thresholds
 
-`lib/algorithms/Analysis.h` names the knobs:
+`lib/lcs/algorithms/Analysis.h` names the knobs:
 
 ```
 EditThreshold   = 2000   // Myers' fast range (the probe cap)

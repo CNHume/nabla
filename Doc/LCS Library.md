@@ -12,7 +12,7 @@ dispatch.  The library does not depend on any tool's switch set.
 ## Namespace layout
 
 All library types live under `namespace lcs`, split into sub-namespaces by
-concern (one `lib/` subdirectory per sub-namespace):
+concern (one `lib/lcs/` subdirectory per sub-namespace):
 
 ```
 namespace lcs {
@@ -22,25 +22,25 @@ namespace lcs {
   template <typename Seq, typename Eq> void Trim(...);   // Affix Trimming
   // typedefs: PAIRS, INDEXES, STRING_TO_INDEXES_MAP, MATCHES
 
-  namespace files {        // lib/files/
+  namespace files {        // lib/lcs/files/
     class File;                                 // entry point
     class Encoding; class Normal;               // content support
     class Options;                               // comparison parameters
     class Host;                                  // host-machine report
   }
 
-  namespace algorithms {   // lib/algorithms/
+  namespace algorithms {   // lib/lcs/algorithms/
     class Analysis;                              // dispatch + warnings
     class Myers; class HuntSzymanski;
     class RickSpace; class RickTime;
   }
 
-  namespace modes {        // lib/modes/  (granularity)
+  namespace modes {        // lib/lcs/modes/  (granularity)
     class Text;            // code points
     class Record;          // lines / words
   }
 
-  namespace formatters {   // lib/formatters/
+  namespace formatters {   // lib/lcs/formatters/
     enum class Format { CIGAR, Edit, Parallel, Sequential };
     class Formatter;                             // base
     class Sequential; class Parallel;
@@ -48,7 +48,7 @@ namespace lcs {
     class RecordDriver; class TextDriver;        // driver glue
   }
 
-  namespace metrics {      // lib/metrics/
+  namespace metrics {      // lib/lcs/metrics/
     class Statistics; class Progress; class ProgressBar;
     class Duration; class Stopwatch;
   }
@@ -121,9 +121,10 @@ binaries are shipped later:
 
 ## Build
 
-Each tool's `Makefile` compiles its own `*.cpp` plus `../lib/*.cpp` and
-`../lib/*/*.cpp` (the sub-namespace source directories), with `-I../lib`.
+Each tool's `Makefile` compiles its own `*.cpp` plus the library sources under
+`../lib/` — the core `lcs` namespace (`../lib/lcs/*.cpp`) and its sub-namespaces
+(`../lib/lcs/*/*.cpp`) — with `-I../lib`.
 `Test/Makefile` links the same library sources with the doctest cases.  The
-Visual Studio `.vcxproj`/`.filters` reference the same sources as `..\lib\…`,
+Visual Studio `.vcxproj`/`.filters` reference the same sources as `..\lib\lcs\…`,
 grouped by the namespace filters (`algorithms`, `files`, `formatters`, `metrics`,
 `modes`, `lcs`).

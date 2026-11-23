@@ -28,9 +28,9 @@
 // the overview provided in "Doc/LCS Overview.md"
 //
 #include "Command.h"
-#include "files/File.h"
-#include "metrics/ProgressBar.h"
-#include "metrics/Statistics.h"
+#include "lcs/files/File.h"
+#include "lcs/metrics/ProgressBar.h"
+#include "lcs/metrics/Statistics.h"
 
 #include <cstdlib>                      // for EXIT_FAILURE, EXIT_SUCCESS
 #include <format>                       // for format

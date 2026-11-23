@@ -39,7 +39,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\metrics\ProgressBar.cpp">
+    <ClCompile Include="..\lib\lcs\metrics\ProgressBar.cpp">
       <Filter>metrics</Filter>
     </ClCompile>
     <ClCompile Include="Version.cpp">
@@ -48,70 +48,70 @@
     <ClCompile Include="..\lib\lcs\Delta.cpp">
       <Filter>lcs</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\algorithms\Analysis.cpp">
+    <ClCompile Include="..\lib\lcs\algorithms\Analysis.cpp">
       <Filter>algorithms</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\metrics\Duration.cpp">
+    <ClCompile Include="..\lib\lcs\metrics\Duration.cpp">
       <Filter>metrics</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\files\Host.cpp">
+    <ClCompile Include="..\lib\lcs\files\Host.cpp">
       <Filter>files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\formatters\Cigar.cpp">
+    <ClCompile Include="..\lib\lcs\formatters\Cigar.cpp">
       <Filter>formatters</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\formatters\Edit.cpp">
+    <ClCompile Include="..\lib\lcs\formatters\Edit.cpp">
       <Filter>formatters</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\formatters\Formatter.cpp">
+    <ClCompile Include="..\lib\lcs\formatters\Formatter.cpp">
       <Filter>formatters</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\files\Encoding.cpp">
+    <ClCompile Include="..\lib\lcs\files\Encoding.cpp">
       <Filter>files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\files\Fasta.cpp">
+    <ClCompile Include="..\lib\lcs\files\Fasta.cpp">
       <Filter>files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\files\File.cpp">
+    <ClCompile Include="..\lib\lcs\files\File.cpp">
       <Filter>files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\formatters\RecordDriver.cpp">
+    <ClCompile Include="..\lib\lcs\formatters\RecordDriver.cpp">
       <Filter>formatters</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\formatters\TextDriver.cpp">
+    <ClCompile Include="..\lib\lcs\formatters\TextDriver.cpp">
       <Filter>formatters</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\algorithms\HuntSzymanski.cpp">
+    <ClCompile Include="..\lib\lcs\algorithms\HuntSzymanski.cpp">
       <Filter>algorithms</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\algorithms\Myers.cpp">
+    <ClCompile Include="..\lib\lcs\algorithms\Myers.cpp">
       <Filter>algorithms</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\files\Normal.cpp">
+    <ClCompile Include="..\lib\lcs\files\Normal.cpp">
       <Filter>files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\formatters\Parallel.cpp">
+    <ClCompile Include="..\lib\lcs\formatters\Parallel.cpp">
       <Filter>formatters</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\modes\Record.cpp">
+    <ClCompile Include="..\lib\lcs\modes\Record.cpp">
       <Filter>modes</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\algorithms\RickSpace.cpp">
+    <ClCompile Include="..\lib\lcs\algorithms\RickSpace.cpp">
       <Filter>algorithms</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\algorithms\RickTime.cpp">
+    <ClCompile Include="..\lib\lcs\algorithms\RickTime.cpp">
       <Filter>algorithms</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\formatters\Sequential.cpp">
+    <ClCompile Include="..\lib\lcs\formatters\Sequential.cpp">
       <Filter>formatters</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\modes\Text.cpp">
+    <ClCompile Include="..\lib\lcs\modes\Text.cpp">
       <Filter>modes</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\lcs\Pair.cpp">
       <Filter>lcs</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\metrics\Stopwatch.cpp">
+    <ClCompile Include="..\lib\lcs\metrics\Stopwatch.cpp">
       <Filter>metrics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,7 +119,7 @@
     <ClInclude Include="Command.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\metrics\ProgressBar.h">
+    <ClInclude Include="..\lib\lcs\metrics\ProgressBar.h">
       <Filter>metrics</Filter>
     </ClInclude>
     <ClInclude Include="Version.h">
@@ -128,16 +128,16 @@
     <ClInclude Include="..\lib\lcs\Delta.h">
       <Filter>lcs</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\algorithms\Analysis.h">
+    <ClInclude Include="..\lib\lcs\algorithms\Analysis.h">
       <Filter>algorithms</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\metrics\Duration.h">
+    <ClInclude Include="..\lib\lcs\metrics\Duration.h">
       <Filter>metrics</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\metrics\Statistics.h">
+    <ClInclude Include="..\lib\lcs\metrics\Statistics.h">
       <Filter>metrics</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\files\Host.h">
+    <ClInclude Include="..\lib\lcs\files\Host.h">
       <Filter>files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\lcs\join.h">
@@ -146,61 +146,61 @@
     <ClInclude Include="..\lib\lcs\LCS.h">
       <Filter>lcs</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\Cigar.h">
+    <ClInclude Include="..\lib\lcs\formatters\Cigar.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\Edit.h">
+    <ClInclude Include="..\lib\lcs\formatters\Edit.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\files\Encoding.h">
+    <ClInclude Include="..\lib\lcs\files\Encoding.h">
       <Filter>files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\files\Fasta.h">
+    <ClInclude Include="..\lib\lcs\files\Fasta.h">
       <Filter>files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\files\File.h">
+    <ClInclude Include="..\lib\lcs\files\File.h">
       <Filter>files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\Format.h">
+    <ClInclude Include="..\lib\lcs\formatters\Format.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\Formatter.h">
+    <ClInclude Include="..\lib\lcs\formatters\Formatter.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\RecordDriver.h">
+    <ClInclude Include="..\lib\lcs\formatters\RecordDriver.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\TextDriver.h">
+    <ClInclude Include="..\lib\lcs\formatters\TextDriver.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\algorithms\HuntSzymanski.h">
+    <ClInclude Include="..\lib\lcs\algorithms\HuntSzymanski.h">
       <Filter>algorithms</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\algorithms\Myers.h">
+    <ClInclude Include="..\lib\lcs\algorithms\Myers.h">
       <Filter>algorithms</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\files\Normal.h">
+    <ClInclude Include="..\lib\lcs\files\Normal.h">
       <Filter>files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\files\Options.h">
+    <ClInclude Include="..\lib\lcs\files\Options.h">
       <Filter>files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\Parallel.h">
+    <ClInclude Include="..\lib\lcs\formatters\Parallel.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\modes\Record.h">
+    <ClInclude Include="..\lib\lcs\modes\Record.h">
       <Filter>modes</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\algorithms\RickSpace.h">
+    <ClInclude Include="..\lib\lcs\algorithms\RickSpace.h">
       <Filter>algorithms</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\algorithms\RickTime.h">
+    <ClInclude Include="..\lib\lcs\algorithms\RickTime.h">
       <Filter>algorithms</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\formatters\Sequential.h">
+    <ClInclude Include="..\lib\lcs\formatters\Sequential.h">
       <Filter>formatters</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\modes\Text.h">
+    <ClInclude Include="..\lib\lcs\modes\Text.h">
       <Filter>modes</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\lcs\Pair.h">
@@ -215,10 +215,10 @@
     <ClInclude Include="SuspectDash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\metrics\Progress.h">
+    <ClInclude Include="..\lib\lcs\metrics\Progress.h">
       <Filter>metrics</Filter>
     </ClInclude>
-    <ClInclude Include="..\lib\metrics\Stopwatch.h">
+    <ClInclude Include="..\lib\lcs\metrics\Stopwatch.h">
       <Filter>metrics</Filter>
     </ClInclude>
   </ItemGroup>

@@ -23,7 +23,7 @@ endif
 BUILD_DIR ?= build
 
 # Library objects: one per lib/*.cpp.
-LIB_SOURCES := $(wildcard ../lib/*.cpp ../lib/*/*.cpp)
+LIB_SOURCES := $(wildcard ../lib/*.cpp ../lib/*/*.cpp ../lib/*/*/*.cpp)
 LIB_OBJECTS := $(patsubst ../lib/%.cpp, $(BUILD_DIR)/%.o, $(LIB_SOURCES))
 
 # Test objects: one per *.cpp in this directory.

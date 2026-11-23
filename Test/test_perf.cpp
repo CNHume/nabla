@@ -16,9 +16,9 @@
 //   test perf filterpairs [n] [s]
 //   test perf region [subs] [skew] [dissimilar]
 //
-#include "algorithms/RickSpace.h"
-#include "algorithms/RickTime.h"
-#include "modes/Text.h"
+#include "lcs/algorithms/RickSpace.h"
+#include "lcs/algorithms/RickTime.h"
+#include "lcs/modes/Text.h"
 
 #include <algorithm>                    // for lower_bound, swap
 #include <chrono>

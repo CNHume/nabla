@@ -35,7 +35,7 @@ endif
 BUILD_DIR ?= build
 SOURCES := $(wildcard *.cpp)
 OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
-LIB_SOURCES := $(wildcard ../lib/*.cpp ../lib/*/*.cpp)
+LIB_SOURCES := $(wildcard ../lib/*.cpp ../lib/*/*.cpp ../lib/*/*/*.cpp)
 LIB_OBJECTS := $(patsubst ../lib/%.cpp,$(BUILD_DIR)/%.o,$(LIB_SOURCES))
 DEPS    := $(OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
 TARGET  := $(BUILD_DIR)/$(if $(filter 64,$(LENGTH_SIZE)),nabla64,nabla)

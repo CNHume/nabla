@@ -21,8 +21,8 @@
 // thrown by Parse() when the command line fails to parse.
 //
 #include "Command.h"
-#include "files/Fasta.h"
-#include "files/Host.h"
+#include "lcs/files/Fasta.h"
+#include "lcs/files/Host.h"
 #include "SuspectDash.h"
 #include "Version.h"
 

@@ -13,7 +13,7 @@
 // points.
 //
 #include "doctest/doctest.h"
-#include "modes/Text.h"
+#include "lcs/modes/Text.h"
 
 #include <string>
 #include <vector>
