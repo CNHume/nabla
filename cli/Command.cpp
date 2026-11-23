@@ -46,388 +46,389 @@ namespace {
     "[-s <suffix>] [-t <tabsize>] [-T] [-u] [-v] [-V] [-w] [-W <width>] [-y] "
     "file1 file2";
 
-  constexpr uint32_t edit_context_affix = 3;  // -u default context
+  // -u default context
+  constexpr uint32_t edit_context_affix = 3;
 }
 
 namespace cli {
 
-string Command::arg_msg(const string& s, const string& name) {
-  auto msg = string("Invalid ");
-  msg += name;
-  msg += ": ";
-  msg += s;
-  return msg;
-}
+  string Command::arg_msg(const string& s, const string& name) {
+    auto msg = string("Invalid ");
+    msg += name;
+    msg += ": ";
+    msg += s;
+    return msg;
+  }
 
-uint32_t Command::parse_uint32(const char* s, const string& name) {
-  char* pEnd;
+  uint32_t Command::parse_uint32(const char* s, const string& name) {
+    char* pEnd;
+    //
+    // Reset errno before strtoul(): strtoul() sets errno only on failure and
+    // leaves it unchanged on success, so a stale non-zero errno left by an
+    // earlier call (such as setlocale()) would otherwise make a valid numeric
+    // argument look like an overflow error.
+    //
+    errno = 0;
+    auto result = strtoul(s, &pEnd, 10);
+    if (errno != 0 || *pEnd != '\0')
+      throw invalid_argument(arg_msg(s, name));
+    return result;
+  }
+
   //
-  // Reset errno before strtoul(): strtoul() sets errno only on failure and
-  // leaves it unchanged on success, so a stale non-zero errno left by an
-  // earlier call (such as setlocale()) would otherwise make a valid numeric
-  // argument look like an overflow error.
+  // command line parser
   //
-  errno = 0;
-  auto result = strtoul(s, &pEnd, 10);
-  if (errno != 0 || *pEnd != '\0')
-    throw invalid_argument(arg_msg(s, name));
-  return result;
-}
-
-//
-// command line parser
-//
-void Command::Parse(int argc, char* argv[]) {
-  auto usage = false;
-  auto isgapped = false;                // -G given
-  auto isparallel = false;              // -y given
-  auto isprefix = false;                // -p given
-  auto issuffix = false;                // -s given
-  auto isunified = false;               // -u given
-  auto n = 1;                           // skip verb
-  for (; n < argc && !usage; n++) {     // parse any switches
-    char* token = argv[n];
-    auto len = strlen(token);
-    if (len < 1 || token[0] != '-') {
-      auto message = SuspectDashMessage(token);
-      if (message.empty())              // not a switch
-        break;
-      throw runtime_error(message);     // switch typed with a suspect dash
-    }
-    else if (len < 2)
-      usage = true;
-    else if (len == 2 && token[1] == '-') {
-      n++;                              // skip the -- operand delimiter
-      break;                            // end of switches
-    }
-    else {                              // parse single character switch
-      switch (token[1]) {
-      case 'a':                         // the affix switch (skip trimming)
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          isaffix = true;               // pass common affixes into Compare()
-        break;
-
-      case 'A':                         // the algorithm switch
-        {
-          //
-          // Parse algorithm specifier: a=automatic, d=edit distance, m=matches,
-          // s=space, t=time.  Allow leading spaces -A d (as in -j, -p, -s).
-          //
-          const char* specifier = nullptr;
-          if (len > 2)                  // Same token
-            specifier = &token[2];
-          else if (n + 1 < argc && strlen(argv[n + 1]) == 1)
-            specifier = argv[++n];      // Next token
-          else {
-            usage = true;               // -A requires one specifier-letter
-            break;
-          }
-          switch (specifier[0]) {
-          case 'a':
-            algorithm = Algorithm::Automatic;
-            break;
-          case 'd':
-            algorithm = Algorithm::EditDistance;
-            break;
-          case 'm':
-            algorithm = Algorithm::Matches;
-            break;
-          case 's':
-            algorithm = Algorithm::RickSpace;
-            break;
-          case 't':
-            algorithm = Algorithm::RickTime;
-            break;
-          default:
-            usage = true;               // unknown algorithm
-          }
-        }
-        break;
-
-      case 'b':                         // the ignorespace switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          ignorespace = true;
-        break;
-
-      case 'C':                         // the correspondence switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          iscorrespondence = true;
-        break;
-
-      case 'F':                         // the fasta switch, which implies text
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else {
-          isfasta = true;
-          istext = true;                // -F implies -T
-        }
-        break;
-
-      case 'G':                         // the gapped (CIGAR alignment) switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else {
-          format = Format::CIGAR;
-          isgapped = true;
-        }
-        break;
-
-      case 'h':                         // the help switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          ishelp = true;
-        break;
-
-      case 'H':                         // the host switch (early exit)
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          ishost = true;
-        break;
-
-      case 'i':                         // the ignorecase switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          ignorecase = true;
-        break;
-
-      case 'j':                         // the join switch
-        isjoin = true;
-        if (len > 2)                    // whitespace optional
-          join = parse_uint32(&token[2], "join");
-        else if (n + 1 < argc)          // whitespace allowed
-          join = parse_uint32(argv[++n], "join");
-        else
-          usage = true;
-        break;
-
-      case 'l':                         // the length-only switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          islength = true;
-        break;
-
-      case 'p':                         // the prefix switch
-        if (len > 2)                    // whitespace optional
-          prefix = parse_uint32(&token[2], "prefix");
-        else if (n + 1 < argc)          // whitespace allowed
-          prefix = parse_uint32(argv[++n], "prefix");
-        else
-          usage = true;
-        isprefix = true;
-        break;
-
-      case 'P':                         // the progress bar switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          isprogress = true;
-        break;
-
-      case 'q':                         // the query (file2) FASTA record switch
-        {
-          const char* id = nullptr;
-          if (len > 2)                  // whitespace optional
-            id = &token[2];
-          else if (n + 1 < argc)        // whitespace allowed
-            id = argv[++n];
-          else
-            usage = true;
-
-          hasQueryId = true;
-          isfasta = true;               // -q implies -F
-          istext = true;                // -F implies -T
-          if (id != nullptr)
-            ParseRecordId(id, queryName, queryIndex);
-        }
-        break;
-
-      case 'Q':                         // the quote switch, which implies text
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else {
-          isquote = true;
-          istext = true;                // -Q implies -T
-        }
-        break;
-
-      case 'r':                         // the reference (file1) FASTA record switch
-        {
-          const char* id = nullptr;
-          if (len > 2)                  // whitespace optional
-            id = &token[2];
-          else if (n + 1 < argc)        // whitespace allowed
-            id = argv[++n];
-          else
-            usage = true;
-
-          hasReferenceId = true;
-          isfasta = true;               // -r implies -F
-          istext = true;                // -F implies -T
-          if (id != nullptr)
-            ParseRecordId(id, referenceName, referenceIndex);
-        }
-        break;
-
-      case 's':                         // the suffix switch
-        if (len > 2)                    // whitespace optional
-          suffix = parse_uint32(&token[2], "suffix");
-        else if (n + 1 < argc)          // whitespace allowed
-          suffix = parse_uint32(argv[++n], "suffix");
-        else
-          usage = true;
-        issuffix = true;
-        break;
-
-      case 't':                         // the tab size switch (parallel layout)
-        if (len > 2)                    // whitespace optional
-          tabsize = parse_uint32(&token[2], "tabsize");
-        else if (n + 1 < argc)          // whitespace allowed
-          tabsize = parse_uint32(argv[++n], "tabsize");
-        else
-          usage = true;
-        break;
-
-      case 'T':                         // the text switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          istext = true;
-        break;
-
-      case 'u':                         // the unified diff switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else {
-          format = Format::Edit;
-          isunified = true;
-        }
-        break;
-
-      case 'v':                         // the verbose switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          isverbose = true;
-        break;
-
-      case 'V':                         // the version switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          isversion = true;
-        break;
-
-      case 'w':                         // the word switch
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else
-          isword = true;
-        break;
-
-      case 'W':                         // the width switch (parallel layout)
-        if (len > 2)                    // whitespace optional
-          width = parse_uint32(&token[2], "width");
-        else if (n + 1 < argc)          // whitespace allowed
-          width = parse_uint32(argv[++n], "width");
-        else
-          usage = true;
-        if (width < MIN_PARALLEL_WIDTH) // reject below the minimum
-          throw invalid_argument(
-            std::format("Invalid width: {} (minimum is {})", width, MIN_PARALLEL_WIDTH));
-        break;
-
-      case 'y':                         // the parallel switch (side-by-side)
-        if (len > 2)                    // superfluous value specified
-          usage = true;
-        else {
-          format = Format::Parallel;
-          isparallel = true;
-        }
-        break;
-
-      default:                          // switch unknown
+  void Command::Parse(int argc, char* argv[]) {
+    auto usage = false;
+    auto isgapped = false;              // -G given
+    auto isparallel = false;            // -y given
+    auto isprefix = false;              // -p given
+    auto issuffix = false;              // -s given
+    auto isunified = false;             // -u given
+    auto n = 1;                         // skip verb
+    for (; n < argc && !usage; n++) {   // parse any switches
+      char* token = argv[n];
+      auto len = strlen(token);
+      if (len < 1 || token[0] != '-') {
+        auto message = SuspectDashMessage(token);
+        if (message.empty())            // not a switch
+          break;
+        throw runtime_error(message);   // switch typed with a suspect dash
+      }
+      else if (len < 2)
         usage = true;
-        break;
+      else if (len == 2 && token[1] == '-') {
+        n++;                            // skip the -- operand delimiter
+        break;                          // end of switches
+      }
+      else {                            // parse single character switch
+        switch (token[1]) {
+        case 'a':                       // the affix switch (skip trimming)
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            isaffix = true;             // pass common affixes into Compare()
+          break;
+
+        case 'A':                       // the algorithm switch
+          {
+            //
+            // Parse algorithm specifier: a=automatic, d=edit distance, m=matches,
+            // s=space, t=time.  Allow leading spaces -A d (as in -j, -p, -s).
+            //
+            const char* specifier = nullptr;
+            if (len > 2)                // Same token
+              specifier = &token[2];
+            else if (n + 1 < argc && strlen(argv[n + 1]) == 1)
+              specifier = argv[++n];    // Next token
+            else {
+              usage = true;             // -A requires one specifier-letter
+              break;
+            }
+            switch (specifier[0]) {
+            case 'a':
+              algorithm = Algorithm::Automatic;
+              break;
+            case 'd':
+              algorithm = Algorithm::EditDistance;
+              break;
+            case 'm':
+              algorithm = Algorithm::Matches;
+              break;
+            case 's':
+              algorithm = Algorithm::RickSpace;
+              break;
+            case 't':
+              algorithm = Algorithm::RickTime;
+              break;
+            default:
+              usage = true;             // unknown algorithm
+            }
+          }
+          break;
+
+        case 'b':                       // the ignorespace switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            ignorespace = true;
+          break;
+
+        case 'C':                       // the correspondence switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            iscorrespondence = true;
+          break;
+
+        case 'F':                       // the fasta switch, which implies text
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else {
+            isfasta = true;
+            istext = true;              // -F implies -T
+          }
+          break;
+
+        case 'G':                       // the gapped (CIGAR alignment) switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else {
+            format = Format::CIGAR;
+            isgapped = true;
+          }
+          break;
+
+        case 'h':                       // the help switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            ishelp = true;
+          break;
+
+        case 'H':                       // the host switch (early exit)
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            ishost = true;
+          break;
+
+        case 'i':                       // the ignorecase switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            ignorecase = true;
+          break;
+
+        case 'j':                       // the join switch
+          isjoin = true;
+          if (len > 2)                  // whitespace optional
+            join = parse_uint32(&token[2], "join");
+          else if (n + 1 < argc)        // whitespace allowed
+            join = parse_uint32(argv[++n], "join");
+          else
+            usage = true;
+          break;
+
+        case 'l':                       // the length-only switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            islength = true;
+          break;
+
+        case 'p':                       // the prefix switch
+          if (len > 2)                  // whitespace optional
+            prefix = parse_uint32(&token[2], "prefix");
+          else if (n + 1 < argc)        // whitespace allowed
+            prefix = parse_uint32(argv[++n], "prefix");
+          else
+            usage = true;
+          isprefix = true;
+          break;
+
+        case 'P':                       // the progress bar switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            isprogress = true;
+          break;
+
+        case 'q':                       // the query (file2) FASTA record switch
+          {
+            const char* id = nullptr;
+            if (len > 2)                // whitespace optional
+              id = &token[2];
+            else if (n + 1 < argc)      // whitespace allowed
+              id = argv[++n];
+            else
+              usage = true;
+
+            hasQueryId = true;
+            isfasta = true;             // -q implies -F
+            istext = true;              // -F implies -T
+            if (id != nullptr)
+              ParseRecordId(id, queryName, queryIndex);
+          }
+          break;
+
+        case 'Q':                       // the quote switch, which implies text
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else {
+            isquote = true;
+            istext = true;              // -Q implies -T
+          }
+          break;
+
+        case 'r':                       // the reference (file1) FASTA record switch
+          {
+            const char* id = nullptr;
+            if (len > 2)                // whitespace optional
+              id = &token[2];
+            else if (n + 1 < argc)      // whitespace allowed
+              id = argv[++n];
+            else
+              usage = true;
+
+            hasReferenceId = true;
+            isfasta = true;             // -r implies -F
+            istext = true;              // -F implies -T
+            if (id != nullptr)
+              ParseRecordId(id, referenceName, referenceIndex);
+          }
+          break;
+
+        case 's':                       // the suffix switch
+          if (len > 2)                  // whitespace optional
+            suffix = parse_uint32(&token[2], "suffix");
+          else if (n + 1 < argc)        // whitespace allowed
+            suffix = parse_uint32(argv[++n], "suffix");
+          else
+            usage = true;
+          issuffix = true;
+          break;
+
+        case 't':                       // the tab size switch (parallel layout)
+          if (len > 2)                  // whitespace optional
+            tabsize = parse_uint32(&token[2], "tabsize");
+          else if (n + 1 < argc)        // whitespace allowed
+            tabsize = parse_uint32(argv[++n], "tabsize");
+          else
+            usage = true;
+          break;
+
+        case 'T':                       // the text switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            istext = true;
+          break;
+
+        case 'u':                       // the unified diff switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else {
+            format = Format::Edit;
+            isunified = true;
+          }
+          break;
+
+        case 'v':                       // the verbose switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            isverbose = true;
+          break;
+
+        case 'V':                       // the version switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            isversion = true;
+          break;
+
+        case 'w':                       // the word switch
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else
+            isword = true;
+          break;
+
+        case 'W':                       // the width switch (parallel layout)
+          if (len > 2)                  // whitespace optional
+            width = parse_uint32(&token[2], "width");
+          else if (n + 1 < argc)        // whitespace allowed
+            width = parse_uint32(argv[++n], "width");
+          else
+            usage = true;
+          if (width < MIN_PARALLEL_WIDTH) // reject below the minimum
+            throw invalid_argument(
+              std::format("Invalid width: {} (minimum is {})", width, MIN_PARALLEL_WIDTH));
+          break;
+
+        case 'y':                       // the parallel switch (side-by-side)
+          if (len > 2)                  // superfluous value specified
+            usage = true;
+          else {
+            format = Format::Parallel;
+            isparallel = true;
+          }
+          break;
+
+        default:                        // switch unknown
+          usage = true;
+          break;
+        }
       }
     }
-  }
 
-  // Early-exit switches print their report and terminate without comparing.
-  if (ishelp) {
-    cout << usageSynopsis << '\n';
-    exit(EXIT_SUCCESS);
-  }
+    // Early-exit switches print their report and terminate without comparing.
+    if (ishelp) {
+      cout << usageSynopsis << '\n';
+      exit(EXIT_SUCCESS);
+    }
 
-  if (isversion) {
-    cout << Version::ToString();
-    exit(EXIT_SUCCESS);
-  }
+    if (isversion) {
+      cout << Version::ToString();
+      exit(EXIT_SUCCESS);
+    }
 
-  if (ishost) {
-    cout << Host::ToString();
-    exit(EXIT_SUCCESS);
-  }
+    if (ishost) {
+      cout << Host::ToString();
+      exit(EXIT_SUCCESS);
+    }
 
-  if (iscorrespondence && isgapped)
-    throw invalid_argument(
-      "-C (correspondence) cannot be combined with -G (gapped)");
-
-  if (isquote && isfasta)
-    throw invalid_argument(
-      "-Q (quote) cannot be combined with -q <record_id>, -r <record_id>, or -F");
-
-  // The output-format switches are mutually exclusive.
-  if ((isgapped && isparallel) ||
-      (isgapped && isunified) ||
-      (isparallel && isunified))
-    throw invalid_argument(
-      "-G (gapped), -u (unified), and -y (parallel) are mutually exclusive");
-
-  if (isunified) {
-    if (iscorrespondence)
+    if (iscorrespondence && isgapped)
       throw invalid_argument(
-        "-u (unified) cannot be combined with -C (correspondence)");
-    if (islength)
-      throw invalid_argument(
-        "-u (unified) cannot be combined with -l (length only)");
-    if (istext)
-      throw invalid_argument(
-        "-u (unified) cannot be combined with -F (FASTA), -Q (quote), or -T (text mode)");
-    if (isword)
-      throw invalid_argument(
-        "-u (unified) with -w (word mode) is not yet implemented");
+        "-C (correspondence) cannot be combined with -G (gapped)");
 
-    if (!isprefix)
-      prefix = edit_context_affix;
-    if (!issuffix)
-      suffix = edit_context_affix;
+    if (isquote && isfasta)
+      throw invalid_argument(
+        "-Q (quote) cannot be combined with -q <record_id>, -r <record_id>, or -F");
+
+    // The output-format switches are mutually exclusive.
+    if ((isgapped && isparallel) ||
+        (isgapped && isunified) ||
+        (isparallel && isunified))
+      throw invalid_argument(
+        "-G (gapped), -u (unified), and -y (parallel) are mutually exclusive");
+
+    if (isunified) {
+      if (iscorrespondence)
+        throw invalid_argument(
+          "-u (unified) cannot be combined with -C (correspondence)");
+      if (islength)
+        throw invalid_argument(
+          "-u (unified) cannot be combined with -l (length only)");
+      if (istext)
+        throw invalid_argument(
+          "-u (unified) cannot be combined with -F (FASTA), -Q (quote), or -T (text mode)");
+      if (isword)
+        throw invalid_argument(
+          "-u (unified) with -w (word mode) is not yet implemented");
+
+      if (!isprefix)
+        prefix = edit_context_affix;
+      if (!issuffix)
+        suffix = edit_context_affix;
+    }
+
+    if (n < argc)                       // parse filename1
+      filename1 = argv[n++];
+    else                                // filename1 is required
+      usage = true;
+
+    if (n < argc)                       // parse filename2
+      filename2 = argv[n++];
+    else                                // filename2 is required
+      usage = true;
+
+    if (n < argc)                       // superfluous argument specified
+      usage = true;
+
+    if (usage)                          // throw usage line if parse failed
+      throw runtime_error(usageSynopsis);
   }
-
-  if (n < argc)                         // parse filename1
-    filename1 = argv[n++];
-  else                                  // filename1 is required
-    usage = true;
-
-  if (n < argc)                         // parse filename2
-    filename2 = argv[n++];
-  else                                  // filename2 is required
-    usage = true;
-
-  if (n < argc)                         // superfluous argument specified
-    usage = true;
-
-  if (usage)                            // throw usage line if parse failed
-    throw runtime_error(usageSynopsis);
-}
 
 } // namespace cli

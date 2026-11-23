@@ -31,28 +31,28 @@
 //
 namespace cli {
 
-inline std::string SuspectDashMessage(const char* token) {
-  // UTF-8 encodings of the dash-like characters we recognize.
-  constexpr std::string_view dashes[] = {
-    "\xE2\x80\x90",     // U+2010 HYPHEN
-    "\xE2\x80\x93",     // U+2013 EN DASH
-    "\xE2\x80\x94",     // U+2014 EM DASH
-    "\xE2\x88\x92",     // U+2212 MINUS SIGN
-  };
-  const std::string_view view(token);
-  auto suspect = false;
-  for (auto dash : dashes)
-    if (view.starts_with(dash)) {
-      suspect = true;
-      break;
-    }
-  auto message = suspect ?
-    std::format(
-      "Error: Unknown argument '{}'.\n"
-      "Did you copy-paste this command?  It looks like you used a Unicode minus (U+2212) "
-      "or dash instead of a standard ASCII hyphen (-).", token) :
-    std::string{};
-  return message;
-}
+  inline std::string SuspectDashMessage(const char* token) {
+    // UTF-8 encodings of the dash-like characters we recognize.
+    constexpr std::string_view dashes[] = {
+      "\xE2\x80\x90",     // U+2010 HYPHEN
+      "\xE2\x80\x93",     // U+2013 EN DASH
+      "\xE2\x80\x94",     // U+2014 EM DASH
+      "\xE2\x88\x92",     // U+2212 MINUS SIGN
+    };
+    const std::string_view view(token);
+    auto suspect = false;
+    for (auto dash : dashes)
+      if (view.starts_with(dash)) {
+        suspect = true;
+        break;
+      }
+    auto message = suspect ?
+      std::format(
+        "Error: Unknown argument '{}'.\n"
+        "Did you copy-paste this command?  It looks like you used a Unicode minus (U+2212) "
+        "or dash instead of a standard ASCII hyphen (-).", token) :
+      std::string{};
+    return message;
+  }
 
 } // namespace cli

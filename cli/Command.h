@@ -30,20 +30,20 @@
 //
 namespace cli {
 
-class Command : public lcs::files::Options {
-public:
-  bool iscorrespondence = false;
-  bool ishelp = false;
-  bool ishost = false;
-  bool islength = false;
-  bool isprogress = false;
-  bool isversion = false;
+  class Command : public lcs::files::Options {
+  public:
+    bool iscorrespondence = false;
+    bool ishelp = false;
+    bool ishost = false;
+    bool islength = false;
+    bool isprogress = false;
+    bool isversion = false;
 
-  void Parse(int argc, char* argv[]);
+    void Parse(int argc, char* argv[]);
 
-protected:
-  static std::string arg_msg(const std::string& s, const std::string& name = "argument");
-  static std::uint32_t parse_uint32(const char* s, const std::string& name = "argument");
-};
+  protected:
+    static std::string arg_msg(const std::string& s, const std::string& name = "argument");
+    static std::uint32_t parse_uint32(const char* s, const std::string& name = "argument");
+  };
 
 } // namespace cli

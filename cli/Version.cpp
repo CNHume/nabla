@@ -21,14 +21,14 @@
 
 namespace cli {
 
-std::string Version::ToString() {
-  return std::format(
-    "{} {}{}\n"
-    "Copyright (C) {} {}\n"
-    "License LGPLv3+: GNU LGPL version 3 or later <https://gnu.org/licenses/lgpl.html>.\n"
-    "This is free software: you are free to change and redistribute it.\n"
-    "There is NO WARRANTY, to the extent permitted by law.\n",
-    programName, programVersion, buildFlavor, copyrightYears, author);
-}
+  std::string Version::ToString() {
+    return std::format(
+      "{} {}{}\n"
+      "Copyright (C) {} {}\n"
+      "License LGPLv3+: GNU LGPL version 3 or later <https://gnu.org/licenses/lgpl.html>.\n"
+      "This is free software: you are free to change and redistribute it.\n"
+      "There is NO WARRANTY, to the extent permitted by law.\n",
+      programName, programVersion, buildFlavor, copyrightYears, author);
+  }
 
 } // namespace cli
