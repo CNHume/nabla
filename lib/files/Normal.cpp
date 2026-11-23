@@ -150,3 +150,17 @@ void Normal::NormalSpace(const u32string& input, u32string& output,
     }
   }
 }
+
+//
+// Equal is the predicate passed to lcs::Trim() for affix trimming.  It
+// reports whether two symbols match under the same case/space folding.
+//
+bool Normal::Equal::operator()(char32_t x, char32_t y) const {
+  return ignorecase ? Normal::ToLower(x) == Normal::ToLower(y) : x == y;
+}
+
+bool Normal::Equal::operator()(const string& x, const string& y) {
+  Normal::Normalize(x, nx, ignorecase, ignorespace);
+  Normal::Normalize(y, ny, ignorecase, ignorespace);
+  return nx == ny;
+}

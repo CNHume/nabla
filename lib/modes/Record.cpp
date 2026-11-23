@@ -304,28 +304,24 @@ Length Record::TrimAndCompare(
   bool ignorecase, bool ignorespace, bool isverbose) {
   //
   // Affix Trimming: strip the maximal common prefix and suffix, run Compare()
-  // on the remaining middle, then restore the affixes to the result.  Records
-  // compare under the same case/space normalization the algorithms use.
+  // on the remaining middle, then restore the affixes to the result.  The
+  // affixes are forced LCS members, so the length grows by prefix + suffix and
+  // the middle match runs shift right by prefix.  Equal() compares records
+  // under the same case/space normalization the algorithms use.
   //
   if (ExceedsIndex(r1.size()) || ExceedsIndex(r2.size()))
     throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
   Index prefix = 0, suffix = 0;
-  string nx, ny;
-  Trim(r1, r2,
-    [&](const string& x, const string& y) {
-      Normal::Normalize(x, nx, ignorecase, ignorespace);
-      Normal::Normalize(y, ny, ignorecase, ignorespace);
-      return nx == ny;
-    },
-    prefix, suffix);
+  Trim(r1, r2, Normal::Equal(ignorecase, ignorespace), prefix, suffix);
 
-  if (statistics)
+  if (statistics) {
     statistics->trimmed = prefix + suffix;
-  if (isverbose && statistics && (prefix > 0 || suffix > 0)) {
-    cerr << format("{}: trimmed {} prefix records.\n", statistics->label1, prefix);
-    cerr << format("{}: trimmed {} suffix records.\n", statistics->label1, suffix);
-    cerr << format("{}: trimmed {} prefix records.\n", statistics->label2, prefix);
-    cerr << format("{}: trimmed {} suffix records.\n", statistics->label2, suffix);
+    if (isverbose) {
+      if (prefix > 0)
+        cerr << format("trimmed {} prefix records.\n", prefix);
+      if (suffix > 0)
+        cerr << format("trimmed {} suffix records.\n", suffix);
+    }
   }
 
   //

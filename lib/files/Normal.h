@@ -41,6 +41,25 @@ namespace lcs::files {
     static void NormalSpace(const std::u32string& input, std::u32string& output,
       std::vector<Index>& mapBegin, std::vector<Index>& mapEnd);
     static char32_t ToLower(char32_t c);
+
+    //
+    // Equal is the predicate passed to lcs::Trim() for affix trimming.  It
+    // reports whether a pair of symbols match under the same case/space
+    // normalization the algorithms use.
+    //
+    class Equal {
+    public:
+      explicit Equal(bool ignorecase = false, bool ignorespace = false)
+        : ignorecase(ignorecase), ignorespace(ignorespace) {}
+
+      bool operator()(char32_t x, char32_t y) const;             // code points
+      bool operator()(const std::string& x, const std::string& y);  // records
+
+    private:
+      bool ignorecase;
+      bool ignorespace;
+      std::string nx, ny;               // scratch buffers reused across calls
+    };
   };
 
 } // namespace lcs::files

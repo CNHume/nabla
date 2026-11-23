@@ -344,26 +344,23 @@ Length Text::TrimAndCompare(
   // Affix Trimming: strip the maximal common prefix and suffix, run Compare()
   // on the remaining middle, then restore the affixes to the result.  The
   // affixes are forced LCS members, so the length grows by prefix + suffix and
-  // the middle match runs shift right by prefix.  The trim compares code
+  // the middle match runs shift right by prefix.  Equal() compares code
   // points with case folding only; whitespace is collapsed by the caller
   // before this method runs.
   //
   if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
     throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
   Index prefix = 0, suffix = 0;
-  Trim(s1, s2,
-    [ignorecase](char32_t x, char32_t y) {
-      return ignorecase ? Normal::ToLower(x) == Normal::ToLower(y) : x == y;
-    },
-    prefix, suffix);
+  Trim(s1, s2, Normal::Equal(ignorecase), prefix, suffix);
 
-  if (statistics)
+  if (statistics) {
     statistics->trimmed = prefix + suffix;
-  if (isverbose && statistics && (prefix > 0 || suffix > 0)) {
-    cerr << format("{}: trimmed {} prefix characters.\n", statistics->label1, prefix);
-    cerr << format("{}: trimmed {} suffix characters.\n", statistics->label1, suffix);
-    cerr << format("{}: trimmed {} prefix characters.\n", statistics->label2, prefix);
-    cerr << format("{}: trimmed {} suffix characters.\n", statistics->label2, suffix);
+    if (isverbose) {
+      if (prefix > 0)
+        cerr << format("trimmed {} prefix characters.\n", prefix);
+      if (suffix > 0)
+        cerr << format("trimmed {} suffix characters.\n", suffix);
+    }
   }
 
   //
@@ -372,8 +369,8 @@ Length Text::TrimAndCompare(
   //
   u32string m1, m2;
   if (prefix > 0 || suffix > 0) {
-    m1 = s1.substr(prefix, s1.size() - prefix - suffix);
-    m2 = s2.substr(prefix, s2.size() - prefix - suffix);
+    m1.assign(s1.begin() + prefix, s1.end() - suffix);
+    m2.assign(s2.begin() + prefix, s2.end() - suffix);
   }
   const u32string& a1 = prefix > 0 || suffix > 0 ? m1 : s1;
   const u32string& a2 = prefix > 0 || suffix > 0 ? m2 : s2;
