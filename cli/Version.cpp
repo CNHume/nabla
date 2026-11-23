@@ -19,6 +19,8 @@
 
 #include <format>
 
+namespace cli {
+
 std::string Version::ToString() {
   return std::format(
     "{} {}{}\n"
@@ -28,3 +30,5 @@ std::string Version::ToString() {
     "There is NO WARRANTY, to the extent permitted by law.\n",
     programName, programVersion, buildFlavor, copyrightYears, author);
 }
+
+} // namespace cli

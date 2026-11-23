@@ -22,6 +22,8 @@
 //
 // Version renders the program's GNU-style version banner.
 //
+namespace cli {
+
 class Version {
 public:
   static std::string ToString();
@@ -38,3 +40,5 @@ private:
   static constexpr const char* copyrightYears = "2017-2026";
   static constexpr const char* author = "Christopher N. Hume";
 };
+
+} // namespace cli

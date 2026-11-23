@@ -55,9 +55,9 @@ namespace lcs {
 }
 ```
 
-The tool (`cli/`) sits outside the library, in the global namespace:
-`Command` (derives from `lcs::files::Options`), `Version`, and the `SuspectDash`
-helper.
+The tool (`cli/`) sits outside the library, in `namespace cli` (matching its
+`cli/` directory): `Command` (derives from `lcs::files::Options`), `Version`,
+and the `SuspectDash` helper.  `main()` is the one global-namespace exception.
 
 ## Naming decisions
 

@@ -28,6 +28,8 @@
 // are inherited from lcs::files::Options; only the tool-specific switches are
 // declared here.
 //
+namespace cli {
+
 class Command : public lcs::files::Options {
 public:
   bool iscorrespondence = false;
@@ -43,3 +45,5 @@ protected:
   static std::string arg_msg(const std::string& s, const std::string& name = "argument");
   static std::uint32_t parse_uint32(const char* s, const std::string& name = "argument");
 };
+
+} // namespace cli

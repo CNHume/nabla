@@ -39,31 +39,32 @@
 
 using namespace std;
 using namespace lcs;
+using namespace cli;
 using files::File;
 using metrics::ProgressBar;
 using metrics::Statistics;
 
 namespace {
-// Select a UTF-8 locale when the platform provides one, degrading to the
-// environment locale and finally to the always-valid "C" locale.  Each
-// std::locale(name) construction can throw std::runtime_error when the
-// requested locale is unavailable (e.g. ".UTF-8" in a minimal container, or
-// an LC_ALL/LANG such as C.UTF-8 on glibc < 2.35), so guard every step.
-std::locale selectLocale() {
-  try {
-    return std::locale(".UTF-8");
+  // Select a UTF-8 locale when the platform provides one, degrading to the
+  // environment locale and finally to the always-valid "C" locale.  Each
+  // std::locale(name) construction can throw std::runtime_error when the
+  // requested locale is unavailable (e.g. ".UTF-8" in a minimal container, or
+  // an LC_ALL/LANG such as C.UTF-8 on glibc < 2.35), so guard every step.
+  std::locale selectLocale() {
+    try {
+      return std::locale(".UTF-8");
+    }
+    catch (const std::exception&) {
+      // Fall through to the environment locale.
+    }
+    try {
+      return std::locale("");
+    }
+    catch (const std::exception&) {
+      // Fall through to the classic "C" locale.
+    }
+    return std::locale::classic();
   }
-  catch (const std::exception&) {
-    // Fall through to the environment locale.
-  }
-  try {
-    return std::locale("");
-  }
-  catch (const std::exception&) {
-    // Fall through to the classic "C" locale.
-  }
-  return std::locale::classic();
-}
 }  // namespace
 
 //

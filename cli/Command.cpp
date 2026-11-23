@@ -49,6 +49,8 @@ namespace {
   constexpr uint32_t edit_context_affix = 3;  // -u default context
 }
 
+namespace cli {
+
 string Command::arg_msg(const string& s, const string& name) {
   auto msg = string("Invalid ");
   msg += name;
@@ -427,3 +429,5 @@ void Command::Parse(int argc, char* argv[]) {
   if (usage)                            // throw usage line if parse failed
     throw runtime_error(usageSynopsis);
 }
+
+} // namespace cli

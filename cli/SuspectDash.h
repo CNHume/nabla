@@ -29,6 +29,8 @@
 // not recognized as switch prefixes.  Returns an empty string when the
 // argument does not begin with one of these characters.
 //
+namespace cli {
+
 inline std::string SuspectDashMessage(const char* token) {
   // UTF-8 encodings of the dash-like characters we recognize.
   constexpr std::string_view dashes[] = {
@@ -52,3 +54,5 @@ inline std::string SuspectDashMessage(const char* token) {
     std::string{};
   return message;
 }
+
+} // namespace cli
