@@ -53,353 +53,353 @@ using metrics::Statistics;
 
 namespace lcs::modes {
 
-//
-// Find Matches
-//
-// Match() avoids m*n comparisons by using STRING_TO_INDEXES_MAP to
-// achieve O(m+n) performance, where m and n are the input lengths.
-//
-// The symbol space is larger for records, so the lookup time is
-// O(log(m+n)), at most.
-//
-uint64_t Record::Match(
-  MATCHES& columnsMatchedByRow, STRING_TO_INDEXES_MAP& columnsMatchedByString,
-  const RECORDS& r1, const RECORDS& r2,
-  bool ignorecase, bool ignorespace) {
-  if (ExceedsIndex(r1.size()) || ExceedsIndex(r2.size()))
-    throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
-  uint64_t count = 0;
-  Index index = 0;
-  string buffer;
-  for (const auto& it : r2) {
-    Normal::Normalize(it, buffer, ignorecase, ignorespace);
-    columnsMatchedByString[buffer].push_back(index++);
-  }
-
-  for (const auto& it : r1) {
-    Normal::Normalize(it, buffer, ignorecase, ignorespace);
-    auto& dq2 = columnsMatchedByString[buffer];
-    columnsMatchedByRow.push_back(&dq2);
-    count += dq2.size();
-  }
-#ifdef SHOW_MATCH_COUNT
-  cout << format(
-    std::locale(), "count = {:L} of columnsMatchedByRow\n", count);
-#endif
-  return count;
-}
-
-Length Record::Correspondence(
-  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
-  const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
-  bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
-  uint32_t join, uint32_t prefix, uint32_t suffix) {
   //
-  // -a (affix) passes the common affixes through to the core algorithm;
-  // otherwise the Affix Trimming first pass strips them first.
+  // Find Matches
   //
-  auto compare = isaffix ?
-    &Record::Compare : &Record::TrimAndCompare;
-  if (intervals == nullptr)
-    return compare(
-      nullptr, statistics, progress,
-      r1, r2, algorithm,
-      ignorecase, ignorespace, isverbose);
-
-  auto length = compare(
-    intervals, statistics, progress,
-    r1, r2, algorithm,
-    ignorecase, ignorespace, isverbose);
-  auto size1 = r1.size();               // input size
-  auto size2 = r2.size();
-  Delta::Context(*intervals, size1, size2, prefix, suffix);
-  if (isjoin)
-    *intervals = Delta::Coalesce(*intervals, join);
-  return length;
-}
-
-Length Record::Difference(
-  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
-  const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
-  bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
-  uint32_t join, uint32_t prefix, uint32_t suffix) {
+  // Match() avoids m*n comparisons by using STRING_TO_INDEXES_MAP to
+  // achieve O(m+n) performance, where m and n are the input lengths.
   //
-  // -a (affix) passes the common affixes through to the core algorithm;
-  // otherwise the Affix Trimming first pass strips them first.
+  // The symbol space is larger for records, so the lookup time is
+  // O(log(m+n)), at most.
   //
-  auto compare = isaffix ?
-    &Record::Compare : &Record::TrimAndCompare;
-  if (intervals == nullptr)
-    return compare(
-      nullptr, statistics, progress,
-      r1, r2, algorithm,
-      ignorecase, ignorespace, isverbose);
-
-  auto length = compare(
-    intervals, statistics, progress,
-    r1, r2, algorithm,
-    ignorecase, ignorespace, isverbose);
-  auto size1 = r1.size();               // input size
-  auto size2 = r2.size();
-  auto deltas = Delta::Complement(*intervals, size1, size2);
-  Delta::Context(deltas, size1, size2, prefix, suffix);
-  *intervals = isjoin ? Delta::Coalesce(deltas, join) : deltas;
-  return length;
-}
-
-Length Record::Compare(
-  shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
-  const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
-  bool ignorecase, bool ignorespace, bool isverbose) {
-  if (isverbose)
-    cerr << format("Started at {}\n", Duration::WallClock());
-  Duration duration;                    // time the algorithm
-  shared_ptr<Pair> pairs;
-  auto ppairs = intervals != nullptr ? &pairs : nullptr;
-  Length length;
-  bool isswapped = false;
-
-  if (algorithm == Algorithm::Automatic) {
-    //
-    // Heuristic dispatch over records: probe Myers with a tight band, then
-    // choose among Hunt-Szymanski (sparse) and a speculative RickTime run with
-    // a linear-space RickSpace fallback, with record strings as the symbols.
-    //
-    unordered_map<string, uint64_t> count1, count2;
-    for (const auto& rec : r1)
-      count1[rec]++;
-    for (const auto& rec : r2)
-      count2[rec]++;
-    uint64_t matches = 0;
-    for (const auto& [symbol, count] : count1) {
-      auto found = count2.find(symbol);
-      if (found != count2.end())
-        matches += count * found->second;
-    }
-    string reason;
-    auto d = Myers::ProbeDistance(
-      r1, r2, (int64_t)Analysis::EditThreshold);
-    if (d >= 0) {
-      algorithm = Algorithm::EditDistance;
-      reason = format("Myers edit distance {} is within the {} threshold",
-        d, Analysis::EditThreshold);
-    }
-    else {
-      auto shorter = min(r1.size(), r2.size());
-      if (matches <= Analysis::SparseMatchCount * shorter) {
-        algorithm = Algorithm::Matches;
-        reason = format("{} matches are sparse", matches);
-      }
-      else if (intervals == nullptr) {
-        // Length-only: RickTime's find phase is fastest; the switch falls back
-        // to RickSpace when its recording would overflow memory.
-        algorithm = Algorithm::RickTime;
-        reason = format(
-          "{} matches are dense.  Trying RickTime (LCS Length).", matches);
-      }
-      else {
-        // Interval reconstruction: RickTime's O(d log d) dominant-match sort is
-        // more expensive than RickSpace's divide-and-conquer, so reconstruct
-        // directly in linear space.
-        algorithm = Algorithm::RickSpace;
-        reason = format(
-          "{} matches are dense.  Trying RickSpace (LCS Trace).", matches);
-      }
-    }
-    if (isverbose)
-      cerr << format("Selected {} because {}\n",
-        Statistics::NameOf(algorithm), reason);
-  }
-
-  switch (algorithm) {
-  case Algorithm::EditDistance: {
-    //
-    // Myers is symmetric and needs no match lists; normalize each record for
-    // case/space, then run the edit-graph sweep directly.  Normalization
-    // preserves record indices, so the positions map 1:1 back to r1/r2.
-    //
-    RECORDS nr1, nr2;
-    nr1.reserve(r1.size());
-    nr2.reserve(r2.size());
+  uint64_t Record::Match(
+    MATCHES& columnsMatchedByRow, STRING_TO_INDEXES_MAP& columnsMatchedByString,
+    const RECORDS& r1, const RECORDS& r2,
+    bool ignorecase, bool ignorespace) {
+    if (ExceedsIndex(r1.size()) || ExceedsIndex(r2.size()))
+      throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
+    uint64_t count = 0;
+    Index index = 0;
     string buffer;
-    for (const auto& it : r1) {
-      Normal::Normalize(it, buffer, ignorecase, ignorespace);
-      nr1.push_back(buffer);
-    }
     for (const auto& it : r2) {
       Normal::Normalize(it, buffer, ignorecase, ignorespace);
-      nr2.push_back(buffer);
+      columnsMatchedByString[buffer].push_back(index++);
     }
-    length = Myers::Find(ppairs, statistics, nr1, nr2);
-    break;
+
+    for (const auto& it : r1) {
+      Normal::Normalize(it, buffer, ignorecase, ignorespace);
+      auto& dq2 = columnsMatchedByString[buffer];
+      columnsMatchedByRow.push_back(&dq2);
+      count += dq2.size();
+    }
+  #ifdef SHOW_MATCH_COUNT
+    cout << format(
+      std::locale(), "count = {:L} of columnsMatchedByRow\n", count);
+  #endif
+    return count;
   }
-  case Algorithm::Matches:
-  case Algorithm::RickSpace:
-  case Algorithm::RickTime: {
+
+  Length Record::Correspondence(
+    shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
+    const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
+    bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
+    uint32_t join, uint32_t prefix, uint32_t suffix) {
     //
-    // The Rick variants assume m <= n, so swap for them; Hunt-Szymanski is
-    // symmetric.  Match() consumes the (possibly swapped) inputs, so the swap
-    // must precede the shared match-list build.
+    // -a (affix) passes the common affixes through to the core algorithm;
+    // otherwise the Affix Trimming first pass strips them first.
     //
-    isswapped = algorithm != Algorithm::Matches && r2.size() < r1.size();
-    const auto& shorter = isswapped ? r2 : r1;
-    const auto& longer = isswapped ? r1 : r2;
-    STRING_TO_INDEXES_MAP columnsMatchedByString;
-    MATCHES columnsMatchedByRow;  // holds references into columnsMatchedByString
-    auto count = Match(
-      columnsMatchedByRow, columnsMatchedByString,
-      shorter, longer, ignorecase, ignorespace);
-    if (algorithm == Algorithm::Matches) {
-      Analysis::WarnMatchCount(count, shorter.size(), longer.size());
-      length = HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
-      if (statistics) {
-        statistics->algorithm = Algorithm::Matches;
-        statistics->matches = count;
+    auto compare = isaffix ?
+      &Record::Compare : &Record::TrimAndCompare;
+    if (intervals == nullptr)
+      return compare(
+        nullptr, statistics, progress,
+        r1, r2, algorithm,
+        ignorecase, ignorespace, isverbose);
+
+    auto length = compare(
+      intervals, statistics, progress,
+      r1, r2, algorithm,
+      ignorecase, ignorespace, isverbose);
+    auto size1 = r1.size();               // input size
+    auto size2 = r2.size();
+    Delta::Context(*intervals, size1, size2, prefix, suffix);
+    if (isjoin)
+      *intervals = Delta::Coalesce(*intervals, join);
+    return length;
+  }
+
+  Length Record::Difference(
+    shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
+    const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
+    bool ignorecase, bool ignorespace, bool isjoin, bool isverbose, bool isaffix,
+    uint32_t join, uint32_t prefix, uint32_t suffix) {
+    //
+    // -a (affix) passes the common affixes through to the core algorithm;
+    // otherwise the Affix Trimming first pass strips them first.
+    //
+    auto compare = isaffix ?
+      &Record::Compare : &Record::TrimAndCompare;
+    if (intervals == nullptr)
+      return compare(
+        nullptr, statistics, progress,
+        r1, r2, algorithm,
+        ignorecase, ignorespace, isverbose);
+
+    auto length = compare(
+      intervals, statistics, progress,
+      r1, r2, algorithm,
+      ignorecase, ignorespace, isverbose);
+    auto size1 = r1.size();               // input size
+    auto size2 = r2.size();
+    auto deltas = Delta::Complement(*intervals, size1, size2);
+    Delta::Context(deltas, size1, size2, prefix, suffix);
+    *intervals = isjoin ? Delta::Coalesce(deltas, join) : deltas;
+    return length;
+  }
+
+  Length Record::Compare(
+    shared_ptr<Delta>* intervals, Statistics* statistics, Progress* progress,
+    const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
+    bool ignorecase, bool ignorespace, bool isverbose) {
+    if (isverbose)
+      cerr << format("Started at {}\n", Duration::WallClock());
+    Duration duration;                    // time the algorithm
+    shared_ptr<Pair> pairs;
+    auto ppairs = intervals != nullptr ? &pairs : nullptr;
+    Length length;
+    bool isswapped = false;
+
+    if (algorithm == Algorithm::Automatic) {
+      //
+      // Heuristic dispatch over records: probe Myers with a tight band, then
+      // choose among Hunt-Szymanski (sparse) and a speculative RickTime run with
+      // a linear-space RickSpace fallback, with record strings as the symbols.
+      //
+      unordered_map<string, uint64_t> count1, count2;
+      for (const auto& rec : r1)
+        count1[rec]++;
+      for (const auto& rec : r2)
+        count2[rec]++;
+      uint64_t matches = 0;
+      for (const auto& [symbol, count] : count1) {
+        auto found = count2.find(symbol);
+        if (found != count2.end())
+          matches += count * found->second;
       }
-    }
-    else if (algorithm == Algorithm::RickSpace) {
-      length = RickSpace::Find(
-        ppairs, statistics, progress, columnsMatchedByRow,
-        (Length)shorter.size(), (Length)longer.size());
-    }
-    else {
-      try {
-        length = RickTime::Find(
-          ppairs, statistics, progress, columnsMatchedByRow,
-          (Length)shorter.size(), (Length)longer.size());
+      string reason;
+      auto d = Myers::ProbeDistance(
+        r1, r2, (int64_t)Analysis::EditThreshold);
+      if (d >= 0) {
+        algorithm = Algorithm::EditDistance;
+        reason = format("Myers edit distance {} is within the {} threshold",
+          d, Analysis::EditThreshold);
       }
-      catch (const RickTimeBudgetExceeded&) {
-        if (isverbose)
-          cerr << "RickTime: recording overflowed.  Falling back to RickSpace.\n";
+      else {
+        auto shorter = min(r1.size(), r2.size());
+        if (matches <= Analysis::SparseMatchCount * shorter) {
+          algorithm = Algorithm::Matches;
+          reason = format("{} matches are sparse", matches);
+        }
+        else if (intervals == nullptr) {
+          // Length-only: RickTime's find phase is fastest; the switch falls back
+          // to RickSpace when its recording would overflow memory.
+          algorithm = Algorithm::RickTime;
+          reason = format(
+            "{} matches are dense.  Trying RickTime (LCS Length).", matches);
+        }
+        else {
+          // Interval reconstruction: RickTime's O(d log d) dominant-match sort is
+          // more expensive than RickSpace's divide-and-conquer, so reconstruct
+          // directly in linear space.
+          algorithm = Algorithm::RickSpace;
+          reason = format(
+            "{} matches are dense.  Trying RickSpace (LCS Trace).", matches);
+        }
+      }
+      if (isverbose)
+        cerr << format("Selected {} because {}\n",
+          Statistics::NameOf(algorithm), reason);
+    }
+
+    switch (algorithm) {
+    case Algorithm::EditDistance: {
+      //
+      // Myers is symmetric and needs no match lists; normalize each record for
+      // case/space, then run the edit-graph sweep directly.  Normalization
+      // preserves record indices, so the positions map 1:1 back to r1/r2.
+      //
+      RECORDS nr1, nr2;
+      nr1.reserve(r1.size());
+      nr2.reserve(r2.size());
+      string buffer;
+      for (const auto& it : r1) {
+        Normal::Normalize(it, buffer, ignorecase, ignorespace);
+        nr1.push_back(buffer);
+      }
+      for (const auto& it : r2) {
+        Normal::Normalize(it, buffer, ignorecase, ignorespace);
+        nr2.push_back(buffer);
+      }
+      length = Myers::Find(ppairs, statistics, nr1, nr2);
+      break;
+    }
+    case Algorithm::Matches:
+    case Algorithm::RickSpace:
+    case Algorithm::RickTime: {
+      //
+      // The Rick variants assume m <= n, so swap for them; Hunt-Szymanski is
+      // symmetric.  Match() consumes the (possibly swapped) inputs, so the swap
+      // must precede the shared match-list build.
+      //
+      isswapped = algorithm != Algorithm::Matches && r2.size() < r1.size();
+      const auto& shorter = isswapped ? r2 : r1;
+      const auto& longer = isswapped ? r1 : r2;
+      STRING_TO_INDEXES_MAP columnsMatchedByString;
+      MATCHES columnsMatchedByRow;  // holds references into columnsMatchedByString
+      auto count = Match(
+        columnsMatchedByRow, columnsMatchedByString,
+        shorter, longer, ignorecase, ignorespace);
+      if (algorithm == Algorithm::Matches) {
+        Analysis::WarnMatchCount(count, shorter.size(), longer.size());
+        length = HuntSzymanski::Find(ppairs, progress, columnsMatchedByRow);
+        if (statistics) {
+          statistics->algorithm = Algorithm::Matches;
+          statistics->matches = count;
+        }
+      }
+      else if (algorithm == Algorithm::RickSpace) {
         length = RickSpace::Find(
           ppairs, statistics, progress, columnsMatchedByRow,
           (Length)shorter.size(), (Length)longer.size());
       }
+      else {
+        try {
+          length = RickTime::Find(
+            ppairs, statistics, progress, columnsMatchedByRow,
+            (Length)shorter.size(), (Length)longer.size());
+        }
+        catch (const RickTimeBudgetExceeded&) {
+          if (isverbose)
+            cerr << "RickTime: recording overflowed.  Falling back to RickSpace.\n";
+          length = RickSpace::Find(
+            ppairs, statistics, progress, columnsMatchedByRow,
+            (Length)shorter.size(), (Length)longer.size());
+        }
+      }
+      break;
     }
-    break;
-  }
-  default:
-    throw runtime_error("Unknown LCS algorithm");
-  }
-
-  if (progress)
-    progress->Finish();
-  if (intervals != nullptr) {
-    if (isswapped)
-      for (auto pair = pairs; pair != nullptr; pair = pair->next)
-        swap(pair->begin1, pair->begin2);
-    *intervals = Delta::Coalesce(pairs);
-  }
-  duration.Stop();
-  if (statistics)
-    statistics->elapsedMicroseconds = (uint64_t)duration.ElapsedMicroseconds();
-  if (isverbose)
-    cerr << format("Finished at {}\n", Duration::WallClock());
-  return length;
-}
-
-Length Record::TrimAndCompare(
-  shared_ptr<Delta>* deltas, Statistics* statistics, Progress* progress,
-  const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
-  bool ignorecase, bool ignorespace, bool isverbose) {
-  //
-  // Affix Trimming: strip the maximal common prefix and suffix, run Compare()
-  // on the remaining middle, then restore the affixes to the result.  The
-  // affixes are forced LCS members, so the length grows by prefix + suffix
-  // and the middle match runs shift right by prefix.
-  //
-  // Equal() compares records under the same case/space normalization that
-  // the algorithms use.
-  //
-  if (ExceedsIndex(r1.size()) || ExceedsIndex(r2.size()))
-    throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
-  Index prefix = 0, suffix = 0;
-  Trim(r1, r2, Normal::Equal(ignorecase, ignorespace), prefix, suffix);
-
-  if (statistics) {
-    statistics->trimmed = prefix + suffix;
-    if (isverbose) {
-      if (prefix > 0)
-        cerr << format("trimmed {} prefix records.\n", prefix);
-      if (suffix > 0)
-        cerr << format("trimmed {} suffix records.\n", suffix);
+    default:
+      throw runtime_error("Unknown LCS algorithm");
     }
+
+    if (progress)
+      progress->Finish();
+    if (intervals != nullptr) {
+      if (isswapped)
+        for (auto pair = pairs; pair != nullptr; pair = pair->next)
+          swap(pair->begin1, pair->begin2);
+      *intervals = Delta::Coalesce(pairs);
+    }
+    duration.Stop();
+    if (statistics)
+      statistics->elapsedMicroseconds = (uint64_t)duration.ElapsedMicroseconds();
+    if (isverbose)
+      cerr << format("Finished at {}\n", Duration::WallClock());
+    return length;
   }
 
-  //
-  // The core algorithm compares the middle only.  Copy the middle when the
-  // trim shortened the input; otherwise compare the records in place.
-  //
-  RECORDS m1, m2;
-  if (prefix > 0 || suffix > 0) {
-    m1.assign(r1.begin() + prefix, r1.end() - suffix);
-    m2.assign(r2.begin() + prefix, r2.end() - suffix);
-  }
-  const RECORDS& a1 = prefix > 0 || suffix > 0 ? m1 : r1;
-  const RECORDS& a2 = prefix > 0 || suffix > 0 ? m2 : r2;
+  Length Record::TrimAndCompare(
+    shared_ptr<Delta>* deltas, Statistics* statistics, Progress* progress,
+    const RECORDS& r1, const RECORDS& r2, Algorithm algorithm,
+    bool ignorecase, bool ignorespace, bool isverbose) {
+    //
+    // Affix Trimming: strip the maximal common prefix and suffix, run Compare()
+    // on the remaining middle, then restore the affixes to the result.  The
+    // affixes are forced LCS members, so the length grows by prefix + suffix
+    // and the middle match runs shift right by prefix.
+    //
+    // Equal() compares records under the same case/space normalization that
+    // the algorithms use.
+    //
+    if (ExceedsIndex(r1.size()) || ExceedsIndex(r2.size()))
+      throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
+    Index prefix = 0, suffix = 0;
+    Trim(r1, r2, Normal::Equal(ignorecase, ignorespace), prefix, suffix);
 
-  auto length = Compare(
-    deltas, statistics, progress,
-    a1, a2, algorithm,
-    ignorecase, ignorespace, isverbose);
-
-  //
-  // Restore the affixes: shift the middle match runs right by prefix and
-  // bracket them with the prefix and suffix match runs.  Length-only calls
-  // (null deltas) skip this reconstruction and just grow the length.
-  //
-  length += prefix + suffix;
-  if (deltas != nullptr)
-    Delta::Restore(*deltas, prefix, suffix, r1.size(), r2.size());
-  return length;
-}
-
-//
-// RECORDS Reader
-//
-Record::RECORDS Record::Read(const string& filename, bool isword) {
-  auto [encoding, bomLength] = Encoding::PeekEncoding(filename);
-
-  if (Encoding::IsWide(encoding))
-    return Encoding::ReadWide(filename, encoding, isword);
-
-  ifstream input(filename, ios::binary);
-
-  if (input.fail()) {
-    string msg(format("{} not found", filename));
-    throw runtime_error(msg);
-  }
-
-  RECORDS records;
-  string buffer;
-  auto count = 0;
-  while (getline(input, buffer)) {
-    if (!buffer.empty() && buffer.back() == '\r')
-      buffer.pop_back();                // Strip CRLF terminator.
-    auto record = buffer;
-    if (count == 0 && bomLength > 0)
-      record = &buffer[bomLength];
-
-    if (isword) {
-      istringstream iss(record);
-      string token;
-      while (!iss.eof()) {
-        iss >> token;
-        records.push_back(token);
+    if (statistics) {
+      statistics->trimmed = prefix + suffix;
+      if (isverbose) {
+        if (prefix > 0)
+          cerr << format("trimmed {} prefix records.\n", prefix);
+        if (suffix > 0)
+          cerr << format("trimmed {} suffix records.\n", suffix);
       }
     }
-    else
-      records.push_back(record);
-    count++;
+
+    //
+    // The core algorithm compares the middle only.  Copy the middle when the
+    // trim shortened the input; otherwise compare the records in place.
+    //
+    RECORDS m1, m2;
+    if (prefix > 0 || suffix > 0) {
+      m1.assign(r1.begin() + prefix, r1.end() - suffix);
+      m2.assign(r2.begin() + prefix, r2.end() - suffix);
+    }
+    const RECORDS& a1 = prefix > 0 || suffix > 0 ? m1 : r1;
+    const RECORDS& a2 = prefix > 0 || suffix > 0 ? m2 : r2;
+
+    auto length = Compare(
+      deltas, statistics, progress,
+      a1, a2, algorithm,
+      ignorecase, ignorespace, isverbose);
+
+    //
+    // Restore the affixes: shift the middle match runs right by prefix and
+    // bracket them with the prefix and suffix match runs.  Length-only calls
+    // (null deltas) skip this reconstruction and just grow the length.
+    //
+    length += prefix + suffix;
+    if (deltas != nullptr)
+      Delta::Restore(*deltas, prefix, suffix, r1.size(), r2.size());
+    return length;
   }
 
-  input.close();
-#ifdef SHOW_MATCH_COUNT
-  cout << format(
-    "{} records read from {}\n",
-    records.size(), filename);
-#endif
-  return records;
-}
+  //
+  // RECORDS Reader
+  //
+  Record::RECORDS Record::Read(const string& filename, bool isword) {
+    auto [encoding, bomLength] = Encoding::PeekEncoding(filename);
+
+    if (Encoding::IsWide(encoding))
+      return Encoding::ReadWide(filename, encoding, isword);
+
+    ifstream input(filename, ios::binary);
+
+    if (input.fail()) {
+      string msg(format("{} not found", filename));
+      throw runtime_error(msg);
+    }
+
+    RECORDS records;
+    string buffer;
+    auto count = 0;
+    while (getline(input, buffer)) {
+      if (!buffer.empty() && buffer.back() == '\r')
+        buffer.pop_back();                // Strip CRLF terminator.
+      auto record = buffer;
+      if (count == 0 && bomLength > 0)
+        record = &buffer[bomLength];
+
+      if (isword) {
+        istringstream iss(record);
+        string token;
+        while (!iss.eof()) {
+          iss >> token;
+          records.push_back(token);
+        }
+      }
+      else
+        records.push_back(record);
+      count++;
+    }
+
+    input.close();
+  #ifdef SHOW_MATCH_COUNT
+    cout << format(
+      "{} records read from {}\n",
+      records.size(), filename);
+  #endif
+    return records;
+  }
 
 } // namespace lcs::modes

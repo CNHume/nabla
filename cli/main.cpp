@@ -88,7 +88,8 @@ int main(int argc, char* argv[]) {
 
     Statistics statistics;
     ProgressBar progressBar;
-    auto progress = command.isprogress ? &progressBar : nullptr;
+    auto progress = command.isprogress ?
+      &progressBar : nullptr;
     auto length = command.iscorrespondence ?
       File::Correspondence(pintervals, &statistics, progress, command) :
       File::Difference(pintervals, &statistics, progress, command);
