@@ -25,57 +25,57 @@ using files::Encoding;
 
 namespace lcs::formatters {
 
-//
-// Delta Formatters
-//
-// Concatenate elements from the selected side
-//
-u32string TextDriver::Select(
-  shared_ptr<Delta> deltas, const u32string& s1, const u32string& s2,
-  bool isright) {
-  Length length1, length2;
-  Delta::Lengths(deltas, length1, length2);
-  u32string buffer;
-  buffer.reserve((size_t)(isright ? length2 : length1));
-  for (auto next = deltas; next != nullptr;
-    next = dynamic_pointer_cast<Delta>(next->next)) {
-    auto begin = isright ? next->begin2 : next->begin1;
-    auto end = isright ? next->end2 : next->end1;
-    auto& s = isright ? s2 : s1;
-    for (auto index = begin; index < end; index++)
-      buffer.push_back(s[index]);
+  //
+  // Delta Formatters
+  //
+  // Concatenate elements from the selected side
+  //
+  u32string TextDriver::Select(
+    shared_ptr<Delta> deltas, const u32string& s1, const u32string& s2,
+    bool isright) {
+    Length length1, length2;
+    Delta::Lengths(deltas, length1, length2);
+    u32string buffer;
+    buffer.reserve((size_t)(isright ? length2 : length1));
+    for (auto next = deltas; next != nullptr;
+      next = dynamic_pointer_cast<Delta>(next->next)) {
+      auto begin = isright ? next->begin2 : next->begin1;
+      auto end = isright ? next->end2 : next->end1;
+      auto& s = isright ? s2 : s1;
+      for (auto index = begin; index < end; index++)
+        buffer.push_back(s[index]);
+    }
+    return buffer;
   }
-  return buffer;
-}
 
-Length TextDriver::Show(
-  Formatter& format, shared_ptr<Delta> deltas,
-  const u32string& s1, const u32string& s2,
-  const string& label1, const string& label2) {
-  format.BeginResult(
-    label1, label2, (Length)s1.size(), (Length)s2.size());
-  uint32_t ndelta = 0;                  // # of deltas
-  for (auto next = deltas; next != nullptr;
-    next = dynamic_pointer_cast<Delta>(next->next)) {
-    auto side1 = MakeSpan(label1, s1, next->begin1, next->end1);
-    auto side2 = MakeSpan(label2, s2, next->begin2, next->end2);
-    format.Layout(ndelta, side1, side2);
-    ndelta++;
+  Length TextDriver::Show(
+    Formatter& format, shared_ptr<Delta> deltas,
+    const u32string& s1, const u32string& s2,
+    const string& label1, const string& label2) {
+    format.BeginResult(
+      label1, label2, (Length)s1.size(), (Length)s2.size());
+    uint32_t ndelta = 0;                  // # of deltas
+    for (auto next = deltas; next != nullptr;
+      next = dynamic_pointer_cast<Delta>(next->next)) {
+      auto side1 = MakeSpan(label1, s1, next->begin1, next->end1);
+      auto side2 = MakeSpan(label2, s2, next->begin2, next->end2);
+      format.Layout(ndelta, side1, side2);
+      ndelta++;
+    }
+    format.EndResult();
+    return ndelta;
   }
-  format.EndResult();
-  return ndelta;
-}
 
-SideSpan TextDriver::MakeSpan(
-  const string& label, const u32string& s,
-  Index begin, Index end) {
-  SideSpan span;
-  span.label = label;
-  span.begin = begin;
-  span.end = end;
-  span.lines.push_back(
-    Encoding::ToUtf8(s.substr(begin, end - begin)));
-  return span;
-}
+  SideSpan TextDriver::MakeSpan(
+    const string& label, const u32string& s,
+    Index begin, Index end) {
+    SideSpan span;
+    span.label = label;
+    span.begin = begin;
+    span.end = end;
+    span.lines.push_back(
+      Encoding::ToUtf8(s.substr(begin, end - begin)));
+    return span;
+  }
 
 } // namespace lcs::formatters

@@ -24,79 +24,79 @@ using modes::Record;
 
 namespace lcs::formatters {
 
-//
-// Delta Formatters
-//
-// Concatenate elements from the selected side
-//
-Record::RECORDS RecordDriver::Select(
-  shared_ptr<Delta> deltas, const RECORDS& r1, const RECORDS& r2,
-  bool isright) {
-  Length length1, length2;
-  Delta::Lengths(deltas, length1, length2);
-  RECORDS list;
-  list.reserve((size_t)(isright ? length2 : length1));
-  for (auto next = deltas; next != nullptr;
-    next = dynamic_pointer_cast<Delta>(next->next)) {
-    auto begin = isright ? next->begin2 : next->begin1;
-    auto end = isright ? next->end2 : next->end1;
-    auto& records = isright ? r2 : r1;
-    for (auto index = begin; index < end; index++)
-      list.push_back(records[index]);
+  //
+  // Delta Formatters
+  //
+  // Concatenate elements from the selected side
+  //
+  Record::RECORDS RecordDriver::Select(
+    shared_ptr<Delta> deltas, const RECORDS& r1, const RECORDS& r2,
+    bool isright) {
+    Length length1, length2;
+    Delta::Lengths(deltas, length1, length2);
+    RECORDS list;
+    list.reserve((size_t)(isright ? length2 : length1));
+    for (auto next = deltas; next != nullptr;
+      next = dynamic_pointer_cast<Delta>(next->next)) {
+      auto begin = isright ? next->begin2 : next->begin1;
+      auto end = isright ? next->end2 : next->end1;
+      auto& records = isright ? r2 : r1;
+      for (auto index = begin; index < end; index++)
+        list.push_back(records[index]);
+    }
+    return list;
   }
-  return list;
-}
 
-Length RecordDriver::Show(
-  Formatter& format, shared_ptr<Delta> deltas,
-  const RECORDS& r1, const RECORDS& r2,
-  const string& label1, const string& label2) {
-  format.BeginResult(
-    label1, label2, (Length)r1.size(), (Length)r2.size());
-  uint32_t ndelta = 0;                  // # of deltas
-  for (auto next = deltas; next != nullptr;
-    next = dynamic_pointer_cast<Delta>(next->next)) {
-    auto side1 = MakeSpan(label1, r1, next->begin1, next->end1);
-    auto side2 = MakeSpan(label2, r2, next->begin2, next->end2);
-    format.Layout(ndelta, side1, side2);
-    ndelta++;
-  }
-  format.EndResult();
-  return ndelta;
-}
-
-Length RecordDriver::Show(
-  Formatter& format, const EDIT_INTERVALS& intervals,
-  const RECORDS& r1, const RECORDS& r2,
-  const string& label1, const string& label2) {
-  format.BeginResult(
-    label1, label2, (Length)r1.size(), (Length)r2.size());
-  uint32_t ndelta = 0;                  // # of runs
-  for (const auto& interval : intervals) {
-    format.BeginInterval(
-      interval.front()->begin1, interval.back()->end1,
-      interval.front()->begin2, interval.back()->end2);
-    for (const auto& run : interval) {
-      auto side1 = MakeSpan(label1, r1, run->begin1, run->end1);
-      auto side2 = MakeSpan(label2, r2, run->begin2, run->end2);
-      format.Layout(ndelta, side1, side2, run->kind);
+  Length RecordDriver::Show(
+    Formatter& format, shared_ptr<Delta> deltas,
+    const RECORDS& r1, const RECORDS& r2,
+    const string& label1, const string& label2) {
+    format.BeginResult(
+      label1, label2, (Length)r1.size(), (Length)r2.size());
+    uint32_t ndelta = 0;                  // # of deltas
+    for (auto next = deltas; next != nullptr;
+      next = dynamic_pointer_cast<Delta>(next->next)) {
+      auto side1 = MakeSpan(label1, r1, next->begin1, next->end1);
+      auto side2 = MakeSpan(label2, r2, next->begin2, next->end2);
+      format.Layout(ndelta, side1, side2);
       ndelta++;
     }
+    format.EndResult();
+    return ndelta;
   }
-  format.EndResult();
-  return ndelta;
-}
 
-SideSpan RecordDriver::MakeSpan(
-  const string& label, const RECORDS& records,
-  Index begin, Index end) {
-  SideSpan span;
-  span.label = label;
-  span.begin = begin;
-  span.end = end;
-  span.lines.assign(
-    records.begin() + begin, records.begin() + end);
-  return span;
-}
+  Length RecordDriver::Show(
+    Formatter& format, const EDIT_INTERVALS& intervals,
+    const RECORDS& r1, const RECORDS& r2,
+    const string& label1, const string& label2) {
+    format.BeginResult(
+      label1, label2, (Length)r1.size(), (Length)r2.size());
+    uint32_t ndelta = 0;                  // # of runs
+    for (const auto& interval : intervals) {
+      format.BeginInterval(
+        interval.front()->begin1, interval.back()->end1,
+        interval.front()->begin2, interval.back()->end2);
+      for (const auto& run : interval) {
+        auto side1 = MakeSpan(label1, r1, run->begin1, run->end1);
+        auto side2 = MakeSpan(label2, r2, run->begin2, run->end2);
+        format.Layout(ndelta, side1, side2, run->kind);
+        ndelta++;
+      }
+    }
+    format.EndResult();
+    return ndelta;
+  }
+
+  SideSpan RecordDriver::MakeSpan(
+    const string& label, const RECORDS& records,
+    Index begin, Index end) {
+    SideSpan span;
+    span.label = label;
+    span.begin = begin;
+    span.end = end;
+    span.lines.assign(
+      records.begin() + begin, records.begin() + end);
+    return span;
+  }
 
 } // namespace lcs::formatters
