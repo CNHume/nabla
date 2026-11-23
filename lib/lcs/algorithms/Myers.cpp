@@ -43,10 +43,12 @@ namespace lcs::algorithms {
     };
 
     //
-    // O(n) lower bound on the edit distance from the element counts:
-    // p <= sum_s min(count1[s], count2[s])
-    // =>
-    // D >= m + n - 2*sum min(...)
+    // Linear-time lower bound on the edit distance, derived from per-symbol
+    // counts.  A symbol s can be matched at most min(count1[s], count2[s])
+    // times, so the LCS length p is bounded by
+    //   common = sum_s min(count1[s], count2[s]).
+    // Insert/delete-only distance satisfies D = m + n - 2p, hence
+    //   D >= m + n - 2*common.
     //
     template <typename Sequence>
     uint64_t DistanceLowerBound(const Sequence& s1, const Sequence& s2) {
