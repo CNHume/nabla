@@ -16,6 +16,9 @@
 // 2026-10-24 CNHume  Created Parallel class
 //
 #pragma once
+//#define TRUNCATE_LABELS               // Cut over-long labels instead of wrapping them
+#define SHOW_HEADER_RULE
+#define SHOW_FOOTER_RULE
 
 #include "lcs/formatters/Formatter.h"
 

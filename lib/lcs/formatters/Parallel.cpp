@@ -15,10 +15,6 @@
 //
 // 2026-10-24 CNHume  Created Parallel class
 //
-//#define TRUNCATE_LABELS               // Cut over-long labels instead of wrapping them
-#define SHOW_HEADER_RULE
-#define SHOW_FOOTER_RULE
-
 #include "lcs/formatters/Parallel.h"
 
 #include <algorithm>                    // for max
@@ -38,9 +34,9 @@ namespace lcs::formatters {
     //
     vector<string> Wrap(const string& text, uint32_t width) {
       vector<string> lines;
-  #ifdef TRUNCATE_LABELS
+#ifdef TRUNCATE_LABELS
       lines.push_back(text.substr(0, width));
-  #else
+#else
       if (width == 0 || text.size() <= width) {
         lines.push_back(text);
         return lines;
@@ -48,7 +44,7 @@ namespace lcs::formatters {
       lines.reserve((text.size() + width - 1) / width);
       for (size_t i = 0; i < text.size(); i += width)
         lines.push_back(text.substr(i, width));
-  #endif
+#endif
       return lines;
     }
 
@@ -103,9 +99,9 @@ namespace lcs::formatters {
 
   void Parallel::BeginResult(
     const string& label1, const string& label2, Length, Length) {
-  #ifdef SHOW_HEADER_RULE
+#ifdef SHOW_HEADER_RULE
     cout << Rule() << '\n';
-  #endif
+#endif
     auto lines1 = Wrap(label1, leftWidth());
     auto lines2 = Wrap(label2, rightWidth());
     auto rows = max(lines1.size(), lines2.size());
@@ -120,9 +116,9 @@ namespace lcs::formatters {
   }
 
   void Parallel::EndResult() {
-  #ifdef SHOW_FOOTER_RULE
+#ifdef SHOW_FOOTER_RULE
     cout << Rule() << '\n';
-  #endif
+#endif
   }
 
   void Parallel::Layout(
