@@ -50,7 +50,8 @@ Delta::Delta() {
   Deltas++;
 }
 
-Delta::Delta(Index begin1, Index begin2, Index end1, Index end2, shared_ptr<Delta> next)
+Delta::Delta(
+  Index begin1, Index begin2, Index end1, Index end2, shared_ptr<Delta> next)
   : Pair(begin1, begin2, next), end1(end1), end2(end2) {
   Deltas++;
 }
@@ -109,7 +110,9 @@ shared_ptr<Delta> Delta::Copy(const shared_ptr<Delta> deltas) {
   shared_ptr<Delta> rest = nullptr;
   for (auto next = deltas; next != nullptr; next = dynamic_pointer_cast<Delta>(next->next)) {
     auto copy = make_shared<Delta>(next->begin1, next->begin2, next->end1, next->end2);
-    rest = rest == nullptr ? head = copy : static_pointer_cast<Delta>(rest->next = copy);
+    rest = rest == nullptr ?
+      head = copy :
+      static_pointer_cast<Delta>(rest->next = copy);
   }
 
   return head;
@@ -131,7 +134,8 @@ shared_ptr<Delta> Delta::Coalesce(shared_ptr<Pair> pairs) {
     if (last == nullptr || first1 < begin1 || first2 < begin2) {
       auto deltas = make_shared<Delta>(begin1, begin2, end1, end2);
       last = last == nullptr ?
-        head = deltas : static_pointer_cast<Delta>(last->next = deltas);
+        head = deltas :
+        static_pointer_cast<Delta>(last->next = deltas);
     }
     else {
       last->end1 = end1;
@@ -162,7 +166,8 @@ shared_ptr<Delta> Delta::Coalesce(const shared_ptr<Delta> deltas, uint32_t join)
     if (last == nullptr || first1 + (uint64_t)join < begin1 || first2 + (uint64_t)join < begin2) {
       auto deltas = make_shared<Delta>(begin1, begin2, end1, end2);
       last = last == nullptr ?
-        head = deltas : static_pointer_cast<Delta>(last->next = deltas);
+        head = deltas :
+        static_pointer_cast<Delta>(last->next = deltas);
     }
     else {
       last->end1 = end1;
@@ -196,7 +201,9 @@ shared_ptr<Delta> Delta::Complement(shared_ptr<Delta> deltas,
 
     if (prior1 < begin1 || prior2 < begin2) {
       auto last = make_shared<Delta>(prior1, prior2, begin1, begin2);
-      rest = rest == nullptr ? head = last : static_pointer_cast<Delta>(rest->next = last);
+      rest = rest == nullptr ?
+        head = last :
+        static_pointer_cast<Delta>(rest->next = last);
     }
 
     prior1 = end1;
@@ -206,7 +213,9 @@ shared_ptr<Delta> Delta::Complement(shared_ptr<Delta> deltas,
   // empty final delta
   if (prior1 < size1 || prior2 < size2) {
     auto last = make_shared<Delta>(prior1, prior2, size1, size2);
-    rest = rest == nullptr ? head = last : static_pointer_cast<Delta>(rest->next = last);
+    rest = rest == nullptr ?
+      head = last :
+      static_pointer_cast<Delta>(rest->next = last);
   }
 
   //prior1 = size1;
@@ -231,16 +240,20 @@ void Delta::Context(shared_ptr<Delta> deltas,
   for (auto next = deltas; next != nullptr; next = dynamic_pointer_cast<Delta>(next->next)) {
     auto begin1 = next->begin1;         // beginning of current Delta
     auto begin2 = next->begin2;
-    auto last1 = prior1 + (uint64_t)suffix < begin1 ? prior1 + suffix : begin1;
-    auto last2 = prior2 + (uint64_t)suffix < begin2 ? prior2 + suffix : begin2;
+    auto last1 = prior1 + (uint64_t)suffix < begin1 ?
+      prior1 + suffix : begin1;
+    auto last2 = prior2 + (uint64_t)suffix < begin2 ?
+      prior2 + suffix : begin2;
 
     if (last != nullptr) {
       last->end1 = last1;
       last->end2 = last2;
     }
 
-    next->begin1 = last1 + (uint64_t)prefix < begin1 ? begin1 - prefix : last1;
-    next->begin2 = last2 + (uint64_t)prefix < begin2 ? begin2 - prefix : last2;
+    next->begin1 = last1 + (uint64_t)prefix < begin1 ?
+      begin1 - prefix : last1;
+    next->begin2 = last2 + (uint64_t)prefix < begin2 ?
+      begin2 - prefix : last2;
 
     prior1 = next->end1;                // end of current Delta sans suffix
     prior2 = next->end2;
@@ -249,8 +262,10 @@ void Delta::Context(shared_ptr<Delta> deltas,
 
   // empty final delta
   if (last != nullptr) {
-    auto last1 = prior1 + (uint64_t)suffix < size1 ? prior1 + suffix : size1;
-    auto last2 = prior2 + (uint64_t)suffix < size2 ? prior2 + suffix : size2;
+    auto last1 = prior1 + (uint64_t)suffix < size1 ?
+      prior1 + suffix : size1;
+    auto last2 = prior2 + (uint64_t)suffix < size2 ?
+      prior2 + suffix : size2;
     last->end1 = last1;
     last->end2 = last2;
   }

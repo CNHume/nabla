@@ -156,7 +156,8 @@ void Normal::NormalSpace(const u32string& input, u32string& output,
 // reports whether two symbols match under the same case/space folding.
 //
 bool Normal::Equal::operator()(char32_t x, char32_t y) const {
-  return ignorecase ? Normal::ToLower(x) == Normal::ToLower(y) : x == y;
+  return ignorecase ?
+    Normal::ToLower(x) == Normal::ToLower(y) : x == y;
 }
 
 bool Normal::Equal::operator()(const string& x, const string& y) {
