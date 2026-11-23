@@ -36,238 +36,244 @@ using metrics::Statistics;
 
 namespace lcs::algorithms {
 
-namespace {
-  struct Match {
-    Index row = 0;
-    Index column = 0;
-  };
+  namespace {
+    struct Match {
+      Index row = 0;
+      Index column = 0;
+    };
 
-  //
-  // O(n) lower bound on the edit distance from the element counts:
-  //   p <= sum_s min(count1[s], count2[s])   =>   D >= m + n - 2*sum min(...)
-  //
-  template <typename Sequence>
-  uint64_t DistanceLowerBound(const Sequence& s1, const Sequence& s2) {
-    unordered_map<typename Sequence::value_type, uint64_t> count1;
-    unordered_map<typename Sequence::value_type, uint64_t> count2;
-    for (const auto& c : s1)
-      count1[c]++;
-    for (const auto& c : s2)
-      count2[c]++;
-    uint64_t common = 0;
-    for (const auto& entry : count1) {
-      auto found = count2.find(entry.first);
-      if (found != count2.end())
-        common += min(entry.second, found->second);
-    }
-    return s1.size() + s2.size() - 2 * common;
-  }
-
-  //
-  // Length-only probe: forward D-path sweep keeping only the previous frontier,
-  // so memory is O(budget) rather than the O(D^2) reconstruction history.  The
-  // -Aa dispatch uses this to test whether Myers is in its fast range.
-  //
-  template <typename Sequence>
-  int64_t ProbeDistanceCore(const Sequence& s1, const Sequence& s2, int64_t budget) {
-    auto m = (int64_t)s1.size();
-    auto n = (int64_t)s2.size();
-    int64_t x = 0;
-    int64_t y = 0;
-    while (x < m && y < n && s1[(size_t)x] == s2[(size_t)y]) {
-      x++;
-      y++;
-    }
-    if (x >= m && y >= n)
-      return 0;
-    vector<Index> prev{ (Index)x };
-    for (int64_t d = 1; d <= budget; d++) {
-      vector<Index> v((size_t)(2 * d + 1), 0);
-      for (int64_t k = -d; k <= d; k += 2) {
-        if (k == -d || (k != d && prev[(size_t)(k - 1 + d - 1)] < prev[(size_t)(k + 1 + d - 1)])) {
-          x = prev[(size_t)(k + 1 + d - 1)];         // down move (insertion)
-        }
-        else {
-          x = prev[(size_t)(k - 1 + d - 1)] + 1;     // right move (deletion)
-        }
-        y = x - k;
-        while (x < m && y < n && s1[(size_t)x] == s2[(size_t)y]) {
-          x++;
-          y++;
-        }
-        v[(size_t)(k + d)] = (Index)x;
-        if (x >= m && y >= n)
-          return d;
+    //
+    // O(n) lower bound on the edit distance from the element counts:
+    // p <= sum_s min(count1[s], count2[s])
+    // =>
+    // D >= m + n - 2*sum min(...)
+    //
+    template <typename Sequence>
+    uint64_t DistanceLowerBound(const Sequence& s1, const Sequence& s2) {
+      unordered_map<typename Sequence::value_type, uint64_t> count1;
+      unordered_map<typename Sequence::value_type, uint64_t> count2;
+      for (const auto& c : s1)
+        count1[c]++;
+      for (const auto& c : s2)
+        count2[c]++;
+      uint64_t common = 0;
+      for (const auto& entry : count1) {
+        auto found = count2.find(entry.first);
+        if (found != count2.end())
+          common += min(entry.second, found->second);
       }
-      prev = move(v);
-    }
-    return -1;                              // D exceeds the budget
-  }
-
-  //
-  // The Myers core, templated over the sequence type so the code-point path
-  // (u32string) and the record path (vector<string>) share one implementation.
-  //
-  template <typename Sequence>
-  Length MyersFind(
-    shared_ptr<Pair>* pairs, Statistics* statistics,
-    const Sequence& s1, const Sequence& s2) {
-    if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
-      throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
-    auto m = s1.size();
-    auto n = s2.size();
-    auto budget = Analysis::MyersBudget(m, n);
-
-    //
-    // Composition pre-filter: when the count-based lower bound already exceeds
-    // the budget, the input is too dissimilar, so abort before the O(D^2) sweep.
-    //
-    auto lower = DistanceLowerBound(s1, s2);
-    if (lower > budget) {
-      Analysis::WarnMyersDistance(lower, budget);
-      throw runtime_error(
-        "Myers: edit distance exceeds the budget; use -As (RickSpace) or -At (RickTime)");
+      return s1.size() + s2.size() - 2 * common;
     }
 
-    if (pairs == nullptr) {
+    //
+    // Length-only probe: forward D-path sweep keeping only the previous frontier,
+    // so memory is O(budget) rather than the O(D^2) reconstruction history.  The
+    // -Aa dispatch uses this to test whether Myers is in its fast range.
+    //
+    template <typename Sequence>
+    int64_t ProbeDistanceCore(const Sequence& s1, const Sequence& s2, int64_t budget) {
+      auto m = (int64_t)s1.size();
+      auto n = (int64_t)s2.size();
+      int64_t x = 0;
+      int64_t y = 0;
+      while (x < m && y < n && s1[(size_t)x] == s2[(size_t)y]) {
+        x++;
+        y++;
+      }
+      if (x >= m && y >= n)
+        return 0;
+      vector<Index> prev{ (Index)x };
+      for (int64_t d = 1; d <= budget; d++) {
+        vector<Index> v((size_t)(2 * d + 1), 0);
+        for (int64_t k = -d; k <= d; k += 2) {
+          if (k == -d || (k != d && prev[(size_t)(k - 1 + d - 1)] < prev[(size_t)(k + 1 + d - 1)])) {
+            x = prev[(size_t)(k + 1 + d - 1)];         // down move (insertion)
+          }
+          else {
+            x = prev[(size_t)(k - 1 + d - 1)] + 1;     // right move (deletion)
+          }
+          y = x - k;
+          while (x < m && y < n && s1[(size_t)x] == s2[(size_t)y]) {
+            x++;
+            y++;
+          }
+          v[(size_t)(k + d)] = (Index)x;
+          if (x >= m && y >= n)
+            return d;
+        }
+        prev = move(v);
+      }
+      return -1;                              // D exceeds the budget
+    }
+
+    //
+    // The Myers core, templated over the sequence type so the code-point path
+    // (u32string) and the record path (vector<string>) share one implementation.
+    //
+    template <typename Sequence>
+    Length MyersFind(
+      shared_ptr<Pair>* pairs, Statistics* statistics,
+      const Sequence& s1, const Sequence& s2) {
+      if (ExceedsIndex(s1.size()) || ExceedsIndex(s2.size()))
+        throw runtime_error("input exceeds the 32-bit position limit; use nabla64");
+      auto m = s1.size();
+      auto n = s2.size();
+      auto budget = Analysis::MyersBudget(m, n);
+
       //
-      // Length only: the prev-only sweep avoids the O(D^2) reconstruction
-      // history, keeping memory O(D) rather than O(D^2).
+      // Composition pre-filter: when the count-based lower bound already exceeds
+      // the budget, the input is too dissimilar, so abort before the O(D^2) sweep.
       //
-      auto D = ProbeDistanceCore(s1, s2, (int64_t)budget);
+      auto lower = DistanceLowerBound(s1, s2);
+      if (lower > budget) {
+        Analysis::WarnMyersDistance(lower, budget);
+        throw runtime_error(
+          "Myers: edit distance exceeds the budget; use -As (RickSpace) or -At (RickTime)");
+      }
+
+      if (pairs == nullptr) {
+        //
+        // Length only: the prev-only sweep avoids the O(D^2) reconstruction
+        // history, keeping memory O(D) rather than O(D^2).
+        //
+        auto D = ProbeDistanceCore(s1, s2, (int64_t)budget);
+        if (D < 0) {
+          Analysis::WarnMyersDistance(budget, budget);
+          throw runtime_error(
+            "Myers: edit distance exceeds the budget; use -As (RickSpace) or -At (RickTime)");
+        }
+        auto length = (Length)((m + n - (size_t)D) / 2);
+        if (statistics) {
+          statistics->algorithm = Algorithm::EditDistance;
+          statistics->edits = (uint64_t)D;
+        }
+        return length;
+      }
+
+      //
+      // Full path: store every frontier so the edit script can be reconstructed.
+      // V[d] holds the furthest x reached on each diagonal
+      // k = x - y, indexed by k + d; snakes follow the matching runs.  The first
+      // d whose frontier reaches (m, n) is the minimal edit distance.
+      //
+      vector<vector<Index>> V;
+      V.reserve((size_t)budget + 1);
+
+      int64_t x = 0;
+      int64_t y = 0;
+      while (x < (int64_t)m && y < (int64_t)n && s1[(size_t)x] == s2[(size_t)y]) {
+        x++;
+        y++;
+      }
+      V.push_back(vector<Index>{ (Index)x });
+
+      int64_t D = (x >= (int64_t)m && y >= (int64_t)n) ? 0 : -1;
+      for (int64_t d = 1; d <= (int64_t)budget && D < 0; d++) {
+        auto& prev = V[(size_t)(d - 1)];
+        vector<Index> v((size_t)(2 * d + 1), 0);
+        for (int64_t k = -d; k <= d; k += 2) {
+          if (k == -d || (k != d && prev[(size_t)(k - 1 + d - 1)] < prev[(size_t)(k + 1 + d - 1)])) {
+            // down move (insertion)
+            x = prev[(size_t)(k + 1 + d - 1)];
+          }
+          else {
+            // right move (deletion)
+            x = prev[(size_t)(k - 1 + d - 1)] + 1;
+          }
+          y = x - k;
+          while (x < (int64_t)m && y < (int64_t)n && s1[(size_t)x] == s2[(size_t)y]) {
+            x++;
+            y++;
+          }
+          v[(size_t)(k + d)] = (Index)x;
+          if (x >= (int64_t)m && y >= (int64_t)n) {
+            D = d;
+            break;
+          }
+        }
+        V.push_back(move(v));
+      }
+
       if (D < 0) {
         Analysis::WarnMyersDistance(budget, budget);
         throw runtime_error(
           "Myers: edit distance exceeds the budget; use -As (RickSpace) or -At (RickTime)");
       }
+
       auto length = (Length)((m + n - (size_t)D) / 2);
       if (statistics) {
         statistics->algorithm = Algorithm::EditDistance;
         statistics->edits = (uint64_t)D;
       }
-      return length;
-    }
 
-    //
-    // Full path: store every frontier so the edit script can be reconstructed.
-    // V[d] holds the furthest x reached on each diagonal
-    // k = x - y, indexed by k + d; snakes follow the matching runs.  The first
-    // d whose frontier reaches (m, n) is the minimal edit distance.
-    //
-    vector<vector<Index>> V;
-    V.reserve((size_t)budget + 1);
-
-    int64_t x = 0;
-    int64_t y = 0;
-    while (x < (int64_t)m && y < (int64_t)n && s1[(size_t)x] == s2[(size_t)y]) {
-      x++;
-      y++;
-    }
-    V.push_back(vector<Index>{ (Index)x });
-
-    int64_t D = (x >= (int64_t)m && y >= (int64_t)n) ? 0 : -1;
-    for (int64_t d = 1; d <= (int64_t)budget && D < 0; d++) {
-      auto& prev = V[(size_t)(d - 1)];
-      vector<Index> v((size_t)(2 * d + 1), 0);
-      for (int64_t k = -d; k <= d; k += 2) {
+      //
+      // Reconstruction: walk back from (m, n) across the stored frontiers.  Each
+      // depth's snake contributes a run of matched positions on its diagonal.
+      //
+      vector<Match> matches;
+      x = (int64_t)m;
+      y = (int64_t)n;
+      for (int64_t d = D; d > 0; d--) {
+        int64_t k = x - y;
+        auto& prev = V[(size_t)(d - 1)];
+        int64_t prevK;
         if (k == -d || (k != d && prev[(size_t)(k - 1 + d - 1)] < prev[(size_t)(k + 1 + d - 1)])) {
-          x = prev[(size_t)(k + 1 + d - 1)];        // down move (insertion)
+          // down move (insertion) from k + 1
+          prevK = k + 1;
         }
         else {
-          x = prev[(size_t)(k - 1 + d - 1)] + 1;    // right move (deletion)
+          // right move (deletion) from k - 1
+          prevK = k - 1;
         }
-        y = x - k;
-        while (x < (int64_t)m && y < (int64_t)n && s1[(size_t)x] == s2[(size_t)y]) {
-          x++;
-          y++;
-        }
-        v[(size_t)(k + d)] = (Index)x;
-        if (x >= (int64_t)m && y >= (int64_t)n) {
-          D = d;
-          break;
-        }
+        int64_t prevX = prev[(size_t)(prevK + d - 1)];
+        int64_t prevY = prevX - prevK;
+        int64_t startX = prevK == k + 1 ? prevX : prevX + 1;
+        // Emit the snake high-to-low so the reverse() below yields ascending rows.
+        for (int64_t i = x - 1; i >= startX; i--)
+          matches.push_back({ .row = (Index)i, .column = (Index)(i - k) });
+        x = prevX;
+        y = prevY;
       }
-      V.push_back(move(v));
-    }
+      for (int64_t i = x - 1; i >= 0; i--)
+        matches.push_back({ .row = (Index)i, .column = (Index)i });
 
-    if (D < 0) {
-      Analysis::WarnMyersDistance(budget, budget);
-      throw runtime_error(
-        "Myers: edit distance exceeds the budget; use -As (RickSpace) or -At (RickTime)");
-    }
+      reverse(matches.begin(), matches.end());
 
-    auto length = (Length)((m + n - (size_t)D) / 2);
-    if (statistics) {
-      statistics->algorithm = Algorithm::EditDistance;
-      statistics->edits = (uint64_t)D;
-    }
-
-    //
-    // Reconstruction: walk back from (m, n) across the stored frontiers.  Each
-    // depth's snake contributes a run of matched positions on its diagonal.
-    //
-    vector<Match> matches;
-    x = (int64_t)m;
-    y = (int64_t)n;
-    for (int64_t d = D; d > 0; d--) {
-      int64_t k = x - y;
-      auto& prev = V[(size_t)(d - 1)];
-      int64_t prevK;
-      if (k == -d || (k != d && prev[(size_t)(k - 1 + d - 1)] < prev[(size_t)(k + 1 + d - 1)])) {
-        prevK = k + 1;                              // down move (insertion) from k + 1
+      shared_ptr<Pair> head = nullptr;
+      shared_ptr<Pair> tail = nullptr;
+      for (const auto& match : matches) {
+        auto pair = make_shared<Pair>(match.row, match.column);
+        if (tail == nullptr)
+          head = pair;
+        else
+          tail->next = pair;
+        tail = pair;
       }
-      else {
-        prevK = k - 1;                              // right move (deletion) from k - 1
-      }
-      int64_t prevX = prev[(size_t)(prevK + d - 1)];
-      int64_t prevY = prevX - prevK;
-      int64_t startX = prevK == k + 1 ? prevX : prevX + 1;
-      // Emit the snake high-to-low so the reverse() below yields ascending rows.
-      for (int64_t i = x - 1; i >= startX; i--)
-        matches.push_back({ .row = (Index)i, .column = (Index)(i - k) });
-      x = prevX;
-      y = prevY;
+      *pairs = head;
+      return length;
     }
-    for (int64_t i = x - 1; i >= 0; i--)
-      matches.push_back({ .row = (Index)i, .column = (Index)i });
-
-    reverse(matches.begin(), matches.end());
-
-    shared_ptr<Pair> head = nullptr;
-    shared_ptr<Pair> tail = nullptr;
-    for (const auto& match : matches) {
-      auto pair = make_shared<Pair>(match.row, match.column);
-      if (tail == nullptr)
-        head = pair;
-      else
-        tail->next = pair;
-      tail = pair;
-    }
-    *pairs = head;
-    return length;
   }
-}
 
-Length Myers::Find(
-  shared_ptr<Pair>* pairs, Statistics* statistics,
-  const u32string& s1, const u32string& s2) {
-  return MyersFind(pairs, statistics, s1, s2);
-}
+  Length Myers::Find(
+    shared_ptr<Pair>* pairs, Statistics* statistics,
+    const u32string& s1, const u32string& s2) {
+    return MyersFind(pairs, statistics, s1, s2);
+  }
 
-Length Myers::Find(
-  shared_ptr<Pair>* pairs, Statistics* statistics,
-  const vector<string>& r1, const vector<string>& r2) {
-  return MyersFind(pairs, statistics, r1, r2);
-}
+  Length Myers::Find(
+    shared_ptr<Pair>* pairs, Statistics* statistics,
+    const vector<string>& r1, const vector<string>& r2) {
+    return MyersFind(pairs, statistics, r1, r2);
+  }
 
-int64_t Myers::ProbeDistance(
-  const u32string& s1, const u32string& s2, int64_t budget) {
-  return ProbeDistanceCore(s1, s2, budget);
-}
+  int64_t Myers::ProbeDistance(
+    const u32string& s1, const u32string& s2, int64_t budget) {
+    return ProbeDistanceCore(s1, s2, budget);
+  }
 
-int64_t Myers::ProbeDistance(
-  const vector<string>& r1, const vector<string>& r2, int64_t budget) {
-  return ProbeDistanceCore(r1, r2, budget);
-}
+  int64_t Myers::ProbeDistance(
+    const vector<string>& r1, const vector<string>& r2, int64_t budget) {
+    return ProbeDistanceCore(r1, r2, budget);
+  }
 
 } // namespace lcs::algorithms

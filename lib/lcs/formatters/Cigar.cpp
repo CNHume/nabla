@@ -26,53 +26,53 @@ using namespace lcs;
 
 namespace lcs::formatters {
 
-void Cigar::BeginResult(
-  const string&, const string&, Length size1, Length size2) {
-  size1_ = size1;
-  size2_ = size2;
-  prevEnd1_ = 0;
-  reference_ = 0;
-  query_ = 0;
-  cigar_.clear();
-}
+  void Cigar::BeginResult(
+    const string&, const string&, Length size1, Length size2) {
+    size1_ = size1;
+    size2_ = size2;
+    prevEnd1_ = 0;
+    reference_ = 0;
+    query_ = 0;
+    cigar_.clear();
+  }
 
-void Cigar::Layout(
-  uint32_t, const SideSpan& side1, const SideSpan& side2, EditKind) {
-  // The match preceding this delta.
-  auto match = side1.begin - prevEnd1_;
-  if (match > 0) {
-    cigar_ += format("{}=", match);
-    reference_ += match;
-    query_ += match;
+  void Cigar::Layout(
+    uint32_t, const SideSpan& side1, const SideSpan& side2, EditKind) {
+    // The match preceding this delta.
+    auto match = side1.begin - prevEnd1_;
+    if (match > 0) {
+      cigar_ += format("{}=", match);
+      reference_ += match;
+      query_ += match;
+    }
+    // Deletions (reference-only), then insertions (query-only).
+    auto del = side1.end - side1.begin;
+    if (del > 0) {
+      cigar_ += format("{}D", del);
+      reference_ += del;
+    }
+    auto ins = side2.end - side2.begin;
+    if (ins > 0) {
+      cigar_ += format("{}I", ins);
+      query_ += ins;
+    }
+    prevEnd1_ = side1.end;
   }
-  // Deletions (reference-only), then insertions (query-only).
-  auto del = side1.end - side1.begin;
-  if (del > 0) {
-    cigar_ += format("{}D", del);
-    reference_ += del;
-  }
-  auto ins = side2.end - side2.begin;
-  if (ins > 0) {
-    cigar_ += format("{}I", ins);
-    query_ += ins;
-  }
-  prevEnd1_ = side1.end;
-}
 
-void Cigar::EndResult() {
-  // The match following the last delta.
-  auto match = size1_ - prevEnd1_;
-  if (match > 0) {
-    cigar_ += format("{}=", match);
-    reference_ += match;
-    query_ += match;
+  void Cigar::EndResult() {
+    // The match following the last delta.
+    auto match = size1_ - prevEnd1_;
+    if (match > 0) {
+      cigar_ += format("{}=", match);
+      reference_ += match;
+      query_ += match;
+    }
+    //
+    // The trace must account for the reference and query lengths exactly.
+    //
+    if (reference_ != size1_ || query_ != size2_)
+      throw runtime_error("CIGAR trace does not match the input lengths");
+    cout << cigar_ << '\n';
   }
-  //
-  // The trace must account for the reference and query lengths exactly.
-  //
-  if (reference_ != size1_ || query_ != size2_)
-    throw runtime_error("CIGAR trace does not match the input lengths");
-  cout << cigar_ << '\n';
-}
 
 } // namespace lcs::formatters

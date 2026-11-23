@@ -25,33 +25,33 @@ using namespace lcs;
 
 namespace lcs::formatters {
 
-// Write both sides of a Delta sequentially
-void Sequential::Layout(
-  uint32_t counter, const SideSpan& side1, const SideSpan& side2, EditKind) {
-  Side(side1, string(5, leftEmblem), counter);
-  Side(side2, string(5, rightEmblem), counter);
-}
-
-void Sequential::Side(
-  const SideSpan& side, const string& emblem, uint32_t counter) {
-  if (side.begin < side.end)
-    cout << Head(side, emblem, counter) << Body(side);
-}
-
-std::string Sequential::Head(
-  const SideSpan& side, const string& emblem, uint32_t counter) {
-  return format(
-    "{} {} {} [{}:{}] {}\n",
-    emblem, counter + 1, side.label, side.begin, side.end, emblem);
-}
-
-std::string Sequential::Body(const SideSpan& side) {
-  string text;
-  for (const auto& line : side.lines) {
-    text += line;
-    text += '\n';
+  // Write both sides of a Delta sequentially
+  void Sequential::Layout(
+    uint32_t counter, const SideSpan& side1, const SideSpan& side2, EditKind) {
+    Side(side1, string(5, leftEmblem), counter);
+    Side(side2, string(5, rightEmblem), counter);
   }
-  return text;
-}
+
+  void Sequential::Side(
+    const SideSpan& side, const string& emblem, uint32_t counter) {
+    if (side.begin < side.end)
+      cout << Head(side, emblem, counter) << Body(side);
+  }
+
+  std::string Sequential::Head(
+    const SideSpan& side, const string& emblem, uint32_t counter) {
+    return format(
+      "{} {} {} [{}:{}] {}\n",
+      emblem, counter + 1, side.label, side.begin, side.end, emblem);
+  }
+
+  std::string Sequential::Body(const SideSpan& side) {
+    string text;
+    for (const auto& line : side.lines) {
+      text += line;
+      text += '\n';
+    }
+    return text;
+  }
 
 } // namespace lcs::formatters
