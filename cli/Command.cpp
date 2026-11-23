@@ -111,41 +111,41 @@ namespace cli {
           break;
 
         case 'A':                       // the algorithm switch
-          {
-            //
-            // Parse algorithm specifier: a=automatic, d=edit distance, m=matches,
-            // s=space, t=time.  Allow leading spaces -A d (as in -j, -p, -s).
-            //
-            const char* specifier = nullptr;
-            if (len > 2)                // Same token
-              specifier = &token[2];
-            else if (n + 1 < argc && strlen(argv[n + 1]) == 1)
-              specifier = argv[++n];    // Next token
-            else {
-              usage = true;             // -A requires one specifier-letter
-              break;
-            }
-            switch (specifier[0]) {
-            case 'a':
-              algorithm = Algorithm::Automatic;
-              break;
-            case 'd':
-              algorithm = Algorithm::EditDistance;
-              break;
-            case 'm':
-              algorithm = Algorithm::Matches;
-              break;
-            case 's':
-              algorithm = Algorithm::RickSpace;
-              break;
-            case 't':
-              algorithm = Algorithm::RickTime;
-              break;
-            default:
-              usage = true;             // unknown algorithm
-            }
+        {
+          //
+          // Parse algorithm specifier: a=automatic, d=edit distance, m=matches,
+          // s=space, t=time.  Allow leading spaces -A d (as in -j, -p, -s).
+          //
+          const char* specifier = nullptr;
+          if (len > 2)                // Same token
+            specifier = &token[2];
+          else if (n + 1 < argc && strlen(argv[n + 1]) == 1)
+            specifier = argv[++n];    // Next token
+          else {
+            usage = true;             // -A requires one specifier-letter
+            break;
           }
-          break;
+          switch (specifier[0]) {
+          case 'a':
+            algorithm = Algorithm::Automatic;
+            break;
+          case 'd':
+            algorithm = Algorithm::EditDistance;
+            break;
+          case 'm':
+            algorithm = Algorithm::Matches;
+            break;
+          case 's':
+            algorithm = Algorithm::RickSpace;
+            break;
+          case 't':
+            algorithm = Algorithm::RickTime;
+            break;
+          default:
+            usage = true;             // unknown algorithm
+          }
+        }
+        break;
 
         case 'b':                       // the ignorespace switch
           if (len > 2)                  // superfluous value specified
@@ -235,22 +235,22 @@ namespace cli {
           break;
 
         case 'q':                       // the query (file2) FASTA record switch
-          {
-            const char* id = nullptr;
-            if (len > 2)                // whitespace optional
-              id = &token[2];
-            else if (n + 1 < argc)      // whitespace allowed
-              id = argv[++n];
-            else
-              usage = true;
+        {
+          const char* id = nullptr;
+          if (len > 2)                // whitespace optional
+            id = &token[2];
+          else if (n + 1 < argc)      // whitespace allowed
+            id = argv[++n];
+          else
+            usage = true;
 
-            hasQueryId = true;
-            isfasta = true;             // -q implies -F
-            istext = true;              // -F implies -T
-            if (id != nullptr)
-              ParseRecordId(id, queryName, queryIndex);
-          }
-          break;
+          hasQueryId = true;
+          isfasta = true;             // -q implies -F
+          istext = true;              // -F implies -T
+          if (id != nullptr)
+            ParseRecordId(id, queryName, queryIndex);
+        }
+        break;
 
         case 'Q':                       // the quote switch, which implies text
           if (len > 2)                  // superfluous value specified
@@ -262,22 +262,22 @@ namespace cli {
           break;
 
         case 'r':                       // the reference (file1) FASTA record switch
-          {
-            const char* id = nullptr;
-            if (len > 2)                // whitespace optional
-              id = &token[2];
-            else if (n + 1 < argc)      // whitespace allowed
-              id = argv[++n];
-            else
-              usage = true;
+        {
+          const char* id = nullptr;
+          if (len > 2)                // whitespace optional
+            id = &token[2];
+          else if (n + 1 < argc)      // whitespace allowed
+            id = argv[++n];
+          else
+            usage = true;
 
-            hasReferenceId = true;
-            isfasta = true;             // -r implies -F
-            istext = true;              // -F implies -T
-            if (id != nullptr)
-              ParseRecordId(id, referenceName, referenceIndex);
-          }
-          break;
+          hasReferenceId = true;
+          isfasta = true;             // -r implies -F
+          istext = true;              // -F implies -T
+          if (id != nullptr)
+            ParseRecordId(id, referenceName, referenceIndex);
+        }
+        break;
 
         case 's':                       // the suffix switch
           if (len > 2)                  // whitespace optional

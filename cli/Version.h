@@ -29,13 +29,13 @@ namespace cli {
     static std::string ToString();
 
   private:
-  #ifdef LENGTH_SIZE_64
+#ifdef LENGTH_SIZE_64
     static constexpr const char* programName = "nabla64";
     static constexpr const char* buildFlavor = " 64-bit";
-  #else
+#else
     static constexpr const char* programName = "nabla";
     static constexpr const char* buildFlavor = "";
-  #endif
+#endif
     static constexpr const char* programVersion = "1.3.1";
     static constexpr const char* copyrightYears = "2017-2026";
     static constexpr const char* author = "Christopher N. Hume";
