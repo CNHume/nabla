@@ -117,12 +117,12 @@ namespace cli {
           // s=space, t=time.  Allow leading spaces -A d (as in -j, -p, -s).
           //
           const char* specifier = nullptr;
-          if (len > 2)                // Same token
+          if (len > 2)                  // Same token
             specifier = &token[2];
           else if (n + 1 < argc && strlen(argv[n + 1]) == 1)
-            specifier = argv[++n];    // Next token
+            specifier = argv[++n];      // Next token
           else {
-            usage = true;             // -A requires one specifier-letter
+            usage = true;               // -A requires one specifier-letter
             break;
           }
           switch (specifier[0]) {
@@ -142,7 +142,7 @@ namespace cli {
             algorithm = Algorithm::RickTime;
             break;
           default:
-            usage = true;             // unknown algorithm
+            usage = true;               // unknown algorithm
           }
         }
         break;
@@ -237,16 +237,16 @@ namespace cli {
         case 'q':                       // the query (file2) FASTA record switch
         {
           const char* id = nullptr;
-          if (len > 2)                // whitespace optional
+          if (len > 2)                  // whitespace optional
             id = &token[2];
-          else if (n + 1 < argc)      // whitespace allowed
+          else if (n + 1 < argc)        // whitespace allowed
             id = argv[++n];
           else
             usage = true;
 
           hasQueryId = true;
-          isfasta = true;             // -q implies -F
-          istext = true;              // -F implies -T
+          isfasta = true;               // -q implies -F
+          istext = true;                // -F implies -T
           if (id != nullptr)
             ParseRecordId(id, queryName, queryIndex);
         }
@@ -264,16 +264,16 @@ namespace cli {
         case 'r':                       // the reference (file1) FASTA record switch
         {
           const char* id = nullptr;
-          if (len > 2)                // whitespace optional
+          if (len > 2)                  // whitespace optional
             id = &token[2];
-          else if (n + 1 < argc)      // whitespace allowed
+          else if (n + 1 < argc)        // whitespace allowed
             id = argv[++n];
           else
             usage = true;
 
           hasReferenceId = true;
-          isfasta = true;             // -r implies -F
-          istext = true;              // -F implies -T
+          isfasta = true;               // -r implies -F
+          istext = true;                // -F implies -T
           if (id != nullptr)
             ParseRecordId(id, referenceName, referenceIndex);
         }
@@ -342,9 +342,13 @@ namespace cli {
             width = parse_uint32(argv[++n], "width");
           else
             usage = true;
-          if (width < MIN_PARALLEL_WIDTH) // reject below the minimum
+
+          // require minimum parallel width
+          if (width < MIN_PARALLEL_WIDTH)
             throw invalid_argument(
-              std::format("Invalid width: {} (minimum is {})", width, MIN_PARALLEL_WIDTH));
+              std::format(
+                "Invalid width: {}, minimum is {}",
+                width, MIN_PARALLEL_WIDTH));
           break;
 
         case 'y':                       // the parallel switch (side-by-side)
