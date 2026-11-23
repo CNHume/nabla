@@ -1,5 +1,7 @@
 # nabla
 
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](https://bioconda.github.io/recipes/nabla/README.html)
+
 `nabla` finds the **longest common subsequence (LCS)** of two input files.
 It supports explicit choice among four LCS algorithms; and will select the fastest
 algorithm automatically, based on analysis of the inputs.
@@ -18,6 +20,14 @@ reconstruction → RickSpace.
 
 `nabla` reads FASTA (`-F`) sequences, and emits SAM CIGAR alignments (`-G`);
 so it works on nucleotide/protein sequences, in addition to text or records.
+
+## Install
+
+```
+conda install -c bioconda nabla
+```
+
+Installs both `nabla` and `nabla64` from the [bioconda](https://bioconda.github.io/) channel.
 
 ## Build
 

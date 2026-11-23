@@ -31,15 +31,15 @@ about:
   license_file:
     - cli/LICENSES/COPYING_LESSER.txt
     - cli/LICENSES/COPYING.txt
-  summary: "Longest Common Subsequence of two sequences or files, supporting whole-genome scale FASTA input and CIGAR output."
+  summary: "Longest common subsequence (LCS) of two sequences or files, with automatic algorithm selection, FASTA input, and SAM CIGAR output."
   description: |
-    nabla finds the Longest Common Subsequence (LCS) of two record or text
+    nabla finds the longest common subsequence (LCS) of two record or text
     sequences, selecting automatically among four algorithms — Myers,
     Hunt-Szymanski, RickSpace, or RickTime — based on the input's edit
-    distance, match count, and alphabet size.  It is able to read FASTA (-F)
-    and can emit SAM CIGAR alignments (-G), so nucleotide and protein
-    sequences can be compared.  The nabla64 build lifts the 32-bit (4G)
-    length limitation for very long genome inputs.
+    distance, match count, and alphabet size.  It reads FASTA (-F) and emits
+    SAM CIGAR alignments (-G), so nucleotide and protein sequences can be
+    compared.  The nabla64 build lifts the 32-bit length limit for
+    whole-genome inputs.
 
 extra:
   recipe-maintainers:
