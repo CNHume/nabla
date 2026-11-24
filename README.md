@@ -1,7 +1,7 @@
 # nabla
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](https://bioconda.github.io/recipes/nabla/README.html)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24474949.svg)](https://doi.org/10.5281/zenodo.24474949)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24474948.svg)](https://doi.org/10.5281/zenodo.24474948)
 
 `nabla` finds the **Longest Common Subsequence (LCS)** of two input files.
 It supports explicit choice among four LCS algorithms; and will select the fastest
@@ -63,7 +63,7 @@ Algorithm and performance details are presented in `Doc/`.
 
 ## Cite
 
-> Hume, Christopher N. (2026). *nabla: Longest Common Subsequence (LCS) of two sequences or files* (v1.3.2). Zenodo. https://doi.org/10.5281/zenodo.24474949
+> Hume, Christopher N. (2026). *nabla: Longest Common Subsequence (LCS) of two sequences or files*. Zenodo. https://doi.org/10.5281/zenodo.24474948
 
 ## License
 
