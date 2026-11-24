@@ -54,7 +54,7 @@ namespace lcs::formatters {
     const string& label1, const string& label2) {
     format.BeginResult(
       label1, label2, (Length)s1.size(), (Length)s2.size());
-    uint32_t ndelta = 0;                  // # of deltas
+    uint32_t ndelta = 0;                // # of deltas
     for (auto next = deltas; next != nullptr;
       next = dynamic_pointer_cast<Delta>(next->next)) {
       auto side1 = MakeSpan(label1, s1, next->begin1, next->end1);
