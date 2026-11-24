@@ -31,9 +31,9 @@ about:
   license_file:
     - cli/LICENSES/COPYING_LESSER.txt
     - cli/LICENSES/COPYING.txt
-  summary: "Longest common subsequence (LCS) of two sequences or files, with automatic algorithm selection, FASTA input, and SAM CIGAR output."
+  summary: "Longest Common Subsequence (LCS) of two sequences or files, with automatic algorithm selection, FASTA input, and SAM CIGAR output."
   description: |
-    nabla finds the longest common subsequence (LCS) of two record or text
+    nabla finds the Longest Common Subsequence (LCS) of two record or text
     sequences, selecting automatically among four algorithms — Myers,
     Hunt-Szymanski, RickSpace, or RickTime — based on the input's edit
     distance, match count, and alphabet size.  It reads FASTA (-F) and emits

@@ -2,7 +2,7 @@
 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](https://bioconda.github.io/recipes/nabla/README.html)
 
-`nabla` finds the **longest common subsequence (LCS)** of two input files.
+`nabla` finds the **Longest Common Subsequence (LCS)** of two input files.
 It supports explicit choice among four LCS algorithms; and will select the fastest
 algorithm automatically, based on analysis of the inputs.
 
