@@ -44,18 +44,15 @@ void Normal::NormalCase(string& input) {
 
 void Normal::NormalSpace(const string& input, string& output) {
   // outer (right) trim
-  auto end = 0;
-  for (auto it = input.rbegin(); it != input.rend(); it++)
-    if (!isspace(*it)) {
-      end = input.rend() - it;
-      break;
-    }
+  size_t end = input.size();
+  while (end > 0 && isspace(input[end - 1]))
+    end--;
 
   output.clear();
   output.reserve(input.size());
   // inner (left) trims
   bool allowSpace = false;
-  for (auto index = 0; index < end; index++) {
+  for (size_t index = 0; index < end; index++) {
     auto c = input[index];
 
     if (!isspace(c)) {

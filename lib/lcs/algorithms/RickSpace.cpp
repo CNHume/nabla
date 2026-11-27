@@ -192,7 +192,7 @@ namespace lcs::algorithms {
       // Two rows sharing a symbol share the same match-list pointer, so pointer
       // identity compresses the symbols without needing the symbol values.
       //
-      unordered_map<const INDEXES*, uint32_t> pointerToId;
+      unordered_map<const INDEXES*, Index> pointerToId;
       vector<const INDEXES*> lists;       // lists[id] = sorted positions of symbol id
       occ.rowId.assign(size1, NoIndex);
       for (size_t rowIndex = 0; rowIndex < size1; rowIndex++) {
@@ -307,7 +307,7 @@ namespace lcs::algorithms {
       occ.columns = (int64_t)s2.size();
 
       // Compress the code points of s2 (the tabled string) to dense ids.
-      unordered_map<char32_t, uint32_t> charToId;
+      unordered_map<char32_t, Index> charToId;
       vector<Index> s2Id(s2.size(), NoIndex);
       for (size_t columnIndex = 0; columnIndex < s2.size(); columnIndex++) {
         auto codePoint = s2[columnIndex];
