@@ -1,5 +1,9 @@
 <Solution>
   <Configurations>
+    <BuildType Name="Debug32" />
+    <BuildType Name="Debug64" />
+    <BuildType Name="Release32" />
+    <BuildType Name="Release64" />
     <Platform Name="Win32" />
   </Configurations>
   <Project Path="cli/nabla.vcxproj" Id="14bd6659-eb48-4058-ad46-f8bf2e4c6916" />

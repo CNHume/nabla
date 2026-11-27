@@ -223,8 +223,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="LICENSE.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
+    <Text Include="LICENSES\COPYING.txt" />
+    <Text Include="LICENSES\COPYING_LESSER.txt" />
   </ItemGroup>
 </Project>

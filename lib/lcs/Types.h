@@ -33,9 +33,9 @@
 namespace lcs {
 
 #ifdef LENGTH_SIZE_64
-  using Index = std::uint64_t;          // specialized release: 64-bit positions
+  using Index = std::uint64_t;          // wide 64-bit position build
 #else
-  using Index = std::uint32_t;          // default: 32-bit positions
+  using Index = std::uint32_t;          // compact 32-bit position build
 #endif
 
   //
