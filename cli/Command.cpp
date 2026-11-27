@@ -70,9 +70,9 @@ namespace cli {
     //
     errno = 0;
     auto result = strtoul(s, &pEnd, 10);
-    if (errno != 0 || *pEnd != '\0')
+    if (errno != 0 || *pEnd != '\0' || result > UINT32_MAX)
       throw invalid_argument(arg_msg(s, name));
-    return result;
+    return (uint32_t)result;
   }
 
   //

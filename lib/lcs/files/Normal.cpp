@@ -39,7 +39,7 @@ void Normal::Normalize(const string& input, string& output,
 
 void Normal::NormalCase(string& input) {
   for (auto& c : input)
-    c = tolower(c);                     // normal case
+    c = (char)tolower((unsigned char)c);                     // normal case
 }
 
 void Normal::NormalSpace(const string& input, string& output) {
