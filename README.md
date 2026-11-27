@@ -41,13 +41,13 @@ make -C cli
 The executable is `cli/build/nabla`.  A root-level `make` (or `make all`) builds
 both variants: `cli/build/nabla` and `cli/build/nabla64`.
 
-For inputs longer than 4,294,967,296 positions, a 64-bit variant is built, as follows:
+For inputs longer than 4,294,967,295 positions, a 64-bit variant is built, as follows:
 
 ```
 make -C cli LENGTH_SIZE=64 BUILD_DIR=build64
 ```
 
-which produces `cli/build64/nabla64`.  The 32-bit default handles up to 4,294,967,296 positions
+which produces `cli/build64/nabla64`.  The 32-bit default handles up to 4,294,967,295 positions
 (the human genome is ~3.1 billion); `nabla64` supports 64-bit positions, using twice the memory.
 
 ## Usage

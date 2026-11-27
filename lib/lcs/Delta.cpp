@@ -263,9 +263,9 @@ void Delta::Context(shared_ptr<Delta> deltas,
   // empty final delta
   if (last != nullptr) {
     auto last1 = prior1 + (uint64_t)suffix < size1 ?
-      prior1 + suffix : size1;
+      prior1 + suffix : (Index)size1;
     auto last2 = prior2 + (uint64_t)suffix < size2 ?
-      prior2 + suffix : size2;
+      prior2 + suffix : (Index)size2;
     last->end1 = last1;
     last->end2 = last2;
   }

@@ -19,7 +19,7 @@
 //
 // Index is the type of a position index into a sequence; its width sets the
 // maximum sequence length nabla can address.  The default 32-bit build covers
-// up to 4,294,967,296 positions (position indexes 0 through 4,294,967,295; the
+// up to 4,294,967,295 positions (position indexes 0 through 4,294,967,294; the
 // human genome is ~3.1 billion) at half the memory of 64-bit indexes.  Define
 // LENGTH_SIZE_64 to build a specialized release whose maximum sequence length
 // is 64-bit.
@@ -50,13 +50,15 @@ namespace lcs {
 
   //
   // ExceedsIndex() reports whether a sequence of `size` positions cannot be
-  // addressed by Index: its largest position, size - 1, would not fit.  The
-  // 32-bit build therefore supports up to 2^32 positions (4,294,967,296); the
-  // 64-bit limit is unreachable in practice.  The 32-bit build guards its match
-  // list construction with this so it fails loudly instead of silently wrapping.
+  // addressed by Index.  Both every position (0 through size - 1) and the
+  // exclusive end (size itself) must fit in Index, so the limit is
+  // Index::max().  The 32-bit build therefore supports up to 2^32 - 1
+  // positions (4,294,967,295); the 64-bit limit is unreachable in practice.
+  // The 32-bit build guards its match-list construction with this so it fails
+  // loudly instead of silently wrapping.
   //
   inline bool ExceedsIndex(std::size_t size) {
-    return size > 0 && size - 1 > (std::size_t)std::numeric_limits<Index>::max();
+    return size > (std::size_t)std::numeric_limits<Index>::max();
   }
 
 } // namespace lcs

@@ -381,11 +381,12 @@ TEST_CASE("Myers agrees with Hunt-Szymanski on the record path") {
 
 TEST_CASE("32-bit position boundary distinguishes nabla from nabla64") {
   //
-  // The 32-bit build addresses positions [0, 2^32); a sequence of more than
-  // 2^32 positions overflows Index, which is the crossover where nabla (32-bit)
-  // would silently wrap and nabla64 becomes necessary.  This verifies the
+  // The 32-bit build addresses positions [0, 2^32); the exclusive end of the
+  // last position (the sequence size) must also fit in Index, so the largest
+  // representable length is 2^32 - 1.  A length of 2^32 would overflow Index,
+  // which is the crossover where nabla64 becomes necessary.  This verifies the
   // boundary constant and ExceedsIndex(), the guard that makes the 32-bit build
-  // fail loudly instead.
+  // fail loudly instead of wrapping.
   //
 #ifdef LENGTH_SIZE_64
   static_assert(sizeof(Index) == 8);
@@ -401,8 +402,8 @@ TEST_CASE("32-bit position boundary distinguishes nabla from nabla64") {
   CHECK(ExceedsIndex(4'294'967'296ull) == false);
   CHECK(ExceedsIndex(4'294'967'297ull) == false);
 #else
-  // 2^32 positions is the largest representable length; 2^32 + 1 overflows.
-  CHECK(ExceedsIndex(4'294'967'296ull) == false);
-  CHECK(ExceedsIndex(4'294'967'297ull) == true);
+  // 2^32 - 1 positions is the largest representable length; 2^32 overflows.
+  CHECK(ExceedsIndex(4'294'967'295ull) == false);
+  CHECK(ExceedsIndex(4'294'967'296ull) == true);
 #endif
 }
