@@ -1,19 +1,9 @@
 <Solution>
   <Configurations>
-    <BuildType Name="Debug32" />
-    <BuildType Name="Debug64" />
-    <BuildType Name="Release32" />
-    <BuildType Name="Release64" />
+    <BuildType Name="Debug" />
+    <BuildType Name="Release" />
     <Platform Name="Win32" />
     <Platform Name="x64" />
   </Configurations>
-  <Project Path="cli/nabla.vcxproj" Id="14bd6659-eb48-4058-ad46-f8bf2e4c6916">
-    <!-- The 32-bit-position builds are Win32 only; the 64-bit-position builds
-         are x64 only.  Pin each build type to its platform so every solution
-         configuration maps to a valid project configuration. -->
-    <Platform Solution="Debug32|*" Project="Win32" />
-    <Platform Solution="Release32|*" Project="Win32" />
-    <Platform Solution="Debug64|*" Project="x64" />
-    <Platform Solution="Release64|*" Project="x64" />
-  </Project>
+  <Project Path="cli/nabla.vcxproj" Id="14bd6659-eb48-4058-ad46-f8bf2e4c6916" />
 </Solution>

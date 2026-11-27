@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
-    <!-- Forces all final builds into a flat solution-level folder -->
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    
-    <!-- Cleans up temporary clutter into a unified 'Intermediate' directory -->
-    <IntDir>$(SolutionDir)Intermediate\$(Configuration)\$(MSBuildProjectName)\</IntDir>
+    <!-- Route final builds into a solution-level folder, separated by platform. -->
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+
+    <!-- Keep intermediate files out of the source tree, separated by platform. -->
+    <IntDir>$(SolutionDir)Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
   </PropertyGroup>
 </Project>
